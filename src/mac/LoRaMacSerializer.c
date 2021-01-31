@@ -107,7 +107,7 @@ LoRaMacSerializerStatus_t LoRaMacSerializerReJoinType0or2( LoRaMacMessageReJoinT
 
     macMsg->Buffer[bufItr++] = macMsg->ReJoinType;
 
-    memcpy1( &macMsg->Buffer[bufItr], macMsg->NetID, LORAMAC_NET_ID_FIELD_SIZE );
+    memcpyr( &macMsg->Buffer[bufItr], macMsg->NetID, LORAMAC_NET_ID_FIELD_SIZE );
     bufItr += LORAMAC_NET_ID_FIELD_SIZE;
 
     memcpyr( &macMsg->Buffer[bufItr], macMsg->DevEUI, LORAMAC_DEV_EUI_FIELD_SIZE );
@@ -130,7 +130,7 @@ LoRaMacSerializerStatus_t LoRaMacSerializerData( LoRaMacMessageData_t* macMsg )
 
     // Check macMsg->BufSize
     uint16_t computedBufSize =   LORAMAC_MHDR_FIELD_SIZE
-                               + LORAMAC_FHDR_DEV_ADDR_FIELD_SIZE
+                               + LORAMAC_FHDR_DEV_ADD_FIELD_SIZE
                                + LORAMAC_FHDR_F_CTRL_FIELD_SIZE
                                + LORAMAC_FHDR_F_CNT_FIELD_SIZE;
 

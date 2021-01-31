@@ -37,11 +37,6 @@
 #ifndef __REGION_AU915_H__
 #define __REGION_AU915_H__
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #include "region/Region.h"
 
 /*!
@@ -88,12 +83,17 @@ extern "C"
 /*!
  * Maximal Rx1 receive datarate offset
  */
-#define AU915_MAX_RX1_DR_OFFSET                     5
+#define AU915_MAX_RX1_DR_OFFSET                     6
+
+/*!
+ * Default Rx1 receive datarate offset
+ */
+#define AU915_DEFAULT_RX1_DR_OFFSET                 0
 
 /*!
  * Minimal Tx output power that can be used by the node
  */
-#define AU915_MIN_TX_POWER                          TX_POWER_14
+#define AU915_MIN_TX_POWER                          TX_POWER_10
 
 /*!
  * Maximal Tx output power that can be used by the node
@@ -111,6 +111,11 @@ extern "C"
 #define AU915_DEFAULT_UPLINK_DWELL_TIME             1
 
 /*!
+ * Default downlink dwell time configuration
+ */
+#define AU915_DEFAULT_DOWNLINK_DWELL_TIME           0
+
+/*!
  * Default Max EIRP
  */
 #define AU915_DEFAULT_MAX_EIRP                      30.0f
@@ -121,6 +126,16 @@ extern "C"
 #define AU915_DEFAULT_ANTENNA_GAIN                  2.15f
 
 /*!
+ * ADR Ack limit
+ */
+#define AU915_ADR_ACK_LIMIT                         64
+
+/*!
+ * ADR Ack delay
+ */
+#define AU915_ADR_ACK_DELAY                         32
+
+/*!
  * Enabled or disabled the duty cycle
  */
 #define AU915_DUTY_CYCLE_ENABLED                    0
@@ -129,6 +144,41 @@ extern "C"
  * Maximum RX window duration
  */
 #define AU915_MAX_RX_WINDOW                         3000
+
+/*!
+ * Receive delay 1
+ */
+#define AU915_RECEIVE_DELAY1                        1000
+
+/*!
+ * Receive delay 2
+ */
+#define AU915_RECEIVE_DELAY2                        2000
+
+/*!
+ * Join accept delay 1
+ */
+#define AU915_JOIN_ACCEPT_DELAY1                    5000
+
+/*!
+ * Join accept delay 2
+ */
+#define AU915_JOIN_ACCEPT_DELAY2                    6000
+
+/*!
+ * Maximum frame counter gap
+ */
+#define AU915_MAX_FCNT_GAP                          16384
+
+/*!
+ * Ack timeout
+ */
+#define AU915_ACKTIMEOUT                            2000
+
+/*!
+ * Random ack timeout limits
+ */
+#define AU915_ACK_TIMEOUT_RND                       1000
 
 /*!
  * Second reception window channel frequency definition.
@@ -154,11 +204,6 @@ extern "C"
 #define AU915_BEACON_CHANNEL_STEPWIDTH              600000
 
 /*!
- * Ping slot channel frequency
- */
-#define AU915_PING_SLOT_CHANNEL_FREQ                923300000
-
-/*!
  * Number of possible beacon channels
  */
 #define AU915_BEACON_NB_CHANNELS                    8
@@ -166,22 +211,22 @@ extern "C"
 /*!
  * Payload size of a beacon frame
  */
-#define AU915_BEACON_SIZE                           23
+#define AU915_BEACON_SIZE                           19
 
 /*!
  * Size of RFU 1 field
  */
-#define AU915_RFU1_SIZE                             4
+#define AU915_RFU1_SIZE                             3
 
 /*!
  * Size of RFU 2 field
  */
-#define AU915_RFU2_SIZE                             3
+#define AU915_RFU2_SIZE                             1
 
 /*!
  * Datarate of the beacon channel
  */
-#define AU915_BEACON_CHANNEL_DR                     DR_8
+#define AU915_BEACON_CHANNEL_DR                     DR_10
 
 /*!
  * Bandwith of the beacon channel
@@ -191,7 +236,7 @@ extern "C"
 /*!
  * Ping slot channel datarate
  */
-#define AU915_PING_SLOT_CHANNEL_DR                  DR_8
+#define AU915_PING_SLOT_CHANNEL_DR                  DR_10
 
 /*!
  * LoRaMac maximum number of bands
@@ -200,9 +245,9 @@ extern "C"
 
 /*!
  * Band 0 definition
- * Band = { DutyCycle, TxMaxPower, LastBandUpdateTime, LastMaxCreditAssignTime, TimeCredits, MaxTimeCredits, ReadyForTransmission }
+ * { DutyCycle, TxMaxPower, LastJoinTxDoneTime, LastTxDoneTime, TimeOff }
  */
-#define AU915_BAND0                                 { 1, AU915_MAX_TX_POWER, 0, 0, 0, 0, 0 } //  100.0 %
+#define AU915_BAND0                                 { 1, AU915_MAX_TX_POWER, 0, 0, 0 } //  100.0 %
 
 /*!
  * Defines the first channel for RX window 1 for US band
@@ -244,16 +289,30 @@ static const int8_t DatarateOffsetsAU915[7][6] =
 };
 
 /*!
- * Maximum payload with respect to the datarate index.
+ * Maximum payload with respect to the datarate index. Cannot operate with repeater.
  * The table is valid for the dwell time configuration of 0 for uplinks.
  */
 static const uint8_t MaxPayloadOfDatarateDwell0AU915[] = { 51, 51, 51, 115, 242, 242, 242, 0, 53, 129, 242, 242, 242, 242 };
 
 /*!
- * Maximum payload with respect to the datarate index.
+ * Maximum payload with respect to the datarate index. Can operate with repeater.
+ * The table is valid for the dwell time configuration of 0 for uplinks. The table provides
+ * repeater support.
+ */
+static const uint8_t MaxPayloadOfDatarateRepeaterDwell0AU915[] = { 51, 51, 51, 115, 222, 222, 222, 0, 33, 109, 222, 222, 222, 222 };
+
+/*!
+ * Maximum payload with respect to the datarate index. Cannot operate with repeater.
  * The table is valid for the dwell time configuration of 1 for uplinks.
  */
 static const uint8_t MaxPayloadOfDatarateDwell1AU915[] = { 0, 0, 11, 53, 125, 242, 242, 0, 53, 129, 242, 242, 242, 242 };
+
+/*!
+ * Maximum payload with respect to the datarate index. Can operate with repeater.
+ * The table is valid for the dwell time configuration of 1 for uplinks. The table provides
+ * repeater support.
+ */
+static const uint8_t MaxPayloadOfDatarateRepeaterDwell1AU915[] = { 0, 0, 11, 53, 125, 242, 242, 0, 33, 109, 222, 222, 222, 222 };
 
 /*!
  * \brief The function gets a value of a specific phy attribute.
@@ -277,6 +336,15 @@ void RegionAU915SetBandTxDone( SetBandTxDoneParams_t* txDone );
  * \param [IN] type Sets the initialization type.
  */
 void RegionAU915InitDefaults( InitDefaultsParams_t* params );
+
+/*!
+ * \brief Returns a pointer to the internal context and its size.
+ *
+ * \param [OUT] params Pointer to the function parameters.
+ *
+ * \retval      Points to a structure where the module store its non-volatile context.
+ */
+void* RegionAU915GetNvmCtx( GetNvmCtxParams_t* params );
 
 /*!
  * \brief Verifies a parameter.
@@ -370,7 +438,7 @@ uint8_t RegionAU915RxParamSetupReq( RxParamSetupReqParams_t* rxParamSetupReq );
  *
  * \retval Returns the status of the operation, according to the LoRaMAC specification.
  */
-int8_t RegionAU915NewChannelReq( NewChannelReqParams_t* newChannelReq );
+uint8_t RegionAU915NewChannelReq( NewChannelReqParams_t* newChannelReq );
 
 /*!
  * \brief The function processes a TX ParamSetup Request.
@@ -390,7 +458,7 @@ int8_t RegionAU915TxParamSetupReq( TxParamSetupReqParams_t* txParamSetupReq );
  *
  * \retval Returns the status of the operation, according to the LoRaMAC specification.
  */
-int8_t RegionAU915DlChannelReq( DlChannelReqParams_t* dlChannelReq );
+uint8_t RegionAU915DlChannelReq( DlChannelReqParams_t* dlChannelReq );
 
 /*!
  * \brief Alternates the datarate of the channel for the join request.
@@ -400,6 +468,13 @@ int8_t RegionAU915DlChannelReq( DlChannelReqParams_t* dlChannelReq );
  * \retval Datarate to apply.
  */
 int8_t RegionAU915AlternateDr( int8_t currentDr, AlternateDrType_t type );
+
+/*!
+ * \brief Calculates the back-off time.
+ *
+ * \param [IN] calcBackOff Pointer to the function parameters.
+ */
+void RegionAU915CalcBackOff( CalcBackOffParams_t* calcBackOff );
 
 /*!
  * \brief Searches and set the next random available channel
@@ -434,6 +509,13 @@ LoRaMacStatus_t RegionAU915ChannelAdd( ChannelAddParams_t* channelAdd );
 bool RegionAU915ChannelsRemove( ChannelRemoveParams_t* channelRemove  );
 
 /*!
+ * \brief Sets the radio into continuous wave mode.
+ *
+ * \param [IN] continuousWave Pointer to the function parameters.
+ */
+void RegionAU915SetContinuousWave( ContinuousWaveParams_t* continuousWave );
+
+/*!
  * \brief Computes new datarate according to the given offset
  *
  * \param [IN] downlinkDwellTime Downlink dwell time configuration. 0: No limit, 1: 400ms
@@ -454,9 +536,5 @@ uint8_t RegionAU915ApplyDrOffset( uint8_t downlinkDwellTime, int8_t dr, int8_t d
  void RegionAU915RxBeaconSetup( RxBeaconSetup_t* rxBeaconSetup, uint8_t* outDr );
 
 /*! \} defgroup REGIONAU915 */
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // __REGION_AU915_H__
