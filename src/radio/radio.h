@@ -23,6 +23,10 @@
 #ifndef __RADIO_H__
 #define __RADIO_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -97,6 +101,16 @@ typedef struct
      * \param [IN] channelDetected    Channel Activity detected during the CAD
      */
 	void ( *CadDone )( bool channelActivityDetected );
+
+	/*!
+     * \brief  Gnss Done Done callback prototype.
+    */
+	void ( *GnssDone )( void );
+
+	/*!
+     * \brief  Gnss Done Done callback prototype.
+    */
+	void ( *WifiDone )( void );
 } RadioEvents_t;
 
 /*!
@@ -300,14 +314,14 @@ struct Radio_s
      * \param [IN]: addr Register address
      * \param [IN]: data New register value
      */
-	void ( *Write )( uint16_t addr, uint8_t data );
+	void ( *Write )( uint32_t addr, uint8_t data );
 	/*!
      * \brief Reads the radio register at the specified address
      *
      * \param [IN]: addr Register address
      * \retval data Register value
      */
-	uint8_t ( *Read )( uint16_t addr );
+	uint8_t ( *Read )( uint32_t addr );
 	/*!
      * \brief Writes multiple radio registers starting at address
      *
@@ -315,7 +329,7 @@ struct Radio_s
      * \param [IN] buffer Buffer containing the new register's values
      * \param [IN] size   Number of registers to be written
      */
-	void ( *WriteBuffer )( uint16_t addr, uint8_t *buffer, uint8_t size );
+	void ( *WriteBuffer )( uint32_t addr, uint8_t *buffer, uint8_t size );
 	/*!
      * \brief Reads multiple radio registers starting at address
      *
@@ -323,7 +337,7 @@ struct Radio_s
      * \param [OUT] buffer Buffer where to copy the registers data
      * \param [IN] size Number of registers to be read
      */
-	void ( *ReadBuffer )( uint16_t addr, uint8_t *buffer, uint8_t size );
+	void ( *ReadBuffer )( uint32_t addr, uint8_t *buffer, uint8_t size );
 	/*!
      * \brief Sets the maximum payload length.
      *
@@ -379,5 +393,9 @@ struct Radio_s
  *         board implementation
  */
 extern const struct Radio_s Radio;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __RADIO_H__
