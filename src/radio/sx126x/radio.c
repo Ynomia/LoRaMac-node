@@ -187,11 +187,30 @@ bool RadioCheckRfFrequency( uint32_t frequency );
  * \Remark Can only be called once SetRxConfig or SetTxConfig have been called
  *
  * \param [IN] modem      Radio modem to be used [0: FSK, 1: LoRa]
- * \param [IN] pktLen     Packet payload length
+ * \param [IN] bandwidth    Sets the bandwidth
+ *                          FSK : >= 2600 and <= 250000 Hz
+ *                          LoRa: [0: 125 kHz, 1: 250 kHz,
+ *                                 2: 500 kHz, 3: Reserved]
+ * \param [IN] datarate     Sets the Datarate
+ *                          FSK : 600..300000 bits/s
+ *                          LoRa: [6: 64, 7: 128, 8: 256, 9: 512,
+ *                                10: 1024, 11: 2048, 12: 4096  chips]
+ * \param [IN] coderate     Sets the coding rate (LoRa only)
+ *                          FSK : N/A ( set to 0 )
+ *                          LoRa: [1: 4/5, 2: 4/6, 3: 4/7, 4: 4/8]
+ * \param [IN] preambleLen  Sets the Preamble length
+ *                          FSK : Number of bytes
+ *                          LoRa: Length in symbols (the hardware adds 4 more symbols)
+ * \param [IN] fixLen       Fixed length packets [0: variable, 1: fixed]
+ * \param [IN] payloadLen   Sets payload length when fixed length is used
+ * \param [IN] crcOn        Enables/Disables the CRC [0: OFF, 1: ON]
  *
  * \retval airTime        Computed airTime (ms) for the given packet payload length
  */
-uint32_t RadioTimeOnAir( RadioModems_t modem, uint8_t pktLen );
+uint32_t RadioTimeOnAir( RadioModems_t modem, uint32_t bandwidth,
+						 uint32_t datarate, uint8_t coderate,
+						 uint16_t preambleLen, bool fixLen, uint8_t payloadLen,
+						 bool crcOn );
 
 /*!
  * \brief Sends the buffer of size. Prepares the packet to be sent and sets
@@ -801,37 +820,142 @@ bool RadioCheckRfFrequency( uint32_t frequency )
 	return true;
 }
 
-// ---------------------_########## NEEDS WORK #############----------------------//
-uint32_t RadioTimeOnAir( RadioModems_t modem, uint8_t pktLen )
+static uint32_t RadioGetLoRaBandwidthInHz( RadioLoRaBandwidths_t bw )
 {
-	uint32_t airTime = 0;
+	uint32_t bandwidthInHz = 0;
+
+	switch ( bw ) {
+		case LORA_BW_007:
+			bandwidthInHz = 7812UL;
+			break;
+		case LORA_BW_010:
+			bandwidthInHz = 10417UL;
+			break;
+		case LORA_BW_015:
+			bandwidthInHz = 15625UL;
+			break;
+		case LORA_BW_020:
+			bandwidthInHz = 20833UL;
+			break;
+		case LORA_BW_031:
+			bandwidthInHz = 31250UL;
+			break;
+		case LORA_BW_041:
+			bandwidthInHz = 41667UL;
+			break;
+		case LORA_BW_062:
+			bandwidthInHz = 62500UL;
+			break;
+		case LORA_BW_125:
+			bandwidthInHz = 125000UL;
+			break;
+		case LORA_BW_250:
+			bandwidthInHz = 250000UL;
+			break;
+		case LORA_BW_500:
+			bandwidthInHz = 500000UL;
+			break;
+	}
+
+	return bandwidthInHz;
+}
+
+static uint32_t RadioGetGfskTimeOnAirNumerator( uint32_t datarate, uint8_t coderate,
+												uint16_t preambleLen, bool fixLen, uint8_t payloadLen,
+												bool crcOn )
+{
+	const RadioAddressComp_t addrComp		= RADIO_ADDRESSCOMP_FILT_OFF;
+	const uint8_t			 syncWordLength = 3;
+
+	return ( preambleLen << 3 ) +
+		   ( ( fixLen == false ) ? 8 : 0 ) +
+		   ( syncWordLength << 3 ) +
+		   ( ( payloadLen +
+			   ( addrComp == RADIO_ADDRESSCOMP_FILT_OFF ? 0 : 1 ) +
+			   ( ( crcOn == true ) ? 2 : 0 ) )
+			 << 3 );
+}
+
+static uint32_t RadioGetLoRaTimeOnAirNumerator( uint32_t bandwidth,
+												uint32_t datarate, uint8_t coderate,
+												uint16_t preambleLen, bool fixLen, uint8_t payloadLen,
+												bool crcOn )
+{
+	int32_t crDenom			  = coderate + 4;
+	bool	lowDatareOptimize = false;
+
+	// Ensure that the preamble length is at least 12 symbols when using SF5 or
+	// SF6
+	if ( ( datarate == 5 ) || ( datarate == 6 ) ) {
+		if ( preambleLen < 12 ) {
+			preambleLen = 12;
+		}
+	}
+
+	if ( ( ( bandwidth == 0 ) && ( ( datarate == 11 ) || ( datarate == 12 ) ) ) ||
+		 ( ( bandwidth == 1 ) && ( datarate == 12 ) ) ) {
+		lowDatareOptimize = true;
+	}
+
+	int32_t ceilDenominator;
+	int32_t ceilNumerator = ( payloadLen << 3 ) +
+							( crcOn ? 16 : 0 ) -
+							( 4 * datarate ) +
+							( fixLen ? 0 : 20 );
+
+	if ( datarate <= 6 ) {
+		ceilDenominator = 4 * datarate;
+	}
+	else {
+		ceilNumerator += 8;
+
+		if ( lowDatareOptimize == true ) {
+			ceilDenominator = 4 * ( datarate - 2 );
+		}
+		else {
+			ceilDenominator = 4 * datarate;
+		}
+	}
+
+	if ( ceilNumerator < 0 ) {
+		ceilNumerator = 0;
+	}
+
+	// Perform integral ceil()
+	int32_t intermediate =
+		( ( ceilNumerator + ceilDenominator - 1 ) / ceilDenominator ) * crDenom + preambleLen + 12;
+
+	if ( datarate <= 6 ) {
+		intermediate += 2;
+	}
+
+	return ( uint32_t )( ( 4 * intermediate + 1 ) * ( 1 << ( datarate - 2 ) ) );
+}
+
+uint32_t RadioTimeOnAir( RadioModems_t modem, uint32_t bandwidth,
+						 uint32_t datarate, uint8_t coderate,
+						 uint16_t preambleLen, bool fixLen, uint8_t payloadLen,
+						 bool crcOn )
+{
+	uint32_t numerator	 = 0;
+	uint32_t denominator = 1;
 
 	switch ( modem ) {
 		case MODEM_FSK: {
-			airTime = rint( ( 8 * ( pxSx126xModule->xPacketParams.xParams.xGfsk.usPreambleLength + ( pxSx126xModule->xPacketParams.xParams.xGfsk.ucSyncWordLength >> 3 ) + ( ( pxSx126xModule->xPacketParams.xParams.xGfsk.eHeaderType == RADIO_PACKET_FIXED_LENGTH ) ? 0.0 : 1.0 ) + pktLen + ( ( pxSx126xModule->xPacketParams.xParams.xGfsk.eCrcLength == RADIO_CRC_2_BYTES ) ? 2.0 : 0 ) ) /
-							  pxSx126xModule->xModulationParams.xParams.xGfsk.ulBitRate ) *
-							1e3 );
+			numerator	= 1000U * RadioGetGfskTimeOnAirNumerator( datarate, coderate,
+																  preambleLen, fixLen,
+																  payloadLen, crcOn );
+			denominator = datarate;
 		} break;
 		case MODEM_LORA: {
-			double ts = RadioLoRaSymbTime[pxSx126xModule->xModulationParams.xParams.xLoRa.eBandwidth - 4][12 - pxSx126xModule->xModulationParams.xParams.xLoRa.eSpreadingFactor];
-			// time of preamble
-			double tPreamble = ( pxSx126xModule->xPacketParams.xParams.xLoRa.usPreambleLength + 4.25 ) * ts;
-			// Symbol length of payload and time
-			double tmp = ceil( ( 8 * pktLen - 4 * pxSx126xModule->xModulationParams.xParams.xLoRa.eSpreadingFactor +
-								 28 + 16 * pxSx126xModule->xPacketParams.xParams.xLoRa.eCrcMode -
-								 ( ( pxSx126xModule->xPacketParams.xParams.xLoRa.eHeaderType == LORA_PACKET_FIXED_LENGTH ) ? 20 : 0 ) ) /
-							   (double) ( 4 * ( pxSx126xModule->xModulationParams.xParams.xLoRa.eSpreadingFactor -
-												( ( pxSx126xModule->xModulationParams.xParams.xLoRa.ucLowDatarateOptimize > 0 ) ? 2 : 0 ) ) ) ) *
-						 ( ( pxSx126xModule->xModulationParams.xParams.xLoRa.eCodingRate % 4 ) + 4 );
-			double nPayload = 8 + ( ( tmp > 0 ) ? tmp : 0 );
-			double tPayload = nPayload * ts;
-			// Time on air
-			double tOnAir = tPreamble + tPayload;
-			// return milli seconds
-			airTime = floor( tOnAir + 0.999 );
+			numerator	= 1000U * RadioGetLoRaTimeOnAirNumerator( bandwidth, datarate,
+																  coderate, preambleLen,
+																  fixLen, payloadLen, crcOn );
+			denominator = RadioGetLoRaBandwidthInHz( Bandwidths[bandwidth] );
 		} break;
 	}
-	return airTime;
+	// Perform integral ceil()
+	return ( numerator + denominator - 1 ) / denominator;
 }
 
 void RadioSend( uint8_t *buffer, uint8_t size )

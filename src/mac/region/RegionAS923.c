@@ -147,6 +147,23 @@ static uint8_t CountNbOfEnabledChannels( bool joined, uint8_t datarate, uint16_t
 	return nbEnabledChannels;
 }
 
+static TimerTime_t GetTimeOnAir( int8_t datarate, uint16_t pktLen )
+{
+    int8_t phyDr = DataratesAS923[datarate];
+    uint32_t bandwidth = RegionCommonGetBandwidth( datarate, BandwidthsAS923 );
+    TimerTime_t timeOnAir = 0;
+
+    if( datarate == DR_7 )
+    { // High Speed FSK channel
+        timeOnAir = Radio.TimeOnAir( MODEM_FSK, bandwidth, phyDr * 1000, 0, 5, false, pktLen, true );
+    }
+    else
+    {
+        timeOnAir = Radio.TimeOnAir( MODEM_LORA, bandwidth, phyDr, 1, 8, false, pktLen, true );
+    }
+    return timeOnAir;
+}
+
 PhyParam_t RegionAS923GetPhyParam( GetPhyParams_t *getPhy )
 {
 	PhyParam_t phyParam = { 0 };
@@ -574,7 +591,7 @@ bool RegionAS923TxConfig( TxConfigParams_t *txConfig, int8_t *txPower, TimerTime
 	// Setup maximum payload lenght of the radio driver
 	Radio.SetMaxPayloadLength( modem, txConfig->PktLen );
 	// Get the time-on-air of the next tx frame
-	*txTimeOnAir = Radio.TimeOnAir( modem, txConfig->PktLen );
+	*txTimeOnAir = GetTimeOnAir( txConfig->Datarate, txConfig->PktLen );
 
 	*txPower = txPowerLimited;
 	return true;
