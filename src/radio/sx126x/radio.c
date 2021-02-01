@@ -414,11 +414,6 @@ const FskBandwidth_t FskBandwidths[] = {
 
 const RadioLoRaBandwidths_t Bandwidths[] = { LORA_BW_125, LORA_BW_250, LORA_BW_500 };
 
-//                                          SF12    SF11    SF10    SF9    SF8    SF7
-static double RadioLoRaSymbTime[3][6] = { { 32.768, 16.384, 8.192, 4.096, 2.048, 1.024 }, // 125 KHz
-										  { 16.384, 8.192, 4.096, 2.048, 1.024, 0.512 },  // 250 KHz
-										  { 8.192, 4.096, 2.048, 1.024, 0.512, 0.256 } }; // 500 KHz
-
 uint8_t MaxPayloadLength = 0xFF;
 
 uint32_t TxTimeout = 0;
@@ -428,6 +423,11 @@ bool RxContinuous = false;
 
 xPacketStatus_t RadioPktStatus;
 uint8_t			RadioRxPayload[255];
+
+/*
+ * SX126x DIO IRQ callback functions prototype
+ */
+bool IrqFired = false;
 
 /*!
  * \brief DIO 0 IRQ callback
@@ -471,7 +471,7 @@ static RadioEvents_t *RadioEvents;
 /*!
  * Radio hardware and global parameters
  */
-// vSX126x_t vSX126x;
+SX126x_t SX126x;
 
 /*!
  * Tx and Rx timers
@@ -507,7 +507,6 @@ static uint8_t RadioGetFskBandwidthRegValue( uint32_t bandwidth )
 
 void RadioInit( RadioEvents_t *events )
 {
-
 	RadioEvents = events;
 	// set irq interupts
 	vSX126xInit( RadioOnDioIrq );
@@ -529,6 +528,7 @@ void RadioInit( RadioEvents_t *events )
 
 	// set the irq to false
 	STATIC_SEMAPHORE_CREATE_BINARY( xLorawanInteruptHandle );
+	IrqFired = false;
 }
 
 RadioState_t RadioGetStatus( void )
@@ -715,14 +715,25 @@ void RadioSetRxConfig( RadioModems_t modem, uint32_t bandwidth,
 			pxSx126xModule->xPacketParams.xParams.xLoRa.eCrcMode		= (RadioLoRaCrcModes_t) crcOn;
 			pxSx126xModule->xPacketParams.xParams.xLoRa.eInvertIQ		= (RadioLoRaIQModes_t) iqInverted;
 
+			RadioStandby();
 			RadioSetModem( ( pxSx126xModule->xModulationParams.ePacketType == PACKET_TYPE_GFSK ) ? MODEM_FSK : MODEM_LORA );
 			vSX126xSetModulationParams( &pxSx126xModule->xModulationParams );
 			vSX126xSetPacketParams( &pxSx126xModule->xPacketParams );
 
+			// WORKAROUND - Optimizing the Inverted IQ Operation, see DS_SX1261-2_V1.2 datasheet chapter 15.4
+			if ( pxSx126xModule->xPacketParams.xParams.xLoRa.eInvertIQ == LORA_IQ_INVERTED ) {
+				// RegIqPolaritySetup = @address 0x0736
+				vSX126xWriteRegister( 0x0736, ucSX126xReadRegister( 0x0736 ) & ~( 1 << 2 ) );
+			}
+			else {
+				// RegIqPolaritySetup @address 0x0736
+				vSX126xWriteRegister( 0x0736, ucSX126xReadRegister( 0x0736 ) | ( 1 << 2 ) );
+			}
+			// WORKAROUND END
+
 			// Timeout Max, Timeout handled directly in SetRx function
 			RxTimeout = 0xFFFF;
-			break;
-		default:
+
 			break;
 	}
 }
