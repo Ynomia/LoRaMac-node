@@ -1,0 +1,39 @@
+# We'll use defaults from the LLVM style
+# Available options can be found here https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+BasedOnStyle: LLVM
+
+AlignAfterOpenBracket: true
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: true
+AlignTrailingComments: true
+AllowShortLoopsOnASingleLine: true
+
+# Enable the following option when it makes its way into a release
+#AlignConsecutiveMacros: true
+
+BreakBeforeBraces: Custom
+
+BraceWrapping:
+    AfterFunction: true
+    AfterStruct: true
+    AfterUnion: true
+    BeforeElse: true
+
+ColumnLimit: 0
+Cpp11BracedListStyle: false
+
+IndentCaseLabels: true
+IndentWidth: 4
+
+PointerAlignment: Right
+
+SortIncludes: true
+
+SpaceAfterCStyleCast: true
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeParens: true
+SpacesInParentheses: true
+
+TabWidth: 4
+
+UseTab: Always
