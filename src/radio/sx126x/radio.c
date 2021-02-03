@@ -999,11 +999,11 @@ void RadioSend( uint8_t *buffer, uint8_t size )
 
 void RadioSleep( void )
 {
-	xSleepParams_t xSleepParams		 = { { 0 } };
-	xSleepParams.xFields.ucWarmStart = 1;
+	SleepParams_t params = { 0 };
 
-	vSX126xSetSleep( xSleepParams );
-	// wait for 2Ms to switch to
+	params.Fields.WarmStart = 1;
+	SX126xSetSleep( params );
+
 	vTaskDelay( pdMS_TO_TICKS( 2 ) );
 }
 

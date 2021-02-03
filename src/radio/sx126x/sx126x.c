@@ -247,13 +247,13 @@ uint32_t SX126xGetRandom( void )
 
 void SX126xSetSleep( SleepParams_t sleepConfig )
 {
-	SX126xAntSwOff();
+	vSX126xAntSwOff();
 
 	uint8_t value = ( ( (uint8_t) sleepConfig.Fields.WarmStart << 2 ) |
 					  ( (uint8_t) sleepConfig.Fields.Reset << 1 ) |
 					  ( (uint8_t) sleepConfig.Fields.WakeUpRTC ) );
-	SX126xWriteCommand( RADIO_SET_SLEEP, &value, 1 );
-	SX126xSetOperatingMode( MODE_SLEEP );
+	vSX126xWriteCommand( RADIO_SET_SLEEP, &value, 1 );
+	vSX126xSetOperatingMode( MODE_SLEEP );
 }
 
 void SX126xSetStandby( RadioStandbyModes_t standbyConfig )
@@ -895,12 +895,6 @@ uint32_t ulSX126xGetRandom( void )
 	vSX126xSetStandby( STDBY_RC );
 
 	return ( ucBuf[0] << 24 ) | ( ucBuf[1] << 16 ) | ( ucBuf[2] << 8 ) | ucBuf[3];
-}
-
-void vSX126xSetSleep( xSleepParams_t xSleepConfig )
-{
-	vSX126xWriteCommand( RADIO_SET_SLEEP, &xSleepConfig.ucValue, 1 );
-	vSX126xSetOperatingMode( MODE_SLEEP );
 }
 
 void vSX126xSetStandby( RadioStandbyModes_t eStandbyConfig )
