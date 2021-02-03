@@ -237,7 +237,7 @@ uint32_t SX126xGetRandom( void )
 
 	vSX126xReadRegisters( RANDOM_NUMBER_GENERATORBASEADDR, (uint8_t *) &number, 4 );
 
-	vSX126xSetStandby( STDBY_RC );
+	SX126xSetStandby( STDBY_RC );
 
 	vSX126xWriteRegister( REG_ANA_LNA, regAnaLna );
 	vSX126xWriteRegister( REG_ANA_MIXER, regAnaMixer );
@@ -258,12 +258,12 @@ void SX126xSetSleep( SleepParams_t sleepConfig )
 
 void SX126xSetStandby( RadioStandbyModes_t standbyConfig )
 {
-	SX126xWriteCommand( RADIO_SET_STANDBY, (uint8_t *) &standbyConfig, 1 );
+	vSX126xWriteCommand( RADIO_SET_STANDBY, (uint8_t *) &standbyConfig, 1 );
 	if ( standbyConfig == STDBY_RC ) {
-		SX126xSetOperatingMode( MODE_STDBY_RC );
+		vSX126xSetOperatingMode( MODE_STDBY_RC );
 	}
 	else {
-		SX126xSetOperatingMode( MODE_STDBY_XOSC );
+		vSX126xSetOperatingMode( MODE_STDBY_XOSC );
 	}
 }
 
@@ -879,33 +879,6 @@ void vSX126xSendPayload( uint8_t *pucPayload, uint8_t ucSize, uint32_t ulTimeout
 	vSX126xSetPayload( pucPayload, ucSize );
 
 	vSX126xSetTx( ulTimeout );
-}
-
-uint32_t ulSX126xGetRandom( void )
-{
-	uint8_t ucBuf[] = { 0, 0, 0, 0 };
-
-	// Set radio in continuous reception
-	vSX126xSetRx( 0 );
-
-	vTaskDelay( pdMS_TO_TICKS( 1 ) );
-
-	vSX126xReadRegisters( RANDOM_NUMBER_GENERATORBASEADDR, ucBuf, 4 );
-
-	vSX126xSetStandby( STDBY_RC );
-
-	return ( ucBuf[0] << 24 ) | ( ucBuf[1] << 16 ) | ( ucBuf[2] << 8 ) | ucBuf[3];
-}
-
-void vSX126xSetStandby( RadioStandbyModes_t eStandbyConfig )
-{
-	vSX126xWriteCommand( RADIO_SET_STANDBY, (uint8_t *) &eStandbyConfig, 1 );
-	if ( eStandbyConfig == STDBY_RC ) {
-		vSX126xSetOperatingMode( MODE_STDBY_RC );
-	}
-	else {
-		vSX126xSetOperatingMode( MODE_STDBY_XOSC );
-	}
 }
 
 void vSX126xSetFs( void )

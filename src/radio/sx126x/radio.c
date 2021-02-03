@@ -511,7 +511,7 @@ void RadioInit( RadioEvents_t *events )
 {
 	RadioEvents = events;
 	vSX126xInit( RadioOnDioIrq );
-	vSX126xSetStandby( STDBY_RC );
+	SX126xSetStandby( STDBY_RC );
 	vSX126xSetRegulatorMode( USE_DCDC );
 	vSX126xSetBufferBaseAddress( 0x00, 0x00 );
 	vSX126xSetTxParams( 0, RADIO_RAMP_200_US );
@@ -1009,7 +1009,7 @@ void RadioSleep( void )
 
 void RadioStandby( void )
 {
-	vSX126xSetStandby( STDBY_RC );
+	SX126xSetStandby( STDBY_RC );
 }
 
 void LorawanRadioRx( uint32_t timeout )
