@@ -64,14 +64,16 @@ void RadioSetChannel( uint32_t freq );
 /*!
  * \brief Checks if the channel is free for the given time
  *
- * \param [IN] modem      Radio modem to be used [0: FSK, 1: LoRa]
- * \param [IN] freq       Channel RF frequency
- * \param [IN] rssiThresh RSSI threshold
- * \param [IN] maxCarrierSenseTime Max time while the RSSI is measured
+ * \remark The FSK modem is always used for this task as we can select the Rx bandwidth at will.
+ *
+ * \param [IN] freq                Channel RF frequency in Hertz
+ * \param [IN] rxBandwidth         Rx bandwidth in Hertz
+ * \param [IN] rssiThresh          RSSI threshold in dBm
+ * \param [IN] maxCarrierSenseTime Max time in milliseconds while the RSSI is measured
  *
  * \retval isFree         [true: Channel is free, false: Channel is not free]
  */
-bool RadioIsChannelFree( RadioModems_t modem, uint32_t freq, int16_t rssiThresh, uint32_t maxCarrierSenseTime );
+bool RadioIsChannelFree( uint32_t freq, uint32_t rxBandwidth, int16_t rssiThresh, uint32_t maxCarrierSenseTime );
 
 /*!
  * \brief Generates a 32 bits random value based on the RSSI readings
@@ -565,17 +567,19 @@ void RadioSetChannel( uint32_t freq )
 	vSX126xSetRfFrequency( freq );
 }
 
-// ---------------------_########## NEEDS WORK #############----------------------//
-bool RadioIsChannelFree( RadioModems_t modem, uint32_t freq, int16_t rssiThresh, uint32_t maxCarrierSenseTime )
+bool RadioIsChannelFree( uint32_t freq, uint32_t rxBandwidth, int16_t rssiThresh, uint32_t maxCarrierSenseTime )
 {
 	bool	 status			  = true;
-	int16_t  rssi			  = 0;
+	int16_t	 rssi			  = 0;
 	uint32_t carrierSenseTime = 0;
 
-	RadioSetModem( modem );
+	RadioSetModem( MODEM_FSK );
 
 	RadioSetChannel( freq );
 
+	// TODO Set Rx bandwidth. Other parameters are not used.
+	// RadioSetRxConfig( MODEM_FSK, rxBandwidth, 600, 0, rxBandwidth, 3, 0, false,
+	// 				  0, false, 0, 0, false, true );
 	RadioRx( 0 );
 
 	vTaskDelay( pdMS_TO_TICKS( 1 ) );
@@ -584,11 +588,11 @@ bool RadioIsChannelFree( RadioModems_t modem, uint32_t freq, int16_t rssiThresh,
 
 	// Perform carrier sense for maxCarrierSenseTime
 	while ( TimerGetElapsedTime( carrierSenseTime ) < maxCarrierSenseTime ) {
-		rssi = RadioRssi( modem );
+		rssi = RadioRssi( MODEM_FSK );
 
 		if ( rssi > rssiThresh ) {
 			status = false;
-			// break;
+			break;
 		}
 	}
 	RadioSleep();
@@ -642,7 +646,7 @@ void RadioSetRxConfig( RadioModems_t modem, uint32_t bandwidth,
 
 			pxSx126xModule->xModulationParams.xParams.xGfsk.ulBitRate		   = datarate;
 			pxSx126xModule->xModulationParams.xParams.xGfsk.xModulationShaping = MOD_SHAPING_G_BT_1;
-			pxSx126xModule->xModulationParams.xParams.xGfsk.ucBandwidth		   = RadioGetFskBandwidthRegValue( bandwidth );
+			pxSx126xModule->xModulationParams.xParams.xGfsk.ucBandwidth		   = RadioGetFskBandwidthRegValue( bandwidth << 1 ); // SX126x bandwidth is double sided
 
 			pxSx126xModule->xPacketParams.ePacketType					   = PACKET_TYPE_GFSK;
 			pxSx126xModule->xPacketParams.xParams.xGfsk.usPreambleLength   = ( preambleLen << 3 ); // convert byte into bit
@@ -743,7 +747,7 @@ void RadioSetTxConfig( RadioModems_t modem, int8_t power, uint32_t fdev,
 			pxSx126xModule->xModulationParams.xParams.xGfsk.ulBitRate = datarate;
 
 			pxSx126xModule->xModulationParams.xParams.xGfsk.xModulationShaping = MOD_SHAPING_G_BT_1;
-			pxSx126xModule->xModulationParams.xParams.xGfsk.ucBandwidth		   = RadioGetFskBandwidthRegValue( bandwidth );
+			pxSx126xModule->xModulationParams.xParams.xGfsk.ucBandwidth		   = RadioGetFskBandwidthRegValue( bandwidth << 1 ); // SX126x bandwidth is double sided
 			pxSx126xModule->xModulationParams.xParams.xGfsk.ulFdev			   = fdev;
 
 			pxSx126xModule->xPacketParams.ePacketType					   = PACKET_TYPE_GFSK;
