@@ -21,9 +21,7 @@
  * \author    Gregory Cristian ( Semtech )
  */
 #include "sx126x.h"
-#include "csiro_math.h"
 // #include "delay.h"
-#include "log.h"
 #include "radio.h"
 #include "sx126x-board.h"
 #include "timer.h"
@@ -132,7 +130,7 @@ void SX126xInit( DioIrqHandler dioIrq )
 
 void SX126xCheckDeviceReady( void )
 {
-	if ( ( eSX126xGetOperatingMode() == MODE_SLEEP ) || ( eSX126xGetOperatingMode() == MODE_RX_DC ) ) {
+	if ( ( SX126xGetOperatingMode() == MODE_SLEEP ) || ( SX126xGetOperatingMode() == MODE_RX_DC ) ) {
 		vSX126xWakeup();
 		// Switch is turned off when device is in sleep mode and turned on is all other modes
 		// vSX126xAntSwOn(); //TODO
