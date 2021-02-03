@@ -301,14 +301,14 @@ void SX126xSetRxBoosted( uint32_t timeout )
 {
 	uint8_t buf[3];
 
-	SX126xSetOperatingMode( MODE_RX );
+	vSX126xSetOperatingMode( MODE_RX );
 
-	SX126xWriteRegister( REG_RX_GAIN, 0x96 ); // max LNA gain, increase current by ~2mA for around ~3dB in sensivity
+	vSX126xWriteRegister( REG_RX_GAIN, 0x96 ); // max LNA gain, increase current by ~2mA for around ~3dB in sensivity
 
 	buf[0] = ( uint8_t )( ( timeout >> 16 ) & 0xFF );
 	buf[1] = ( uint8_t )( ( timeout >> 8 ) & 0xFF );
 	buf[2] = ( uint8_t )( timeout & 0xFF );
-	SX126xWriteCommand( RADIO_SET_RX, buf, 3 );
+	vSX126xWriteCommand( RADIO_SET_RX, buf, 3 );
 }
 
 void SX126xSetRxDutyCycle( uint32_t rxTime, uint32_t sleepTime )
@@ -879,20 +879,6 @@ void vSX126xSendPayload( uint8_t *pucPayload, uint8_t ucSize, uint32_t ulTimeout
 	vSX126xSetPayload( pucPayload, ucSize );
 
 	SX126xSetTx( ulTimeout );
-}
-
-void vSX126xSetRxBoosted( uint32_t ulTimeout )
-{
-	uint8_t ucBuf[3];
-
-	vSX126xSetOperatingMode( MODE_RX );
-
-	vSX126xWriteRegister( REG_RX_GAIN, 0x96 ); // max LNA gain, increase current by ~2mA for around ~3dB in sensivity
-
-	ucBuf[0] = ( uint8_t )( ( ulTimeout >> 16 ) & 0xFF );
-	ucBuf[1] = ( uint8_t )( ( ulTimeout >> 8 ) & 0xFF );
-	ucBuf[2] = ( uint8_t )( ulTimeout & 0xFF );
-	vSX126xWriteCommand( RADIO_SET_RX, ucBuf, 3 );
 }
 
 void vSX126xSetTxContinuousWave( void )

@@ -1056,10 +1056,10 @@ void RadioRxBoosted( uint32_t timeout )
 	}
 
 	if ( RxContinuous == true ) {
-		vSX126xSetRxBoosted( 0xFFFFFF ); // Rx Continuous
+		SX126xSetRxBoosted( 0xFFFFFF ); // Rx Continuous
 	}
 	else {
-		vSX126xSetRxBoosted( RxTimeout << 6 );
+		SX126xSetRxBoosted( RxTimeout << 6 );
 	}
 }
 
