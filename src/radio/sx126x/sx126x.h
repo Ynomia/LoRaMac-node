@@ -1439,13 +1439,6 @@ void vSX126xWriteBuffer( uint8_t ucOffset, uint8_t *pucBuffer, uint8_t ucSize );
 void vSX126xReadBuffer( uint8_t ucOffset, uint8_t *pucBuffer, uint8_t ucSize );
 
 /*!
- * \brief Returns the current IRQ status
- *
- * \retval      irqStatus     IRQ status
- */
-uint16_t usSX126xGetIrqStatus( void );
-
-/*!
  * \brief Indicates if DIO2 is used to control an RF Switch
  *
  * \param [in] enable     true of false

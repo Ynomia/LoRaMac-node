@@ -448,7 +448,7 @@ uint16_t SX126xGetIrqStatus( void )
 {
 	uint8_t irqStatus[2];
 
-	SX126xReadCommand( RADIO_GET_IRQSTATUS, irqStatus, 2 );
+	vSX126xReadCommand( RADIO_GET_IRQSTATUS, irqStatus, 2 );
 	return ( irqStatus[0] << 8 ) | irqStatus[1];
 }
 
@@ -879,14 +879,6 @@ void vSX126xSendPayload( uint8_t *pucPayload, uint8_t ucSize, uint32_t ulTimeout
 	vSX126xSetPayload( pucPayload, ucSize );
 
 	SX126xSetTx( ulTimeout );
-}
-
-uint16_t usSX126xGetIrqStatus( void )
-{
-	uint8_t ucIrqStatus[2];
-
-	vSX126xReadCommand( RADIO_GET_IRQSTATUS, ucIrqStatus, 2 );
-	return ( ucIrqStatus[0] << 8 ) | ucIrqStatus[1];
 }
 
 void vSX126xSetDio2AsRfSwitchCtrl( uint8_t ucEnable )

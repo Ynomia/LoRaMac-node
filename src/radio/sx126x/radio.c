@@ -1184,7 +1184,7 @@ void RadioIrqProcess( void )
 		IrqFired = false;
 		CRITICAL_SECTION_END();
 
-		uint16_t irqRegs = usSX126xGetIrqStatus();
+		uint16_t irqRegs = SX126xGetIrqStatus();
 		vSX126xClearIrqStatus( irqRegs );
 
 		if ( ( irqRegs & IRQ_TX_DONE ) == IRQ_TX_DONE ) {
