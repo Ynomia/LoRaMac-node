@@ -1359,24 +1359,6 @@ void vSX126xCalibrate( xCalibrationParams_t xCalibParam );
 void vSX126xSetLongPreamble( uint8_t ucEnable );
 
 /*!
- * \brief Write data to the radio memory
- *
- * \param [in]  address       The address of the first byte to write in the radio
- * \param [in]  buffer        The data to be written in radio's memory
- * \param [in]  size          The number of bytes to write in radio's memory
- */
-void vSX126xWriteRegisters( uint16_t usAddress, uint8_t *pucBuffer, uint16_t usSize );
-
-/*!
- * \brief Read data from the radio memory
- *
- * \param [in]  address       The address of the first byte to read from the radio
- * \param [out] buffer        The buffer that holds data read from radio
- * \param [in]  size          The number of bytes to read from radio's memory
- */
-void vSX126xReadRegisters( uint16_t usAddress, uint8_t *pucBuffer, uint16_t usSize );
-
-/*!
  * \brief Write data to the buffer holding the payload in the radio
  *
  * \param [in]  offset        The offset to start writing the payload
