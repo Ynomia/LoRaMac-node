@@ -821,6 +821,18 @@ void RadioSetTxConfig( RadioModems_t modem, int8_t power, uint32_t fdev,
 		default:
 			break;
 	}
+
+	// WORKAROUND - Modulation Quality with 500 kHz LoRa Bandwidth, see DS_SX1261-2_V1.2 datasheet chapter 15.1
+	if ( ( modem == MODEM_LORA ) && ( pxSx126xModule->xModulationParams.xParams.xLoRa.eBandwidth == LORA_BW_500 ) ) {
+		// RegTxModulation = @address 0x0889
+		vSX126xWriteRegister( 0x0889, ucSX126xReadRegister( 0x0889 ) & ~( 1 << 2 ) );
+	}
+	else {
+		// RegTxModulation = @address 0x0889
+		vSX126xWriteRegister( 0x0889, ucSX126xReadRegister( 0x0889 ) | ( 1 << 2 ) );
+	}
+	// WORKAROUND END
+
 	vSX126xSetRfTxPower( power );
 	TxTimeout = timeout;
 }
