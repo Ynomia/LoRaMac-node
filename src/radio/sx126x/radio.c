@@ -1067,6 +1067,7 @@ void RadioSetRxDutyCycle( uint32_t rxTime, uint32_t sleepTime )
 
 void RadioStartCad( void )
 {
+	vSX126xSetDioIrqParams( IRQ_CAD_DONE | IRQ_CAD_ACTIVITY_DETECTED, IRQ_CAD_DONE | IRQ_CAD_ACTIVITY_DETECTED, IRQ_RADIO_NONE, IRQ_RADIO_NONE );
 	vSX126xSetCad();
 }
 
@@ -1077,10 +1078,12 @@ void RadioTx( uint32_t timeout )
 
 void RadioSetTxContinuousWave( uint32_t freq, int8_t power, uint16_t time )
 {
+	uint32_t timeout = (uint32_t) time * 1000;
+
 	vSX126xSetRfFrequency( freq );
 	vSX126xSetRfTxPower( power );
 	vSX126xSetTxContinuousWave();
-	TimerSetValue( &TxTimeoutTimer, time * 1e3 );
+	TimerSetValue( &TxTimeoutTimer, timeout );
 	TimerStart( &TxTimeoutTimer );
 }
 
@@ -1108,16 +1111,6 @@ void RadioWriteBuffer( uint32_t addr, uint8_t *buffer, uint8_t size )
 void RadioReadBuffer( uint32_t addr, uint8_t *buffer, uint8_t size )
 {
 	vSX126xReadRegisters( addr, buffer, size );
-}
-
-void RadioWriteFifo( uint8_t *buffer, uint8_t size )
-{
-	vSX126xWriteBuffer( 0, buffer, size );
-}
-
-void RadioReadFifo( uint8_t *buffer, uint8_t size )
-{
-	vSX126xReadBuffer( 0, buffer, size );
 }
 
 void RadioSetMaxPayloadLength( RadioModems_t modem, uint8_t max )
