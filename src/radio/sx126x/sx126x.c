@@ -339,13 +339,13 @@ void SX126xSetTxContinuousWave( void )
 
 void SX126xSetTxInfinitePreamble( void )
 {
-	SX126xWriteCommand( RADIO_SET_TXCONTINUOUSPREAMBLE, 0, 0 );
-	SX126xSetOperatingMode( MODE_TX );
+	vSX126xWriteCommand( RADIO_SET_TXCONTINUOUSPREAMBLE, 0, 0 );
+	vSX126xSetOperatingMode( MODE_TX );
 }
 
 void SX126xSetStopRxTimerOnPreambleDetect( bool enable )
 {
-	SX126xWriteCommand( RADIO_SET_STOPRXTIMERONPREAMBLE, (uint8_t *) &enable, 1 );
+	vSX126xWriteCommand( RADIO_SET_STOPRXTIMERONPREAMBLE, (uint8_t *) &enable, 1 );
 }
 
 void SX126xSetLoRaSymbNumTimeout( uint8_t symbNum )
@@ -879,16 +879,6 @@ void vSX126xSendPayload( uint8_t *pucPayload, uint8_t ucSize, uint32_t ulTimeout
 	vSX126xSetPayload( pucPayload, ucSize );
 
 	SX126xSetTx( ulTimeout );
-}
-
-void vSX126xSetTxInfinitePreamble( void )
-{
-	vSX126xWriteCommand( RADIO_SET_TXCONTINUOUSPREAMBLE, 0, 0 );
-}
-
-void vSX126xSetStopRxTimerOnPreambleDetect( bool bEnable )
-{
-	vSX126xWriteCommand( RADIO_SET_STOPRXTIMERONPREAMBLE, (uint8_t *) &bEnable, 1 );
 }
 
 void vSX126xSetRegulatorMode( RadioRegulatorMode_t eMode )

@@ -1389,19 +1389,6 @@ uint8_t ucSX126xGetPayload( uint8_t *pucPayload, uint8_t *pucSize, uint8_t ucMax
 void vSX126xSendPayload( uint8_t *pucPayload, uint8_t ucSize, uint32_t ulTimeout );
 
 /*!
- * \brief Sets the radio in continuous preamble transmission mode
- */
-void vSX126xSetTxInfinitePreamble( void );
-
-/*!
- * \brief Decide which interrupt will stop the internal radio rx timer.
- *
- * \param [in]  enable          [0: Timer stop after header/syncword detection
- *                               1: Timer stop after preamble detection]
- */
-void vSX126xSetStopRxTimerOnPreambleDetect( bool bEnable );
-
-/*!
  * \brief Sets the power regulators operating mode
  *
  * \param [in]  mode          [0: LDO, 1:DC_DC]

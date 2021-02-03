@@ -641,7 +641,7 @@ void RadioSetRxConfig( RadioModems_t modem, uint32_t bandwidth,
 
 	switch ( modem ) {
 		case MODEM_FSK:
-			vSX126xSetStopRxTimerOnPreambleDetect( false );
+			SX126xSetStopRxTimerOnPreambleDetect( false );
 			pxSx126xModule->xModulationParams.ePacketType = PACKET_TYPE_GFSK;
 
 			pxSx126xModule->xModulationParams.xParams.xGfsk.ulBitRate		   = datarate;
@@ -674,7 +674,7 @@ void RadioSetRxConfig( RadioModems_t modem, uint32_t bandwidth,
 			break;
 
 		case MODEM_LORA:
-			vSX126xSetStopRxTimerOnPreambleDetect( false );
+			SX126xSetStopRxTimerOnPreambleDetect( false );
 			pxSx126xModule->xModulationParams.ePacketType					 = PACKET_TYPE_LORA;
 			pxSx126xModule->xModulationParams.xParams.xLoRa.eSpreadingFactor = (RadioLoRaSpreadingFactors_t) datarate;
 			pxSx126xModule->xModulationParams.xParams.xLoRa.eBandwidth		 = Bandwidths[bandwidth];
