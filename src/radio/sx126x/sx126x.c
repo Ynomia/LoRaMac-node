@@ -233,7 +233,7 @@ uint32_t SX126xGetRandom( void )
 	vSX126xWriteRegister( REG_ANA_MIXER, regAnaMixer & ~( 1 << 7 ) );
 
 	// Set radio in continuous reception
-	vSX126xSetRx( 0xFFFFFF ); // Rx Continuous
+	SX126xSetRx( 0xFFFFFF ); // Rx Continuous
 
 	vSX126xReadRegisters( RANDOM_NUMBER_GENERATORBASEADDR, (uint8_t *) &number, 4 );
 
@@ -289,12 +289,12 @@ void SX126xSetRx( uint32_t timeout )
 {
 	uint8_t buf[3];
 
-	SX126xSetOperatingMode( MODE_RX );
+	vSX126xSetOperatingMode( MODE_RX );
 
 	buf[0] = ( uint8_t )( ( timeout >> 16 ) & 0xFF );
 	buf[1] = ( uint8_t )( ( timeout >> 8 ) & 0xFF );
 	buf[2] = ( uint8_t )( timeout & 0xFF );
-	SX126xWriteCommand( RADIO_SET_RX, buf, 3 );
+	vSX126xWriteCommand( RADIO_SET_RX, buf, 3 );
 }
 
 void SX126xSetRxBoosted( uint32_t timeout )
@@ -893,17 +893,6 @@ void vSX126xSetTx( uint32_t ulTimeout )
 	vSX126xWriteCommand( RADIO_SET_TX, ucBuf, 3 );
 }
 
-void vSX126xSetRx( uint32_t ulTimeout )
-{
-	uint8_t ucBuf[3];
-	vSX126xSetOperatingMode( MODE_RX );
-
-	ucBuf[0] = ( uint8_t )( ( ulTimeout >> 16 ) & 0xFF );
-	ucBuf[1] = ( uint8_t )( ( ulTimeout >> 8 ) & 0xFF );
-	ucBuf[2] = ( uint8_t )( ulTimeout & 0xFF );
-	vSX126xWriteCommand( RADIO_SET_RX, ucBuf, 3 );
-}
-
 void vSX126xSetRxBoosted( uint32_t ulTimeout )
 {
 	uint8_t ucBuf[3];
@@ -931,11 +920,6 @@ void vSX126xSetTxInfinitePreamble( void )
 void vSX126xSetStopRxTimerOnPreambleDetect( bool bEnable )
 {
 	vSX126xWriteCommand( RADIO_SET_STOPRXTIMERONPREAMBLE, (uint8_t *) &bEnable, 1 );
-}
-
-void vSX126xSetLoRaSymbNumTimeout( uint8_t ucSymbNum )
-{
-	vSX126xWriteCommand( RADIO_SET_LORASYMBTIMEOUT, &ucSymbNum, 1 );
 }
 
 void vSX126xSetRegulatorMode( RadioRegulatorMode_t eMode )

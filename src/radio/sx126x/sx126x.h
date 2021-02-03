@@ -1396,13 +1396,6 @@ void vSX126xSendPayload( uint8_t *pucPayload, uint8_t ucSize, uint32_t ulTimeout
 void vSX126xSetTx( uint32_t ulTimeout );
 
 /*!
- * \brief Sets the radio in reception mode
- *
- * \param [in]  timeout       Structure describing the reception timeout value
- */
-void vSX126xSetRx( uint32_t ulTimeout );
-
-/*!
  * \brief Sets the radio in reception mode with Boosted LNA gain
  *
  * \param [in]  timeout       Structure describing the reception timeout value
@@ -1426,13 +1419,6 @@ void vSX126xSetTxInfinitePreamble( void );
  *                               1: Timer stop after preamble detection]
  */
 void vSX126xSetStopRxTimerOnPreambleDetect( bool bEnable );
-
-/*!
- * \brief Set the number of symbol the radio will wait to validate a reception
- *
- * \param [in]  SymbNum          number of LoRa symbols
- */
-void vSX126xSetLoRaSymbNumTimeout( uint8_t ucSymbNum );
 
 /*!
  * \brief Sets the power regulators operating mode

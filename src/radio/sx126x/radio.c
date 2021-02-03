@@ -1020,7 +1020,7 @@ void LorawanRadioRx( uint32_t timeout )
 							IRQ_RADIO_NONE,
 							IRQ_RADIO_NONE );
 
-	vSX126xSetRx( 0xFFFFFF );
+	SX126xSetRx( 0xFFFFFF );
 }
 
 void RadioRx( uint32_t timeout )
@@ -1036,10 +1036,10 @@ void RadioRx( uint32_t timeout )
 	}
 
 	if ( RxContinuous == true ) {
-		vSX126xSetRx( 0xFFFFFF ); // Rx Continuous
+		SX126xSetRx( 0xFFFFFF ); // Rx Continuous
 	}
 	else {
-		vSX126xSetRx( RxTimeout << 6 );
+		SX126xSetRx( RxTimeout << 6 );
 	}
 }
 
