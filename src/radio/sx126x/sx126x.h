@@ -1151,15 +1151,5 @@ typedef struct xSX126x_s
  */
 typedef void( DioIrqHandler )( void *context );
 
-/*!
- * ============================================================================
- * Public functions prototypes
- * ============================================================================
- */
-
-/*!
- * \brief Initializes the radio driver
- */
-void vSX126xInit( DioIrqHandler fnDioIrq );
 
 #endif // __SX126x_H__

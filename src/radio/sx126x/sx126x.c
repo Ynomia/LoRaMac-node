@@ -114,20 +114,20 @@ void SX126xProcessIrqs( void );
 
 void SX126xInit( DioIrqHandler dioIrq )
 {
-	SX126xReset();
+	// vSX126xReset(); //TODO
 
-	SX126xIoIrqInit( dioIrq );
+	vSX126xIoIrqInit( dioIrq );
 
-	SX126xWakeup();
+	vSX126xWakeup();
 	SX126xSetStandby( STDBY_RC );
 
 	// Initialize TCXO control
-	SX126xIoTcxoInit();
+	vSX126xIoTcxoInit();
 
 	// Initialize RF switch control
 	SX126xSetDio2AsRfSwitchCtrl( true );
 
-	SX126xSetOperatingMode( MODE_STDBY_RC );
+	vSX126xSetOperatingMode( MODE_STDBY_RC );
 }
 
 void SX126xCheckDeviceReady( void )
@@ -135,7 +135,7 @@ void SX126xCheckDeviceReady( void )
 	if ( ( eSX126xGetOperatingMode() == MODE_SLEEP ) || ( eSX126xGetOperatingMode() == MODE_RX_DC ) ) {
 		vSX126xWakeup();
 		// Switch is turned off when device is in sleep mode and turned on is all other modes
-		// SX126xAntSwOn(); //TODO
+		// vSX126xAntSwOn(); //TODO
 	}
 	vSX126xWaitOnBusy();
 }
@@ -775,12 +775,4 @@ static uint32_t SX126xConvertFreqInHzToPllStep( uint32_t freqInHz )
 	return ( stepsInt << SX126X_PLL_STEP_SHIFT_AMOUNT ) +
 		   ( ( ( stepsFrac << SX126X_PLL_STEP_SHIFT_AMOUNT ) + ( SX126X_PLL_STEP_SCALED >> 1 ) ) /
 			 SX126X_PLL_STEP_SCALED );
-}
-
-/*
-* \If you need the TCXO add a setup to it here. It is not currently being used by our platform.
-*/
-void vSX126xInit( DioIrqHandler fnDioIrq )
-{
-	vSX126xIoIrqInit( fnDioIrq );
 }
