@@ -1185,7 +1185,7 @@ void RadioIrqProcess( void )
 		CRITICAL_SECTION_END();
 
 		uint16_t irqRegs = SX126xGetIrqStatus();
-		vSX126xClearIrqStatus( irqRegs );
+		SX126xClearIrqStatus( irqRegs );
 
 		if ( ( irqRegs & IRQ_TX_DONE ) == IRQ_TX_DONE ) {
 			TimerStop( &TxTimeoutTimer );

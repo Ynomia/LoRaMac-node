@@ -1539,11 +1539,4 @@ xRadioError_t xSX126xGetDeviceErrors( void );
  */
 void vSX126xClearDeviceErrors( void );
 
-/*!
- * \brief Clears the IRQs
- *
- * \param [in]  irq           IRQ(s) to be cleared
- */
-void vSX126xClearIrqStatus( uint16_t usIrq );
-
 #endif // __SX126x_H__

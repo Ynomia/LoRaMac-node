@@ -758,7 +758,7 @@ void SX126xClearIrqStatus( uint16_t irq )
 
 	buf[0] = ( uint8_t )( ( (uint16_t) irq >> 8 ) & 0x00FF );
 	buf[1] = ( uint8_t )( (uint16_t) irq & 0x00FF );
-	SX126xWriteCommand( RADIO_CLR_IRQSTATUS, buf, 2 );
+	vSX126xWriteCommand( RADIO_CLR_IRQSTATUS, buf, 2 );
 }
 
 static uint32_t SX126xConvertFreqInHzToPllStep( uint32_t freqInHz )
@@ -1138,13 +1138,4 @@ void vSX126xClearDeviceErrors( void )
 {
 	uint8_t ucBuf[2] = { 0x00, 0x00 };
 	vSX126xWriteCommand( RADIO_CLR_ERROR, ucBuf, 2 );
-}
-
-void vSX126xClearIrqStatus( uint16_t usIrq )
-{
-	uint8_t ucBuf[2];
-
-	ucBuf[0] = ( uint8_t )( ( (uint16_t) usIrq >> 8 ) & 0x00FF );
-	ucBuf[1] = ( uint8_t )( (uint16_t) usIrq & 0x00FF );
-	vSX126xWriteCommand( RADIO_CLR_IRQSTATUS, ucBuf, 2 );
 }
