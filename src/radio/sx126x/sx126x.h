@@ -1403,15 +1403,6 @@ void vSX126xCalibrate( xCalibrationParams_t xCalibParam );
 void vSX126xSetLongPreamble( uint8_t ucEnable );
 
 /*!
- * \brief Sets the transmission parameters
- *
- * \param [in]  paDutyCycle     Duty Cycle for the PA
- * \param [in]  hpMax          0 for sx1261, 7 for sx1262
- * \param [in]  deviceSel       1 for sx1261, 0 for sx1262
- * \param [in]  paLut           0 for 14dBm LUT, 1 for 22dBm LUT
- */
-void vSX126xSetPaConfig( uint8_t ucPaDutyCycle, uint8_t ucHpMax, uint8_t ucDeviceSel, uint8_t ucPaLut );
-/*!
  * \brief Defines into which mode the chip goes after a TX / RX done
  *
  * \param [in]  fallbackMode    The mode in which the radio goes

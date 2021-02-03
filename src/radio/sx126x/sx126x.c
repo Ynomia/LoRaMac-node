@@ -421,7 +421,7 @@ void SX126xSetPaConfig( uint8_t paDutyCycle, uint8_t hpMax, uint8_t deviceSel, u
 	buf[1] = hpMax;
 	buf[2] = deviceSel;
 	buf[3] = paLut;
-	SX126xWriteCommand( RADIO_SET_PACONFIG, buf, 4 );
+	vSX126xWriteCommand( RADIO_SET_PACONFIG, buf, 4 );
 }
 
 void SX126xSetRxTxFallbackMode( uint8_t fallbackMode )
@@ -881,17 +881,6 @@ void vSX126xSendPayload( uint8_t *pucPayload, uint8_t ucSize, uint32_t ulTimeout
 	SX126xSetTx( ulTimeout );
 }
 
-void vSX126xSetPaConfig( uint8_t ucPaDutyCycle, uint8_t ucHpMax, uint8_t ucDeviceSel, uint8_t ucPaLut )
-{
-	uint8_t ucBuf[4];
-
-	ucBuf[0] = ucPaDutyCycle;
-	ucBuf[1] = ucHpMax;
-	ucBuf[2] = ucDeviceSel;
-	ucBuf[3] = ucPaLut;
-	vSX126xWriteCommand( RADIO_SET_PACONFIG, ucBuf, 4 );
-}
-
 void vSX126xSetRxTxFallbackMode( uint8_t ucFallbackMode )
 {
 	vSX126xWriteCommand( RADIO_SET_TXFALLBACKMODE, &ucFallbackMode, 1 );
@@ -973,10 +962,10 @@ void vSX126xSetTxParams( int8_t cPower, RadioRampTimes_t eRampTime )
 
 	if ( ucSX126xGetDeviceId() == SX1261 ) {
 		if ( cPower == 15 ) {
-			vSX126xSetPaConfig( 0x06, 0x00, 0x01, 0x01 );
+			SX126xSetPaConfig( 0x06, 0x00, 0x01, 0x01 );
 		}
 		else {
-			vSX126xSetPaConfig( 0x04, 0x00, 0x01, 0x01 );
+			SX126xSetPaConfig( 0x04, 0x00, 0x01, 0x01 );
 		}
 		if ( cPower >= 14 ) {
 			cPower = 14;
@@ -988,7 +977,7 @@ void vSX126xSetTxParams( int8_t cPower, RadioRampTimes_t eRampTime )
 	}
 	else // sx1262
 	{
-		vSX126xSetPaConfig( 0x04, 0x07, 0x00, 0x01 );
+		SX126xSetPaConfig( 0x04, 0x07, 0x00, 0x01 );
 		if ( cPower > 22 ) {
 			cPower = 22;
 		}
