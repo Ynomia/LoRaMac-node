@@ -1359,24 +1359,6 @@ void vSX126xCalibrate( xCalibrationParams_t xCalibParam );
 void vSX126xSetLongPreamble( uint8_t ucEnable );
 
 /*!
- * \brief Write data to the buffer holding the payload in the radio
- *
- * \param [in]  offset        The offset to start writing the payload
- * \param [in]  buffer        The data to be written (the payload)
- * \param [in]  size          The number of byte to be written
- */
-void vSX126xWriteBuffer( uint8_t ucOffset, uint8_t *pucBuffer, uint8_t ucSize );
-
-/*!
- * \brief Read data from the buffer holding the payload in the radio
- *
- * \param [in]  offset        The offset to start reading the payload
- * \param [out] buffer        A pointer to a buffer holding the data from the radio
- * \param [in]  size          The number of byte to be read
- */
-void vSX126xReadBuffer( uint8_t ucOffset, uint8_t *pucBuffer, uint8_t ucSize );
-
-/*!
  * \brief Sets the RF frequency
  *
  * \param [in]  frequency     RF frequency [Hz]
