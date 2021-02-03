@@ -1202,7 +1202,7 @@ typedef struct xSX126x_s
 	xGpio_t				xDIO3;
 	xGpio_t				xChipSelect;
 	xSpiModule_t *		pxSpi;
-	xPacketParams_t		xPacketParams;
+	PacketParams_t		PacketParams;
 	xPacketStatus_t		xPacketStatus;
 	ModulationParams_t  ModulationParams;
 } xSX126x_t;
@@ -1211,23 +1211,6 @@ typedef struct xSX126x_s
  * Hardware IO IRQ callback function definition
  */
 typedef void( DioIrqHandler )( void *context );
-
-/*!
- * \brief The radio callbacks structure
- * Holds function pointers to be called on radio interrupts
- */
-typedef struct
-{
-	void ( *txDone )( void );					 //!< Pointer to a function run on successful transmission
-	void ( *rxDone )( void );					 //!< Pointer to a function run on successful reception
-	void ( *rxPreambleDetect )( void );			 //!< Pointer to a function run on successful Preamble detection
-	void ( *rxSyncWordDone )( void );			 //!< Pointer to a function run on successful SyncWord reception
-	void ( *rxHeaderDone )( bool isOk );		 //!< Pointer to a function run on successful Header reception
-	void ( *txTimeout )( void );				 //!< Pointer to a function run on transmission timeout
-	void ( *rxTimeout )( void );				 //!< Pointer to a function run on reception timeout
-	void ( *rxError )( IrqErrorCode_t errCode ); //!< Pointer to a function run on reception error
-	void ( *cadDone )( bool cadFlag );			 //!< Pointer to a function run on channel activity detected
-} xSX126xCallbacks_t;
 
 /*!
  * ============================================================================
@@ -1239,13 +1222,6 @@ typedef struct
  * \brief Initializes the radio driver
  */
 void vSX126xInit( DioIrqHandler fnDioIrq );
-
-/*!
- * \brief Sets the packet parameters
- *
- * \param [in]  packetParams  A structure describing the packet parameters
- */
-void vSX126xSetPacketParams( xPacketParams_t *pxPacketParams );
 
 /*!
  * \brief Gets the current radio status

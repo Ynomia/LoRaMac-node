@@ -833,60 +833,6 @@ void vSX126xInit( DioIrqHandler fnDioIrq )
 	vSX126xIoIrqInit( fnDioIrq );
 }
 
-void vSX126xSetPacketParams( xPacketParams_t *pxPacketParams )
-{
-	uint8_t ucPacketSize;
-	uint8_t ucCrcVal = 0;
-	uint8_t ucBuf[9] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-
-	// Check if required configuration corresponds to the stored packet type
-	// If not, silently update radio packet type
-	if ( ePacketType != pxPacketParams->ePacketType ) {
-		SX126xSetPacketType( pxPacketParams->ePacketType );
-	}
-
-	switch ( pxPacketParams->ePacketType ) {
-		case PACKET_TYPE_GFSK:
-			if ( pxPacketParams->xParams.xGfsk.eCrcLength == RADIO_CRC_2_BYTES_IBM ) {
-				SX126xSetCrcSeed( CRC_IBM_SEED );
-				SX126xSetCrcPolynomial( CRC_POLYNOMIAL_IBM );
-				ucCrcVal = RADIO_CRC_2_BYTES;
-			}
-			else if ( pxPacketParams->xParams.xGfsk.eCrcLength == RADIO_CRC_2_BYTES_CCIT ) {
-				SX126xSetCrcSeed( CRC_CCITT_SEED );
-				SX126xSetCrcPolynomial( CRC_POLYNOMIAL_CCITT );
-				ucCrcVal = RADIO_CRC_2_BYTES_INV;
-			}
-			else {
-				ucCrcVal = pxPacketParams->xParams.xGfsk.eCrcLength;
-			}
-			ucPacketSize = 9;
-			ucBuf[0]	 = ( pxPacketParams->xParams.xGfsk.usPreambleLength >> 8 ) & 0xFF;
-			ucBuf[1]	 = pxPacketParams->xParams.xGfsk.usPreambleLength;
-			ucBuf[2]	 = pxPacketParams->xParams.xGfsk.ePreambleMinDetect;
-			ucBuf[3]	 = ( pxPacketParams->xParams.xGfsk.ucSyncWordLength /*<< 3*/ ); // convert from byte to bit
-			ucBuf[4]	 = pxPacketParams->xParams.xGfsk.eAddrComp;
-			ucBuf[5]	 = pxPacketParams->xParams.xGfsk.eHeaderType;
-			ucBuf[6]	 = pxPacketParams->xParams.xGfsk.ucPayloadLength;
-			ucBuf[7]	 = ucCrcVal;
-			ucBuf[8]	 = pxPacketParams->xParams.xGfsk.eDcFree;
-			break;
-		case PACKET_TYPE_LORA:
-			ucPacketSize = 6;
-			ucBuf[0]	 = ( pxPacketParams->xParams.xLoRa.usPreambleLength >> 8 ) & 0xFF;
-			ucBuf[1]	 = pxPacketParams->xParams.xLoRa.usPreambleLength;
-			ucBuf[2]	 = pxPacketParams->xParams.xLoRa.eHeaderType;
-			ucBuf[3]	 = pxPacketParams->xParams.xLoRa.ucPayloadLength;
-			ucBuf[4]	 = pxPacketParams->xParams.xLoRa.eCrcMode;
-			ucBuf[5]	 = pxPacketParams->xParams.xLoRa.eInvertIQ;
-			break;
-		default:
-		case PACKET_TYPE_NONE:
-			return;
-	}
-	vSX126xWriteCommand( RADIO_SET_PACKETPARAMS, ucBuf, ucPacketSize );
-}
-
 xRadioStatus_t eSX126xGetStatus( void )
 {
 	uint8_t		   ucStat = 0;
