@@ -843,13 +843,6 @@ void vSX126xCheckDeviceReady( void )
 	vSX126xWaitOnBusy();
 }
 
-void vSX126xSendPayload( uint8_t *pucPayload, uint8_t ucSize, uint32_t ulTimeout )
-{
-	SX126xSetPayload( pucPayload, ucSize );
-
-	SX126xSetTx( ulTimeout );
-}
-
 void vSX126xSetDio2AsRfSwitchCtrl( uint8_t ucEnable )
 {
 	vSX126xWriteCommand( RADIO_SET_RFSWITCHMODE, &ucEnable, 1 );

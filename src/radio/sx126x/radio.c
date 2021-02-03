@@ -991,7 +991,7 @@ void RadioSend( uint8_t *buffer, uint8_t size )
 	}
 	vSX126xSetPacketParams( &pxSx126xModule->xPacketParams );
 	
-	vSX126xSendPayload( buffer, size, 0 );
+	SX126xSendPayload( buffer, size, 0 );
 	// TODO
 	// TimerSetValue( &TxTimeoutTimer, TxTimeout );
 	// TimerStart( &TxTimeoutTimer );

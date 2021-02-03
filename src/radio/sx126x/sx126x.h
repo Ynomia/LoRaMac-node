@@ -1345,15 +1345,6 @@ void vSX126xInit( DioIrqHandler fnDioIrq );
 void vSX126xCheckDeviceReady( void );
 
 /*!
- * \brief Sends a payload
- *
- * \param [in]  payload       A pointer to the payload to send
- * \param [in]  size          The size of the payload to send
- * \param [in]  timeout       The timeout for Tx operation
- */
-void vSX126xSendPayload( uint8_t *pucPayload, uint8_t ucSize, uint32_t ulTimeout );
-
-/*!
  * \brief Calibrates the given radio block
  *
  * \param [in]  calibParam    The description of blocks to be calibrated
