@@ -491,7 +491,7 @@ void SX126xSetPacketType( RadioPacketTypes_t packetType )
 {
 	// Save packet type internally to avoid questioning the radio
 	PacketType = packetType;
-	SX126xWriteCommand( RADIO_SET_PACKETTYPE, (uint8_t *) &packetType, 1 );
+	vSX126xWriteCommand( RADIO_SET_PACKETTYPE, (uint8_t *) &packetType, 1 );
 }
 
 RadioPacketTypes_t SX126xGetPacketType( void )
@@ -631,7 +631,7 @@ void SX126xSetPacketParams( PacketParams_t *packetParams )
 		case PACKET_TYPE_NONE:
 			return;
 	}
-	SX126xWriteCommand( RADIO_SET_PACKETPARAMS, buf, n );
+	vSX126xWriteCommand( RADIO_SET_PACKETPARAMS, buf, n );
 }
 
 void SX126xSetCadParams( RadioLoRaCadSymbols_t cadSymbolNum, uint8_t cadDetPeak, uint8_t cadDetMin, RadioCadExitModes_t cadExitMode, uint32_t cadTimeout )
@@ -1205,7 +1205,7 @@ void vSX126xSetModulationParams( xModulationParams_t *pxModulationParams )
 	// Check if required configuration corresponds to the stored packet type
 	// If not, silently update radio packet type
 	if ( ePacketType != pxModulationParams->ePacketType ) {
-		vSX126xSetPacketType( pxModulationParams->ePacketType );
+		SX126xSetPacketType( pxModulationParams->ePacketType );
 	}
 
 	switch ( pxModulationParams->ePacketType ) {
@@ -1245,7 +1245,7 @@ void vSX126xSetPacketParams( xPacketParams_t *pxPacketParams )
 	// Check if required configuration corresponds to the stored packet type
 	// If not, silently update radio packet type
 	if ( ePacketType != pxPacketParams->ePacketType ) {
-		vSX126xSetPacketType( pxPacketParams->ePacketType );
+		SX126xSetPacketType( pxPacketParams->ePacketType );
 	}
 
 	switch ( pxPacketParams->ePacketType ) {
