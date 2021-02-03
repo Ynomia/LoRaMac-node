@@ -1389,13 +1389,6 @@ uint8_t ucSX126xGetPayload( uint8_t *pucPayload, uint8_t *pucSize, uint8_t ucMax
 void vSX126xSendPayload( uint8_t *pucPayload, uint8_t ucSize, uint32_t ulTimeout );
 
 /*!
- * \brief Sets the power regulators operating mode
- *
- * \param [in]  mode          [0: LDO, 1:DC_DC]
- */
-void vSX126xSetRegulatorMode( RadioRegulatorMode_t eMode );
-
-/*!
  * \brief Calibrates the given radio block
  *
  * \param [in]  calibParam    The description of blocks to be calibrated

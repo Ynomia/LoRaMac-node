@@ -370,7 +370,7 @@ void SX126xSetLoRaSymbNumTimeout( uint8_t symbNum )
 
 void SX126xSetRegulatorMode( RadioRegulatorMode_t mode )
 {
-	SX126xWriteCommand( RADIO_SET_REGULATORMODE, (uint8_t *) &mode, 1 );
+	vSX126xWriteCommand( RADIO_SET_REGULATORMODE, (uint8_t *) &mode, 1 );
 }
 
 void SX126xCalibrate( CalibrationParams_t calibParam )
@@ -879,11 +879,6 @@ void vSX126xSendPayload( uint8_t *pucPayload, uint8_t ucSize, uint32_t ulTimeout
 	vSX126xSetPayload( pucPayload, ucSize );
 
 	SX126xSetTx( ulTimeout );
-}
-
-void vSX126xSetRegulatorMode( RadioRegulatorMode_t eMode )
-{
-	vSX126xWriteCommand( RADIO_SET_REGULATORMODE, (uint8_t *) &eMode, 1 );
 }
 
 void eSX126xCalibrate( xCalibrationParams_t xCalibParam )

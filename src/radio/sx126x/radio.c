@@ -512,7 +512,7 @@ void RadioInit( RadioEvents_t *events )
 	RadioEvents = events;
 	vSX126xInit( RadioOnDioIrq );
 	SX126xSetStandby( STDBY_RC );
-	vSX126xSetRegulatorMode( USE_DCDC );
+	SX126xSetRegulatorMode( USE_DCDC );
 	vSX126xSetBufferBaseAddress( 0x00, 0x00 );
 	vSX126xSetTxParams( 0, RADIO_RAMP_200_US );
 	vSX126xSetDioIrqParams( IRQ_RADIO_ALL, IRQ_RADIO_ALL, IRQ_RADIO_NONE, IRQ_RADIO_NONE );
