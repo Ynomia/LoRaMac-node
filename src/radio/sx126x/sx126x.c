@@ -787,11 +787,6 @@ typedef struct
 } xRadioRegisters_t;
 
 /*!
- * \brief Holds the internal operating mode of the radio
- */
-static RadioOperatingModes_t eOperatingMode;
-
-/*!
  * \brief Stores the current packet type set in the radio
  */
 static RadioPacketTypes_t ePacketType;
@@ -836,16 +831,6 @@ void vSX126xProcessIrqs( void );
 void vSX126xInit( DioIrqHandler fnDioIrq )
 {
 	vSX126xIoIrqInit( fnDioIrq );
-}
-
-RadioOperatingModes_t eSX126xGetOperatingMode( void )
-{
-	return eOperatingMode;
-}
-
-void vSX126xSetOperatingMode( RadioOperatingModes_t eMode )
-{
-	eOperatingMode = eMode;
 }
 
 void vSX126xCheckDeviceReady( void )
