@@ -734,7 +734,7 @@ RadioError_t SX126xGetDeviceErrors( void )
 	uint8_t		 err[] = { 0, 0 };
 	RadioError_t error = { .Value = 0 };
 
-	SX126xReadCommand( RADIO_GET_ERROR, (uint8_t *) err, 2 );
+	vSX126xReadCommand( RADIO_GET_ERROR, (uint8_t *) err, 2 );
 	error.Fields.PaRamp		= ( err[0] & ( 1 << 0 ) ) >> 0;
 	error.Fields.PllLock	= ( err[1] & ( 1 << 6 ) ) >> 6;
 	error.Fields.XoscStart	= ( err[1] & ( 1 << 5 ) ) >> 5;
@@ -749,7 +749,7 @@ RadioError_t SX126xGetDeviceErrors( void )
 void SX126xClearDeviceErrors( void )
 {
 	uint8_t buf[2] = { 0x00, 0x00 };
-	SX126xWriteCommand( RADIO_CLR_ERROR, buf, 2 );
+	vSX126xWriteCommand( RADIO_CLR_ERROR, buf, 2 );
 }
 
 void SX126xClearIrqStatus( uint16_t irq )
@@ -1085,18 +1085,4 @@ void vSX126xGetPacketStatus( xPacketStatus_t *pxPktStatus )
 			pxPktStatus->ePacketType = PACKET_TYPE_NONE;
 			break;
 	}
-}
-
-xRadioError_t xSX126xGetDeviceErrors( void )
-{
-	xRadioError_t xError;
-
-	vSX126xReadCommand( RADIO_GET_ERROR, (uint8_t *) &xError, 2 );
-	return xError;
-}
-
-void vSX126xClearDeviceErrors( void )
-{
-	uint8_t ucBuf[2] = { 0x00, 0x00 };
-	vSX126xWriteCommand( RADIO_CLR_ERROR, ucBuf, 2 );
 }

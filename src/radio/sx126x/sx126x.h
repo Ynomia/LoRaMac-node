@@ -1487,16 +1487,5 @@ void vSX126xGetRxBufferStatus( uint8_t *pucPayloadLength, uint8_t *pucRxStartBuf
  */
 void vSX126xGetPacketStatus( xPacketStatus_t *pxPktStatus );
 
-/*!
- * \brief Returns the possible system errors
- *
- * \retval sysErrors Value representing the possible sys failures
- */
-xRadioError_t xSX126xGetDeviceErrors( void );
-
-/*!
- * \brief Clear all the errors in the device
- */
-void vSX126xClearDeviceErrors( void );
 
 #endif // __SX126x_H__
