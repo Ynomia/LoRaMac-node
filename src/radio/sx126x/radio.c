@@ -564,7 +564,7 @@ void RadioSetModem( RadioModems_t modem )
 
 void RadioSetChannel( uint32_t freq )
 {
-	vSX126xSetRfFrequency( freq );
+	SX126xSetRfFrequency( freq );
 }
 
 bool RadioIsChannelFree( uint32_t freq, uint32_t rxBandwidth, int16_t rssiThresh, uint32_t maxCarrierSenseTime )
@@ -1078,7 +1078,7 @@ void RadioSetTxContinuousWave( uint32_t freq, int8_t power, uint16_t time )
 {
 	uint32_t timeout = (uint32_t) time * 1000;
 
-	vSX126xSetRfFrequency( freq );
+	SX126xSetRfFrequency( freq );
 	vSX126xSetRfTxPower( power );
 	SX126xSetTxContinuousWave();
 	TimerSetValue( &TxTimeoutTimer, timeout );

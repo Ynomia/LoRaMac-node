@@ -833,24 +833,6 @@ void vSX126xInit( DioIrqHandler fnDioIrq )
 	vSX126xIoIrqInit( fnDioIrq );
 }
 
-void vSX126xSetRfFrequency( uint32_t ulFrequency )
-{
-	uint8_t	 ucBuf[4];
-	uint32_t ulFreq = 0;
-
-	if ( bImageCalibrated == false ) {
-		SX126xCalibrateImage( ulFrequency );
-		bImageCalibrated = true;
-	}
-
-	ulFreq	 = ( uint32_t )( (double) ulFrequency / (double) FREQ_STEP );
-	ucBuf[0] = ( uint8_t )( ( ulFreq >> 24 ) & 0xFF );
-	ucBuf[1] = ( uint8_t )( ( ulFreq >> 16 ) & 0xFF );
-	ucBuf[2] = ( uint8_t )( ( ulFreq >> 8 ) & 0xFF );
-	ucBuf[3] = ( uint8_t )( ulFreq & 0xFF );
-	vSX126xWriteCommand( RADIO_SET_RFFREQUENCY, ucBuf, 4 );
-}
-
 void vSX126xSetPacketParams( xPacketParams_t *pxPacketParams )
 {
 	uint8_t ucPacketSize;

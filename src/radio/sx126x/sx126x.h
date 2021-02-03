@@ -1241,13 +1241,6 @@ typedef struct
 void vSX126xInit( DioIrqHandler fnDioIrq );
 
 /*!
- * \brief Sets the RF frequency
- *
- * \param [in]  frequency     RF frequency [Hz]
- */
-void vSX126xSetRfFrequency( uint32_t ulFrequency );
-
-/*!
  * \brief Sets the packet parameters
  *
  * \param [in]  packetParams  A structure describing the packet parameters
