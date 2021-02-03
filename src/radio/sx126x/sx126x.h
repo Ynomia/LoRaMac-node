@@ -1353,16 +1353,6 @@ void vSX126xCheckDeviceReady( void );
 void vSX126xSetPayload( uint8_t *ucPayload, uint8_t ucSize );
 
 /*!
- * \brief Reads the payload received. If the received payload is longer
- * than maxSize, then the method returns 1 and do not set size and payload.
- *
- * \param [out] payload       A pointer to a buffer into which the payload will be copied
- * \param [out] size          A pointer to the size of the payload received
- * \param [in]  maxSize       The maximal size allowed to copy into the buffer
- */
-uint8_t ucSX126xGetPayload( uint8_t *pucPayload, uint8_t *pucSize, uint8_t ucMaxSize );
-
-/*!
  * \brief Sends a payload
  *
  * \param [in]  payload       A pointer to the payload to send

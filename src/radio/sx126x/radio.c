@@ -1220,7 +1220,7 @@ void RadioIrqProcess( void )
 					vSX126xWriteRegister( 0x0944, ucSX126xReadRegister( 0x0944 ) | ( 1 << 1 ) );
 					// WORKAROUND END
 				}
-				ucSX126xGetPayload( RadioRxPayload, &size, 255 );
+				SX126xGetPayload( RadioRxPayload, &size, 255 );
 				vSX126xGetPacketStatus( &RadioPktStatus );
 				if ( ( RadioEvents != NULL ) && ( RadioEvents->RxDone != NULL ) ) {
 					RadioEvents->RxDone( RadioRxPayload, size, RadioPktStatus.xParams.xLoRa.cRssiPkt, RadioPktStatus.xParams.xLoRa.cSnrPkt );

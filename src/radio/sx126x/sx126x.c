@@ -153,7 +153,7 @@ uint8_t SX126xGetPayload( uint8_t *buffer, uint8_t *size, uint8_t maxSize )
 	if ( *size > maxSize ) {
 		return 1;
 	}
-	SX126xReadBuffer( offset, buffer, *size );
+	vSX126xReadBuffer( offset, buffer, *size );
 	return 0;
 }
 
@@ -846,17 +846,6 @@ void vSX126xCheckDeviceReady( void )
 void vSX126xSetPayload( uint8_t *pucPayload, uint8_t ucSize )
 {
 	vSX126xWriteBuffer( 0x00, pucPayload, ucSize );
-}
-
-uint8_t ucSX126xGetPayload( uint8_t *pucPuffer, uint8_t *pucSize, uint8_t uxMaxSize )
-{
-	uint8_t ucOffset = 0;
-	SX126xGetRxBufferStatus( pucSize, &ucOffset );
-	if ( *pucSize > uxMaxSize ) {
-		return 1;
-	}
-	vSX126xReadBuffer( ucOffset, pucPuffer, *pucSize );
-	return 0;
 }
 
 void vSX126xSendPayload( uint8_t *pucPayload, uint8_t ucSize, uint32_t ulTimeout )
