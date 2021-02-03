@@ -642,11 +642,11 @@ void RadioSetRxConfig( RadioModems_t modem, uint32_t bandwidth,
 	switch ( modem ) {
 		case MODEM_FSK:
 			SX126xSetStopRxTimerOnPreambleDetect( false );
-			pxSx126xModule->xModulationParams.ePacketType = PACKET_TYPE_GFSK;
+			pxSx126xModule->ModulationParams.PacketType = PACKET_TYPE_GFSK;
 
-			pxSx126xModule->xModulationParams.xParams.xGfsk.ulBitRate		   = datarate;
-			pxSx126xModule->xModulationParams.xParams.xGfsk.xModulationShaping = MOD_SHAPING_G_BT_1;
-			pxSx126xModule->xModulationParams.xParams.xGfsk.ucBandwidth		   = RadioGetFskBandwidthRegValue( bandwidth << 1 ); // SX126x bandwidth is double sided
+			pxSx126xModule->ModulationParams.Params.Gfsk.BitRate		   = datarate;
+			pxSx126xModule->ModulationParams.Params.Gfsk.ModulationShaping = MOD_SHAPING_G_BT_1;
+			pxSx126xModule->ModulationParams.Params.Gfsk.Bandwidth		   = RadioGetFskBandwidthRegValue( bandwidth << 1 ); // SX126x bandwidth is double sided
 
 			pxSx126xModule->xPacketParams.ePacketType					   = PACKET_TYPE_GFSK;
 			pxSx126xModule->xPacketParams.xParams.xGfsk.usPreambleLength   = ( preambleLen << 3 ); // convert byte into bit
@@ -654,7 +654,7 @@ void RadioSetRxConfig( RadioModems_t modem, uint32_t bandwidth,
 			pxSx126xModule->xPacketParams.xParams.xGfsk.ucSyncWordLength   = 3 << 3; // convert byte into bit
 			pxSx126xModule->xPacketParams.xParams.xGfsk.eAddrComp		   = RADIO_ADDRESSCOMP_FILT_OFF;
 			pxSx126xModule->xPacketParams.xParams.xGfsk.eHeaderType		   = ( fixLen == true ) ? RADIO_PACKET_FIXED_LENGTH : RADIO_PACKET_VARIABLE_LENGTH;
-			pxSx126xModule->xPacketParams.xParams.xGfsk.ucPayloadLength	= MaxPayloadLength;
+			pxSx126xModule->xPacketParams.xParams.xGfsk.ucPayloadLength	   = MaxPayloadLength;
 			if ( crcOn == true ) {
 				pxSx126xModule->xPacketParams.xParams.xGfsk.eCrcLength = RADIO_CRC_2_BYTES_CCIT;
 			}
@@ -664,8 +664,8 @@ void RadioSetRxConfig( RadioModems_t modem, uint32_t bandwidth,
 			pxSx126xModule->xPacketParams.xParams.xGfsk.eDcFree = RADIO_DC_FREEWHITENING;
 
 			RadioStandby();
-			RadioSetModem( ( pxSx126xModule->xModulationParams.ePacketType == PACKET_TYPE_GFSK ) ? MODEM_FSK : MODEM_LORA );
-			vSX126xSetModulationParams( &pxSx126xModule->xModulationParams );
+			RadioSetModem( ( pxSx126xModule->ModulationParams.PacketType == PACKET_TYPE_GFSK ) ? MODEM_FSK : MODEM_LORA );
+			SX126xSetModulationParams( &pxSx126xModule->ModulationParams );
 			vSX126xSetPacketParams( &pxSx126xModule->xPacketParams );
 			SX126xSetSyncWord( ( uint8_t[] ){ 0xC1, 0x94, 0xC1, 0x00, 0x00, 0x00, 0x00, 0x00 } );
 			SX126xSetWhiteningSeed( 0x01FF );
@@ -675,23 +675,23 @@ void RadioSetRxConfig( RadioModems_t modem, uint32_t bandwidth,
 
 		case MODEM_LORA:
 			SX126xSetStopRxTimerOnPreambleDetect( false );
-			pxSx126xModule->xModulationParams.ePacketType					 = PACKET_TYPE_LORA;
-			pxSx126xModule->xModulationParams.xParams.xLoRa.eSpreadingFactor = (RadioLoRaSpreadingFactors_t) datarate;
-			pxSx126xModule->xModulationParams.xParams.xLoRa.eBandwidth		 = Bandwidths[bandwidth];
-			pxSx126xModule->xModulationParams.xParams.xLoRa.eCodingRate		 = (RadioLoRaCodingRates_t) coderate;
+			pxSx126xModule->ModulationParams.PacketType					 = PACKET_TYPE_LORA;
+			pxSx126xModule->ModulationParams.Params.LoRa.SpreadingFactor = (RadioLoRaSpreadingFactors_t) datarate;
+			pxSx126xModule->ModulationParams.Params.LoRa.Bandwidth		 = Bandwidths[bandwidth];
+			pxSx126xModule->ModulationParams.Params.LoRa.CodingRate		 = (RadioLoRaCodingRates_t) coderate;
 
 			if ( ( ( bandwidth == 0 ) && ( ( datarate == 11 ) || ( datarate == 12 ) ) ) ||
 				 ( ( bandwidth == 1 ) && ( datarate == 12 ) ) ) {
-				pxSx126xModule->xModulationParams.xParams.xLoRa.ucLowDatarateOptimize = 0x01;
+				pxSx126xModule->ModulationParams.Params.LoRa.LowDatarateOptimize = 0x01;
 			}
 			else {
-				pxSx126xModule->xModulationParams.xParams.xLoRa.ucLowDatarateOptimize = 0x00;
+				pxSx126xModule->ModulationParams.Params.LoRa.LowDatarateOptimize = 0x00;
 			}
 
 			pxSx126xModule->xPacketParams.ePacketType = PACKET_TYPE_LORA;
 
-			if ( ( pxSx126xModule->xModulationParams.xParams.xLoRa.eSpreadingFactor == LORA_SF5 ) ||
-				 ( pxSx126xModule->xModulationParams.xParams.xLoRa.eSpreadingFactor == LORA_SF6 ) ) {
+			if ( ( pxSx126xModule->ModulationParams.Params.LoRa.SpreadingFactor == LORA_SF5 ) ||
+				 ( pxSx126xModule->ModulationParams.Params.LoRa.SpreadingFactor == LORA_SF6 ) ) {
 				if ( preambleLen < 12 ) {
 					pxSx126xModule->xPacketParams.xParams.xLoRa.usPreambleLength = 12;
 				}
@@ -710,8 +710,8 @@ void RadioSetRxConfig( RadioModems_t modem, uint32_t bandwidth,
 			pxSx126xModule->xPacketParams.xParams.xLoRa.eInvertIQ		= (RadioLoRaIQModes_t) iqInverted;
 
 			RadioStandby();
-			RadioSetModem( ( pxSx126xModule->xModulationParams.ePacketType == PACKET_TYPE_GFSK ) ? MODEM_FSK : MODEM_LORA );
-			vSX126xSetModulationParams( &pxSx126xModule->xModulationParams );
+			RadioSetModem( ( pxSx126xModule->ModulationParams.PacketType == PACKET_TYPE_GFSK ) ? MODEM_FSK : MODEM_LORA );
+			SX126xSetModulationParams( &pxSx126xModule->ModulationParams );
 			vSX126xSetPacketParams( &pxSx126xModule->xPacketParams );
 			SX126xSetLoRaSymbNumTimeout( symbTimeout );
 
@@ -743,12 +743,12 @@ void RadioSetTxConfig( RadioModems_t modem, int8_t power, uint32_t fdev,
 	UNUSED( hopPeriod );
 	switch ( modem ) {
 		case MODEM_FSK:
-			pxSx126xModule->xModulationParams.ePacketType			  = PACKET_TYPE_GFSK;
-			pxSx126xModule->xModulationParams.xParams.xGfsk.ulBitRate = datarate;
+			pxSx126xModule->ModulationParams.PacketType			 = PACKET_TYPE_GFSK;
+			pxSx126xModule->ModulationParams.Params.Gfsk.BitRate = datarate;
 
-			pxSx126xModule->xModulationParams.xParams.xGfsk.xModulationShaping = MOD_SHAPING_G_BT_1;
-			pxSx126xModule->xModulationParams.xParams.xGfsk.ucBandwidth		   = RadioGetFskBandwidthRegValue( bandwidth << 1 ); // SX126x bandwidth is double sided
-			pxSx126xModule->xModulationParams.xParams.xGfsk.ulFdev			   = fdev;
+			pxSx126xModule->ModulationParams.Params.Gfsk.ModulationShaping = MOD_SHAPING_G_BT_1;
+			pxSx126xModule->ModulationParams.Params.Gfsk.Bandwidth		   = RadioGetFskBandwidthRegValue( bandwidth << 1 ); // SX126x bandwidth is double sided
+			pxSx126xModule->ModulationParams.Params.Gfsk.Fdev			   = fdev;
 
 			pxSx126xModule->xPacketParams.ePacketType					   = PACKET_TYPE_GFSK;
 			pxSx126xModule->xPacketParams.xParams.xGfsk.usPreambleLength   = ( preambleLen << 3 ); // convert byte into bit
@@ -766,31 +766,31 @@ void RadioSetTxConfig( RadioModems_t modem, int8_t power, uint32_t fdev,
 			pxSx126xModule->xPacketParams.xParams.xGfsk.eDcFree = RADIO_DC_FREEWHITENING;
 
 			RadioStandby();
-			RadioSetModem( ( pxSx126xModule->xModulationParams.ePacketType == PACKET_TYPE_GFSK ) ? MODEM_FSK : MODEM_LORA );
-			vSX126xSetModulationParams( &pxSx126xModule->xModulationParams );
+			RadioSetModem( ( pxSx126xModule->ModulationParams.PacketType == PACKET_TYPE_GFSK ) ? MODEM_FSK : MODEM_LORA );
+			SX126xSetModulationParams( &pxSx126xModule->ModulationParams );
 			vSX126xSetPacketParams( &pxSx126xModule->xPacketParams );
 			SX126xSetSyncWord( ( uint8_t[] ){ 0xC1, 0x94, 0xC1, 0x00, 0x00, 0x00, 0x00, 0x00 } );
 			SX126xSetWhiteningSeed( 0x01FF );
 			break;
 
 		case MODEM_LORA:
-			pxSx126xModule->xModulationParams.ePacketType					 = PACKET_TYPE_LORA;
-			pxSx126xModule->xModulationParams.xParams.xLoRa.eSpreadingFactor = (RadioLoRaSpreadingFactors_t) datarate;
-			pxSx126xModule->xModulationParams.xParams.xLoRa.eBandwidth		 = Bandwidths[bandwidth];
-			pxSx126xModule->xModulationParams.xParams.xLoRa.eCodingRate		 = (RadioLoRaCodingRates_t) coderate;
+			pxSx126xModule->ModulationParams.PacketType					 = PACKET_TYPE_LORA;
+			pxSx126xModule->ModulationParams.Params.LoRa.SpreadingFactor = (RadioLoRaSpreadingFactors_t) datarate;
+			pxSx126xModule->ModulationParams.Params.LoRa.Bandwidth		 = Bandwidths[bandwidth];
+			pxSx126xModule->ModulationParams.Params.LoRa.CodingRate		 = (RadioLoRaCodingRates_t) coderate;
 
 			if ( ( ( bandwidth == 0 ) && ( ( datarate == 11 ) || ( datarate == 12 ) ) ) ||
 				 ( ( bandwidth == 1 ) && ( datarate == 12 ) ) ) {
-				pxSx126xModule->xModulationParams.xParams.xLoRa.ucLowDatarateOptimize = 0x01;
+				pxSx126xModule->ModulationParams.Params.LoRa.LowDatarateOptimize = 0x01;
 			}
 			else {
-				pxSx126xModule->xModulationParams.xParams.xLoRa.ucLowDatarateOptimize = 0x00;
+				pxSx126xModule->ModulationParams.Params.LoRa.LowDatarateOptimize = 0x00;
 			}
 
 			pxSx126xModule->xPacketParams.ePacketType = PACKET_TYPE_LORA;
 
-			if ( ( pxSx126xModule->xModulationParams.xParams.xLoRa.eSpreadingFactor == LORA_SF5 ) ||
-				 ( pxSx126xModule->xModulationParams.xParams.xLoRa.eSpreadingFactor == LORA_SF6 ) ) {
+			if ( ( pxSx126xModule->ModulationParams.Params.LoRa.SpreadingFactor == LORA_SF5 ) ||
+				 ( pxSx126xModule->ModulationParams.Params.LoRa.SpreadingFactor == LORA_SF6 ) ) {
 				if ( preambleLen < 12 ) {
 					pxSx126xModule->xPacketParams.xParams.xLoRa.usPreambleLength = 12;
 				}
@@ -808,8 +808,8 @@ void RadioSetTxConfig( RadioModems_t modem, int8_t power, uint32_t fdev,
 			pxSx126xModule->xPacketParams.xParams.xLoRa.eInvertIQ		= (RadioLoRaIQModes_t) iqInverted;
 
 			RadioStandby();
-			RadioSetModem( ( pxSx126xModule->xModulationParams.ePacketType == PACKET_TYPE_GFSK ) ? MODEM_FSK : MODEM_LORA );
-			vSX126xSetModulationParams( &pxSx126xModule->xModulationParams );
+			RadioSetModem( ( pxSx126xModule->ModulationParams.PacketType == PACKET_TYPE_GFSK ) ? MODEM_FSK : MODEM_LORA );
+			SX126xSetModulationParams( &pxSx126xModule->ModulationParams );
 			vSX126xSetPacketParams( &pxSx126xModule->xPacketParams );
 
 			break;
@@ -818,7 +818,7 @@ void RadioSetTxConfig( RadioModems_t modem, int8_t power, uint32_t fdev,
 	}
 
 	// WORKAROUND - Modulation Quality with 500 kHz LoRa Bandwidth, see DS_SX1261-2_V1.2 datasheet chapter 15.1
-	if ( ( modem == MODEM_LORA ) && ( pxSx126xModule->xModulationParams.xParams.xLoRa.eBandwidth == LORA_BW_500 ) ) {
+	if ( ( modem == MODEM_LORA ) && ( pxSx126xModule->ModulationParams.Params.LoRa.Bandwidth == LORA_BW_500 ) ) {
 		// RegTxModulation = @address 0x0889
 		vSX126xWriteRegister( 0x0889, ucSX126xReadRegister( 0x0889 ) & ~( 1 << 2 ) );
 	}
@@ -982,7 +982,7 @@ void RadioSend( uint8_t *buffer, uint8_t size )
 						   IRQ_TX_DONE | IRQ_RX_TX_TIMEOUT,
 						   IRQ_RADIO_NONE,
 						   IRQ_RADIO_NONE );
-	vSX126xSetModulationParams( &pxSx126xModule->xModulationParams );
+	SX126xSetModulationParams( &pxSx126xModule->ModulationParams );
 	if ( SX126xGetPacketType() == PACKET_TYPE_LORA ) {
 		pxSx126xModule->xPacketParams.xParams.xLoRa.ucPayloadLength = size;
 	}
@@ -990,7 +990,7 @@ void RadioSend( uint8_t *buffer, uint8_t size )
 		pxSx126xModule->xPacketParams.xParams.xGfsk.ucPayloadLength = size;
 	}
 	vSX126xSetPacketParams( &pxSx126xModule->xPacketParams );
-	
+
 	SX126xSendPayload( buffer, size, 0 );
 	// TODO
 	// TimerSetValue( &TxTimeoutTimer, TxTimeout );
@@ -1016,9 +1016,9 @@ void LorawanRadioRx( uint32_t timeout )
 {
 	UNUSED( timeout );
 	SX126xSetDioIrqParams( IRQ_RADIO_ALL, //IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT,
-							IRQ_RADIO_ALL, //IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT,
-							IRQ_RADIO_NONE,
-							IRQ_RADIO_NONE );
+						   IRQ_RADIO_ALL, //IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT,
+						   IRQ_RADIO_NONE,
+						   IRQ_RADIO_NONE );
 
 	SX126xSetRx( 0xFFFFFF );
 }
@@ -1026,9 +1026,9 @@ void LorawanRadioRx( uint32_t timeout )
 void RadioRx( uint32_t timeout )
 {
 	SX126xSetDioIrqParams( IRQ_RADIO_ALL, //IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT,
-							IRQ_RADIO_ALL, //IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT,
-							IRQ_RADIO_NONE,
-							IRQ_RADIO_NONE );
+						   IRQ_RADIO_ALL, //IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT,
+						   IRQ_RADIO_NONE,
+						   IRQ_RADIO_NONE );
 
 	if ( timeout != 0 ) {
 		TimerSetValue( &RxTimeoutTimer, timeout );
@@ -1046,9 +1046,9 @@ void RadioRx( uint32_t timeout )
 void RadioRxBoosted( uint32_t timeout )
 {
 	SX126xSetDioIrqParams( IRQ_RADIO_ALL, //IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT,
-							IRQ_RADIO_ALL, //IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT,
-							IRQ_RADIO_NONE,
-							IRQ_RADIO_NONE );
+						   IRQ_RADIO_ALL, //IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT,
+						   IRQ_RADIO_NONE,
+						   IRQ_RADIO_NONE );
 
 	if ( timeout != 0 ) {
 		TimerSetValue( &RxTimeoutTimer, timeout );

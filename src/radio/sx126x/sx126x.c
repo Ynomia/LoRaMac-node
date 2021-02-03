@@ -562,7 +562,7 @@ void SX126xSetModulationParams( ModulationParams_t *modulationParams )
 			buf[5]	= ( tempVal >> 16 ) & 0xFF;
 			buf[6]	= ( tempVal >> 8 ) & 0xFF;
 			buf[7]	= ( tempVal & 0xFF );
-			SX126xWriteCommand( RADIO_SET_MODULATIONPARAMS, buf, n );
+			vSX126xWriteCommand( RADIO_SET_MODULATIONPARAMS, buf, n );
 			break;
 		case PACKET_TYPE_LORA:
 			n	   = 4;
@@ -571,7 +571,7 @@ void SX126xSetModulationParams( ModulationParams_t *modulationParams )
 			buf[2] = modulationParams->Params.LoRa.CodingRate;
 			buf[3] = modulationParams->Params.LoRa.LowDatarateOptimize;
 
-			SX126xWriteCommand( RADIO_SET_MODULATIONPARAMS, buf, n );
+			vSX126xWriteCommand( RADIO_SET_MODULATIONPARAMS, buf, n );
 
 			break;
 		default:
@@ -849,45 +849,6 @@ void vSX126xSetRfFrequency( uint32_t ulFrequency )
 	ucBuf[2] = ( uint8_t )( ( ulFreq >> 8 ) & 0xFF );
 	ucBuf[3] = ( uint8_t )( ulFreq & 0xFF );
 	vSX126xWriteCommand( RADIO_SET_RFFREQUENCY, ucBuf, 4 );
-}
-
-void vSX126xSetModulationParams( xModulationParams_t *pxModulationParams )
-{
-	uint32_t ulTempVal = 0;
-	uint8_t	 ucBuf[8]  = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-
-	// Check if required configuration corresponds to the stored packet type
-	// If not, silently update radio packet type
-	if ( ePacketType != pxModulationParams->ePacketType ) {
-		SX126xSetPacketType( pxModulationParams->ePacketType );
-	}
-
-	switch ( pxModulationParams->ePacketType ) {
-		case PACKET_TYPE_GFSK:
-			ulTempVal = ( uint32_t )( 32 * ( (double) XTAL_FREQ / (double) pxModulationParams->xParams.xGfsk.ulBitRate ) );
-			ucBuf[0]  = ( ulTempVal >> 16 ) & 0xFF;
-			ucBuf[1]  = ( ulTempVal >> 8 ) & 0xFF;
-			ucBuf[2]  = ulTempVal & 0xFF;
-			ucBuf[3]  = pxModulationParams->xParams.xGfsk.xModulationShaping;
-			ucBuf[4]  = pxModulationParams->xParams.xGfsk.ucBandwidth;
-			ulTempVal = ( uint32_t )( (double) pxModulationParams->xParams.xGfsk.ulFdev / (double) FREQ_STEP );
-			ucBuf[5]  = ( ulTempVal >> 16 ) & 0xFF;
-			ucBuf[6]  = ( ulTempVal >> 8 ) & 0xFF;
-			ucBuf[7]  = ( ulTempVal & 0xFF );
-			vSX126xWriteCommand( RADIO_SET_MODULATIONPARAMS, ucBuf, 8 );
-			break;
-		case PACKET_TYPE_LORA:
-			ucBuf[0] = pxModulationParams->xParams.xLoRa.eSpreadingFactor;
-			ucBuf[1] = pxModulationParams->xParams.xLoRa.eBandwidth;
-			ucBuf[2] = pxModulationParams->xParams.xLoRa.eCodingRate;
-			ucBuf[3] = pxModulationParams->xParams.xLoRa.ucLowDatarateOptimize;
-			vSX126xWriteCommand( RADIO_SET_MODULATIONPARAMS, ucBuf, 4 );
-
-			break;
-		default:
-		case PACKET_TYPE_NONE:
-			return;
-	}
 }
 
 void vSX126xSetPacketParams( xPacketParams_t *pxPacketParams )

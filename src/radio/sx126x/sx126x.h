@@ -1114,7 +1114,6 @@ void SX126xClearIrqStatus( uint16_t irq );
 }
 #endif
 
-
 /*!
  * \brief Structure describing the radio status
  */
@@ -1123,37 +1122,12 @@ typedef union xRadioStatus_u
 	uint8_t ucValue;
 	struct
 	{							 //bit order is lsb -> msb
-		uint8_t ucReserved : 1;  //!< Reserved
+		uint8_t ucReserved : 1;	 //!< Reserved
 		uint8_t ucCmdStatus : 3; //!< Command status
-		uint8_t ucChipMode : 3;  //!< Chip mode
-		uint8_t ucCpuBusy : 1;   //!< Flag for CPU radio busy
+		uint8_t ucChipMode : 3;	 //!< Chip mode
+		uint8_t ucCpuBusy : 1;	 //!< Flag for CPU radio busy
 	} xFields;
 } xRadioStatus_t;
-
-/*!
- * \brief The type describing the modulation parameters for every packet types
- */
-typedef struct
-{
-	RadioPacketTypes_t ePacketType; //!< Packet to which the modulation parameters are referring to.
-	struct
-	{
-		struct
-		{
-			uint32_t			ulBitRate;
-			uint32_t			ulFdev;
-			RadioModShapings_t xModulationShaping;
-			uint8_t				ucBandwidth;
-		} xGfsk;
-		struct
-		{
-			RadioLoRaSpreadingFactors_t eSpreadingFactor;		//!< Spreading Factor for the LoRa modulation
-			RadioLoRaBandwidths_t		 eBandwidth;			//!< Bandwidth for the LoRa modulation
-			RadioLoRaCodingRates_t		 eCodingRate;			//!< Coding rate for the LoRa modulation
-			uint8_t						 ucLowDatarateOptimize; //!< Indicates if the modem uses the low datarate optimization
-		} xLoRa;
-	} xParams; //!< Holds the modulation parameters structure
-} xModulationParams_t;
 
 /*!
  * \brief The type describing the packet parameters for every packet types
@@ -1168,25 +1142,25 @@ typedef struct
          */
 		struct
 		{
-			uint16_t				  usPreambleLength;   //!< The preamble Tx length for GFSK packet type in bit
+			uint16_t				 usPreambleLength;	 //!< The preamble Tx length for GFSK packet type in bit
 			RadioPreambleDetection_t ePreambleMinDetect; //!< The preamble Rx length minimal for GFSK packet type
-			uint8_t					  ucSyncWordLength;   //!< The synchronization word length for GFSK packet type
-			RadioAddressComp_t		  eAddrComp;		  //!< Activated SyncWord correlators
-			RadioPacketLengthModes_t eHeaderType;		  //!< If the header is explicit, it will be transmitted in the GFSK packet. If the header is implicit, it will not be transmitted
-			uint8_t					  ucPayloadLength;	//!< Size of the payload in the GFSK packet
-			RadioCrcTypes_t		  eCrcLength;		  //!< Size of the CRC block in the GFSK packet
-			RadioDcFree_t			  eDcFree;
+			uint8_t					 ucSyncWordLength;	 //!< The synchronization word length for GFSK packet type
+			RadioAddressComp_t		 eAddrComp;			 //!< Activated SyncWord correlators
+			RadioPacketLengthModes_t eHeaderType;		 //!< If the header is explicit, it will be transmitted in the GFSK packet. If the header is implicit, it will not be transmitted
+			uint8_t					 ucPayloadLength;	 //!< Size of the payload in the GFSK packet
+			RadioCrcTypes_t			 eCrcLength;		 //!< Size of the CRC block in the GFSK packet
+			RadioDcFree_t			 eDcFree;
 		} xGfsk;
 		/*!
          * \brief Holds the LoRa packet parameters
          */
 		struct
 		{
-			uint16_t					  usPreambleLength; //!< The preamble length is the number of LoRa symbols in the preamble
-			RadioLoRaPacketLengthsMode_t eHeaderType;		//!< If the header is explicit, it will be transmitted in the LoRa packet. If the header is implicit, it will not be transmitted
-			uint8_t						  ucPayloadLength;  //!< Size of the payload in the LoRa packet
-			RadioLoRaCrcModes_t		  eCrcMode;			//!< Size of CRC block in LoRa packet
-			RadioLoRaIQModes_t			  eInvertIQ;		//!< Allows to swap IQ for LoRa packet
+			uint16_t					 usPreambleLength; //!< The preamble length is the number of LoRa symbols in the preamble
+			RadioLoRaPacketLengthsMode_t eHeaderType;	   //!< If the header is explicit, it will be transmitted in the LoRa packet. If the header is implicit, it will not be transmitted
+			uint8_t						 ucPayloadLength;  //!< Size of the payload in the LoRa packet
+			RadioLoRaCrcModes_t			 eCrcMode;		   //!< Size of CRC block in LoRa packet
+			RadioLoRaIQModes_t			 eInvertIQ;		   //!< Allows to swap IQ for LoRa packet
 		} xLoRa;
 	} xParams; //!< Holds the packet parameters structure
 } xPacketParams_t;
@@ -1201,86 +1175,20 @@ typedef struct
 	{
 		struct
 		{
-			uint8_t  ucRxStatus;
-			int8_t   cRssiAvg;  //!< The averaged RSSI
-			int8_t   cRssiSync; //!< The RSSI measured on last packet
+			uint8_t	 ucRxStatus;
+			int8_t	 cRssiAvg;	//!< The averaged RSSI
+			int8_t	 cRssiSync; //!< The RSSI measured on last packet
 			uint32_t ulFreqError;
 		} xGfsk;
 		struct
 		{
-			int8_t   cRssiPkt; //!< The RSSI of the last packet
-			int8_t   cSnrPkt;  //!< The SNR of the last packet
-			int8_t   cSignalRssiPkt;
+			int8_t	 cRssiPkt; //!< The RSSI of the last packet
+			int8_t	 cSnrPkt;  //!< The SNR of the last packet
+			int8_t	 cSignalRssiPkt;
 			uint32_t ulFreqError;
 		} xLoRa;
 	} xParams;
 } xPacketStatus_t;
-
-/*!
- * \brief Represents the Rx internal counters values when GFSK or LoRa packet type is used
- */
-typedef struct
-{
-	RadioPacketTypes_t ePacketType; //!< Packet to which the packet status are referring to.
-	uint16_t			usPacketReceived;
-	uint16_t			usCrcOk;
-	uint16_t			usLengthError;
-} xRxCounter_t;
-
-/*!
- * \brief Represents a calibration configuration
- */
-typedef union
-{
-	struct
-	{
-		uint8_t ucRC64KEnable : 1;	//!< Calibrate RC64K clock
-		uint8_t ucRC13MEnable : 1;	//!< Calibrate RC13M clock
-		uint8_t ucPLLEnable : 1;	  //!< Calibrate PLL
-		uint8_t ucADCPulseEnable : 1; //!< Calibrate ADC Pulse
-		uint8_t ucADCBulkNEnable : 1; //!< Calibrate ADC bulkN
-		uint8_t ucADCBulkPEnable : 1; //!< Calibrate ADC bulkP
-		uint8_t ucImgEnable : 1;
-		uint8_t : 1;
-	} xFields;
-	uint8_t ucValue;
-} xCalibrationParams_t;
-
-/*!
- * \brief Represents a sleep mode configuration
- */
-typedef union
-{
-	struct
-	{
-		uint8_t ucWakeUpRTC : 1; //!< Get out of sleep mode if wakeup signal received from RTC
-		uint8_t ucReset : 1;
-		uint8_t ucWarmStart : 1;
-		uint8_t ucReserved : 5;
-	} xFields;
-	uint8_t ucValue;
-} xSleepParams_t;
-
-/*!
- * \brief Represents the possible radio system error states
- */
-typedef union
-{
-	struct
-	{
-		uint8_t ucRc64kCalib : 1; //!< RC 64kHz oscillator calibration failed
-		uint8_t ucRc13mCalib : 1; //!< RC 13MHz oscillator calibration failed
-		uint8_t ucPllCalib : 1;   //!< PLL calibration failed
-		uint8_t ucAdcCalib : 1;   //!< ADC calibration failed
-		uint8_t ucImgCalib : 1;   //!< Image calibration failed
-		uint8_t ucXoscStart : 1;  //!< XOSC oscillator failed to start
-		uint8_t ucPllLock : 1;	//!< PLL lock failed
-		uint8_t ucBuckStart : 1;  //!< Buck converter failed to start
-		uint8_t ucPaRamp : 1;	 //!< PA ramp failed
-		uint8_t : 7;			  //!< Reserved
-	} xFields;
-	uint16_t usValue;
-} xRadioError_t;
 
 /*!
  * Radio hardware and global parameters
@@ -1296,7 +1204,7 @@ typedef struct xSX126x_s
 	xSpiModule_t *		pxSpi;
 	xPacketParams_t		xPacketParams;
 	xPacketStatus_t		xPacketStatus;
-	xModulationParams_t xModulationParams;
+	ModulationParams_t  ModulationParams;
 } xSX126x_t;
 
 /*!
@@ -1310,15 +1218,15 @@ typedef void( DioIrqHandler )( void *context );
  */
 typedef struct
 {
-	void ( *txDone )( void );					  //!< Pointer to a function run on successful transmission
-	void ( *rxDone )( void );					  //!< Pointer to a function run on successful reception
-	void ( *rxPreambleDetect )( void );			  //!< Pointer to a function run on successful Preamble detection
-	void ( *rxSyncWordDone )( void );			  //!< Pointer to a function run on successful SyncWord reception
-	void ( *rxHeaderDone )( bool isOk );		  //!< Pointer to a function run on successful Header reception
-	void ( *txTimeout )( void );				  //!< Pointer to a function run on transmission timeout
-	void ( *rxTimeout )( void );				  //!< Pointer to a function run on reception timeout
+	void ( *txDone )( void );					 //!< Pointer to a function run on successful transmission
+	void ( *rxDone )( void );					 //!< Pointer to a function run on successful reception
+	void ( *rxPreambleDetect )( void );			 //!< Pointer to a function run on successful Preamble detection
+	void ( *rxSyncWordDone )( void );			 //!< Pointer to a function run on successful SyncWord reception
+	void ( *rxHeaderDone )( bool isOk );		 //!< Pointer to a function run on successful Header reception
+	void ( *txTimeout )( void );				 //!< Pointer to a function run on transmission timeout
+	void ( *rxTimeout )( void );				 //!< Pointer to a function run on reception timeout
 	void ( *rxError )( IrqErrorCode_t errCode ); //!< Pointer to a function run on reception error
-	void ( *cadDone )( bool cadFlag );			  //!< Pointer to a function run on channel activity detected
+	void ( *cadDone )( bool cadFlag );			 //!< Pointer to a function run on channel activity detected
 } xSX126xCallbacks_t;
 
 /*!
@@ -1340,13 +1248,6 @@ void vSX126xInit( DioIrqHandler fnDioIrq );
 void vSX126xSetRfFrequency( uint32_t ulFrequency );
 
 /*!
- * \brief Set the modulation parameters
- *
- * \param [in]  modParams     A structure describing the modulation parameters
- */
-void vSX126xSetModulationParams( xModulationParams_t *pxModParams );
-
-/*!
  * \brief Sets the packet parameters
  *
  * \param [in]  packetParams  A structure describing the packet parameters
@@ -1366,6 +1267,5 @@ xRadioStatus_t eSX126xGetStatus( void );
  * \param [out] pktStatus     A structure of packet status
  */
 void vSX126xGetPacketStatus( xPacketStatus_t *pxPktStatus );
-
 
 #endif // __SX126x_H__
