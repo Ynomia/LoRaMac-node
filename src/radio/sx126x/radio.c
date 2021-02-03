@@ -983,6 +983,10 @@ uint32_t RadioTimeOnAir( RadioModems_t modem, uint32_t bandwidth,
 
 void RadioSend( uint8_t *buffer, uint8_t size )
 {
+	vSX126xSetDioIrqParams( IRQ_TX_DONE | IRQ_RX_TX_TIMEOUT,
+						   IRQ_TX_DONE | IRQ_RX_TX_TIMEOUT,
+						   IRQ_RADIO_NONE,
+						   IRQ_RADIO_NONE );
 	vSX126xSetModulationParams( &pxSx126xModule->xModulationParams );
 	if ( eSX126xGetPacketType() == PACKET_TYPE_LORA ) {
 		pxSx126xModule->xPacketParams.xParams.xLoRa.ucPayloadLength = size;
@@ -991,7 +995,11 @@ void RadioSend( uint8_t *buffer, uint8_t size )
 		pxSx126xModule->xPacketParams.xParams.xGfsk.ucPayloadLength = size;
 	}
 	vSX126xSetPacketParams( &pxSx126xModule->xPacketParams );
-	vSX126xSendPayload( buffer, size, RADIO_IMMEDIATE_TIMEOUT );
+	
+	vSX126xSendPayload( buffer, size, 0 );
+	// TODO
+	// TimerSetValue( &TxTimeoutTimer, TxTimeout );
+	// TimerStart( &TxTimeoutTimer );
 }
 
 void RadioSleep( void )
@@ -1069,11 +1077,6 @@ void RadioStartCad( void )
 {
 	vSX126xSetDioIrqParams( IRQ_CAD_DONE | IRQ_CAD_ACTIVITY_DETECTED, IRQ_CAD_DONE | IRQ_CAD_ACTIVITY_DETECTED, IRQ_RADIO_NONE, IRQ_RADIO_NONE );
 	vSX126xSetCad();
-}
-
-void RadioTx( uint32_t timeout )
-{
-	vSX126xSetTx( timeout << 6 );
 }
 
 void RadioSetTxContinuousWave( uint32_t freq, int8_t power, uint16_t time )
