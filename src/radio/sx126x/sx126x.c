@@ -503,7 +503,7 @@ void SX126xSetTxParams( int8_t power, RadioRampTimes_t rampTime )
 {
 	uint8_t buf[2];
 
-	if ( SX126xGetDeviceId() == SX1261 ) {
+	if ( ucSX126xGetDeviceId() == SX1261 ) {
 		if ( power == 15 ) {
 			SX126xSetPaConfig( 0x06, 0x00, 0x01, 0x01 );
 		}
@@ -521,7 +521,7 @@ void SX126xSetTxParams( int8_t power, RadioRampTimes_t rampTime )
 	{
 		// WORKAROUND - Better Resistance of the SX1262 Tx to Antenna Mismatch, see DS_SX1261-2_V1.2 datasheet chapter 15.2
 		// RegTxClampConfig = @address 0x08D8
-		SX126xWriteRegister( 0x08D8, SX126xReadRegister( 0x08D8 ) | ( 0x0F << 1 ) );
+		vSX126xWriteRegister( 0x08D8, ucSX126xReadRegister( 0x08D8 ) | ( 0x0F << 1 ) );
 		// WORKAROUND END
 
 		SX126xSetPaConfig( 0x04, 0x07, 0x00, 0x01 );
@@ -534,7 +534,7 @@ void SX126xSetTxParams( int8_t power, RadioRampTimes_t rampTime )
 	}
 	buf[0] = power;
 	buf[1] = (uint8_t) rampTime;
-	SX126xWriteCommand( RADIO_SET_TXPARAMS, buf, 2 );
+	vSX126xWriteCommand( RADIO_SET_TXPARAMS, buf, 2 );
 }
 
 void SX126xSetModulationParams( ModulationParams_t *modulationParams )
@@ -849,41 +849,6 @@ void vSX126xSetRfFrequency( uint32_t ulFrequency )
 	ucBuf[2] = ( uint8_t )( ( ulFreq >> 8 ) & 0xFF );
 	ucBuf[3] = ( uint8_t )( ulFreq & 0xFF );
 	vSX126xWriteCommand( RADIO_SET_RFFREQUENCY, ucBuf, 4 );
-}
-
-void vSX126xSetTxParams( int8_t cPower, RadioRampTimes_t eRampTime )
-{
-	uint8_t ucBuf[2];
-
-	if ( ucSX126xGetDeviceId() == SX1261 ) {
-		if ( cPower == 15 ) {
-			SX126xSetPaConfig( 0x06, 0x00, 0x01, 0x01 );
-		}
-		else {
-			SX126xSetPaConfig( 0x04, 0x00, 0x01, 0x01 );
-		}
-		if ( cPower >= 14 ) {
-			cPower = 14;
-		}
-		else if ( cPower < -17 ) {
-			cPower = -17;
-		}
-		vSX126xWriteRegister( REG_OCP, 0x18 ); // current max is 80 mA for the whole device
-	}
-	else // sx1262
-	{
-		SX126xSetPaConfig( 0x04, 0x07, 0x00, 0x01 );
-		if ( cPower > 22 ) {
-			cPower = 22;
-		}
-		else if ( cPower < -9 ) {
-			cPower = -9;
-		}
-		vSX126xWriteRegister( REG_OCP, 0x38 ); // current max 160mA for the whole device
-	}
-	ucBuf[0] = cPower;
-	ucBuf[1] = (uint8_t) eRampTime;
-	vSX126xWriteCommand( RADIO_SET_TXPARAMS, ucBuf, 2 );
 }
 
 void vSX126xSetModulationParams( xModulationParams_t *pxModulationParams )

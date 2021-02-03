@@ -1340,14 +1340,6 @@ void vSX126xInit( DioIrqHandler fnDioIrq );
 void vSX126xSetRfFrequency( uint32_t ulFrequency );
 
 /*!
- * \brief Sets the transmission parameters
- *
- * \param [in]  power         RF output power [-18..13] dBm
- * \param [in]  rampTime      Transmission ramp up time
- */
-void vSX126xSetTxParams( int8_t cPower, RadioRampTimes_t eRampTime );
-
-/*!
  * \brief Set the modulation parameters
  *
  * \param [in]  modParams     A structure describing the modulation parameters
