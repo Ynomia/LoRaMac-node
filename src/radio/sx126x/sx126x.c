@@ -645,8 +645,8 @@ void SX126xSetCadParams( RadioLoRaCadSymbols_t cadSymbolNum, uint8_t cadDetPeak,
 	buf[4] = ( uint8_t )( ( cadTimeout >> 16 ) & 0xFF );
 	buf[5] = ( uint8_t )( ( cadTimeout >> 8 ) & 0xFF );
 	buf[6] = ( uint8_t )( cadTimeout & 0xFF );
-	SX126xWriteCommand( RADIO_SET_CADPARAMS, buf, 7 );
-	SX126xSetOperatingMode( MODE_CAD );
+	vSX126xWriteCommand( RADIO_SET_CADPARAMS, buf, 7 );
+	vSX126xSetOperatingMode( MODE_CAD );
 }
 
 void SX126xSetBufferBaseAddress( uint8_t txBaseAddress, uint8_t rxBaseAddress )
@@ -1042,21 +1042,6 @@ void vSX126xSetPacketParams( xPacketParams_t *pxPacketParams )
 			return;
 	}
 	vSX126xWriteCommand( RADIO_SET_PACKETPARAMS, ucBuf, ucPacketSize );
-}
-
-void vSX126xSetCadParams( RadioLoRaCadSymbols_t eCadSymbolNum, uint8_t ucCadDetPeak, uint8_t ucCadDetMin, RadioCadExitModes_t eCadExitMode, uint32_t ulCadTimeout )
-{
-	uint8_t ucBuf[7];
-
-	ucBuf[0] = (uint8_t) eCadSymbolNum;
-	ucBuf[1] = ucCadDetPeak;
-	ucBuf[2] = ucCadDetMin;
-	ucBuf[3] = (uint8_t) eCadExitMode;
-	ucBuf[4] = ( uint8_t )( ( ulCadTimeout >> 16 ) & 0xFF );
-	ucBuf[5] = ( uint8_t )( ( ulCadTimeout >> 8 ) & 0xFF );
-	ucBuf[6] = ( uint8_t )( ulCadTimeout & 0xFF );
-	vSX126xWriteCommand( RADIO_SET_CADPARAMS, ucBuf, 7 );
-	vSX126xSetOperatingMode( MODE_CAD );
 }
 
 xRadioStatus_t eSX126xGetStatus( void )

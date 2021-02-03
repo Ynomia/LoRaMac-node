@@ -1483,21 +1483,6 @@ void vSX126xSetModulationParams( xModulationParams_t *pxModParams );
 void vSX126xSetPacketParams( xPacketParams_t *pxPacketParams );
 
 /*!
- * \brief Sets the Channel Activity Detection (CAD) parameters
- *
- * \param [in]  cadSymbolNum   The number of symbol to use for CAD operations
- *                             [LORA_CAD_01_SYMBOL, LORA_CAD_02_SYMBOL,
- *                              LORA_CAD_04_SYMBOL, LORA_CAD_08_SYMBOL,
- *                              LORA_CAD_16_SYMBOL]
- * \param [in]  cadDetPeak     Limit for detection of SNR peak used in the CAD
- * \param [in]  cadDetMin      Set the minimum symbol recognition for CAD
- * \param [in]  cadExitMode    Operation to be done at the end of CAD action
- *                             [LORA_CAD_ONLY, LORA_CAD_RX, LORA_CAD_LBT]
- * \param [in]  cadTimeout     Defines the timeout value to abort the CAD activity
- */
-void vSX126xSetCadParams( RadioLoRaCadSymbols_t eCadSymbolNum, uint8_t ucCadDetPeak, uint8_t ucCadDetMin, RadioCadExitModes_t eCadExitMode, uint32_t ulCadTimeout );
-
-/*!
  * \brief Gets the current radio status
  *
  * \retval      status        Radio status
