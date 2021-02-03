@@ -508,19 +508,13 @@ static uint8_t RadioGetFskBandwidthRegValue( uint32_t bandwidth )
 void RadioInit( RadioEvents_t *events )
 {
 	RadioEvents = events;
-	// set irq interupts
 	vSX126xInit( RadioOnDioIrq );
-	// 1. if not in standby set in to standby
 	vSX126xSetStandby( STDBY_RC );
-	vTaskDelay( pdMS_TO_TICKS( 30 ) );
-	// 2. Define the initial output power and rampiung up time
-	vSX126xSetTxParams( 0, RADIO_RAMP_200_US );
-	// 3. Define the base addr
+	vSX126xSetRegulatorMode( USE_DCDC );
 	vSX126xSetBufferBaseAddress( 0x00, 0x00 );
-	// 4. configure the DIO and IRQ
+	vSX126xSetTxParams( 0, RADIO_RAMP_200_US );
 	vSX126xSetDioIrqParams( IRQ_RADIO_ALL, IRQ_RADIO_ALL, IRQ_RADIO_NONE, IRQ_RADIO_NONE );
-	// switch Dio2 into high so it uses the correct antenna config for rx and tx
-	vSX126xAntSwOn();
+	vSX126xAntSwOn(); //TODO
 
 	// Initialize driver timeout timers
 	TimerInit( &TxTimeoutTimer, RadioOnTxTimeoutIrq );
