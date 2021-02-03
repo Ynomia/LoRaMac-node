@@ -668,7 +668,7 @@ void RadioSetRxConfig( RadioModems_t modem, uint32_t bandwidth,
 			vSX126xSetModulationParams( &pxSx126xModule->xModulationParams );
 			vSX126xSetPacketParams( &pxSx126xModule->xPacketParams );
 			SX126xSetSyncWord( ( uint8_t[] ){ 0xC1, 0x94, 0xC1, 0x00, 0x00, 0x00, 0x00, 0x00 } );
-			vSX126xSetWhiteningSeed( 0x01FF );
+			SX126xSetWhiteningSeed( 0x01FF );
 
 			RxTimeout = (uint32_t) symbTimeout * 8000UL / datarate;
 			break;
@@ -770,7 +770,7 @@ void RadioSetTxConfig( RadioModems_t modem, int8_t power, uint32_t fdev,
 			vSX126xSetModulationParams( &pxSx126xModule->xModulationParams );
 			vSX126xSetPacketParams( &pxSx126xModule->xPacketParams );
 			SX126xSetSyncWord( ( uint8_t[] ){ 0xC1, 0x94, 0xC1, 0x00, 0x00, 0x00, 0x00, 0x00 } );
-			vSX126xSetWhiteningSeed( 0x01FF );
+			SX126xSetWhiteningSeed( 0x01FF );
 			break;
 
 		case MODEM_LORA:

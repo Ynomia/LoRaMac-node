@@ -207,12 +207,12 @@ void SX126xSetWhiteningSeed( uint16_t seed )
 {
 	uint8_t regValue = 0;
 
-	switch ( SX126xGetPacketType() ) {
+	switch ( eSX126xGetPacketType() ) {
 		case PACKET_TYPE_GFSK:
-			regValue = SX126xReadRegister( REG_LR_WHITSEEDBASEADDR_MSB ) & 0xFE;
+			regValue = ucSX126xReadRegister( REG_LR_WHITSEEDBASEADDR_MSB ) & 0xFE;
 			regValue = ( ( seed >> 8 ) & 0x01 ) | regValue;
-			SX126xWriteRegister( REG_LR_WHITSEEDBASEADDR_MSB, regValue ); // only 1 bit.
-			SX126xWriteRegister( REG_LR_WHITSEEDBASEADDR_LSB, (uint8_t) seed );
+			vSX126xWriteRegister( REG_LR_WHITSEEDBASEADDR_MSB, regValue ); // only 1 bit.
+			vSX126xWriteRegister( REG_LR_WHITSEEDBASEADDR_LSB, (uint8_t) seed );
 			break;
 
 		default:
@@ -879,18 +879,6 @@ void vSX126xSendPayload( uint8_t *pucPayload, uint8_t ucSize, uint32_t ulTimeout
 	vSX126xSetPayload( pucPayload, ucSize );
 
 	vSX126xSetTx( ulTimeout );
-}
-
-void vSX126xSetWhiteningSeed( uint16_t usSeed )
-{
-	uint8_t ucRegValue = 0;
-
-	if ( eSX126xGetPacketType() == PACKET_TYPE_GFSK ) {
-		ucRegValue = ucSX126xReadRegister( REG_LR_WHITSEEDBASEADDR_MSB ) & 0xFE;
-		ucRegValue = ( ( usSeed >> 8 ) & 0x01 ) | ucRegValue;
-		vSX126xWriteRegister( REG_LR_WHITSEEDBASEADDR_MSB, ucRegValue ); // only 1 bit.
-		vSX126xWriteRegister( REG_LR_WHITSEEDBASEADDR_LSB, (uint8_t) usSeed );
-	}
 }
 
 uint32_t ulSX126xGetRandom( void )
