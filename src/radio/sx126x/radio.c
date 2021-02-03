@@ -603,8 +603,7 @@ bool RadioIsChannelFree( RadioModems_t modem, uint32_t freq, int16_t rssiThresh,
 
 uint32_t RadioRandom( void )
 {
-	uint8_t  i;
-	uint32_t ulUnfilteredRssi = 0;
+	uint32_t rnd = 0;
 
 	/*
      * Radio setup for random number generation
@@ -612,14 +611,12 @@ uint32_t RadioRandom( void )
 	// Set LoRa modem ON
 	RadioSetModem( MODEM_LORA );
 
-	for ( i = 0; i < 32; i++ ) {
-		vTaskDelay( pdMS_TO_TICKS( 1 ) );
-		// Unfiltered RSSI value reading. Only takes the LSB value
-		ulUnfilteredRssi |= ( (uint32_t) ulSX126xGetRandom() & 0x01 ) << i;
-	}
+	// Disable LoRa modem interrupts
+	vSX126xSetDioIrqParams( IRQ_RADIO_NONE, IRQ_RADIO_NONE, IRQ_RADIO_NONE, IRQ_RADIO_NONE );
 
-	RadioSleep();
-	return ulUnfilteredRssi;
+	rnd = SX126xGetRandom();
+
+	return rnd;
 }
 
 void RadioSetRxConfig( RadioModems_t modem, uint32_t bandwidth,
