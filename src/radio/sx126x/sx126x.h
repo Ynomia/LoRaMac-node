@@ -1473,14 +1473,6 @@ void vSX126xSetPacketParams( xPacketParams_t *pxPacketParams );
 xRadioStatus_t eSX126xGetStatus( void );
 
 /*!
- * \brief Gets the last received packet buffer status
- *
- * \param [out] payloadLength Last received packet payload length
- * \param [out] rxStartBuffer Last received packet buffer address pointer
- */
-void vSX126xGetRxBufferStatus( uint8_t *pucPayloadLength, uint8_t *pucRxStartBuffer );
-
-/*!
  * \brief Gets the last received packet payload length
  *
  * \param [out] pktStatus     A structure of packet status

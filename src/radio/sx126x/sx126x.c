@@ -683,12 +683,12 @@ void SX126xGetRxBufferStatus( uint8_t *payloadLength, uint8_t *rxStartBufferPoin
 {
 	uint8_t status[2];
 
-	SX126xReadCommand( RADIO_GET_RXBUFFERSTATUS, status, 2 );
+	vSX126xReadCommand( RADIO_GET_RXBUFFERSTATUS, status, 2 );
 
 	// In case of LORA fixed header, the payloadLength is obtained by reading
 	// the register REG_LR_PAYLOADLENGTH
 	if ( ( SX126xGetPacketType() == PACKET_TYPE_LORA ) && ( LoRaHeaderType == LORA_PACKET_FIXED_LENGTH ) ) {
-		*payloadLength = SX126xReadRegister( REG_LR_PAYLOADLENGTH );
+		*payloadLength = ucSX126xReadRegister( REG_LR_PAYLOADLENGTH );
 	}
 	else {
 		*payloadLength = status[0];
@@ -783,7 +783,7 @@ static uint32_t SX126xConvertFreqInHzToPllStep( uint32_t freqInHz )
 typedef struct
 {
 	uint16_t usAddr;  //!< The address of the register
-	uint8_t  ucValue; //!< The value of the register
+	uint8_t	 ucValue; //!< The value of the register
 } xRadioRegisters_t;
 
 /*!
@@ -851,7 +851,7 @@ void vSX126xSetPayload( uint8_t *pucPayload, uint8_t ucSize )
 uint8_t ucSX126xGetPayload( uint8_t *pucPuffer, uint8_t *pucSize, uint8_t uxMaxSize )
 {
 	uint8_t ucOffset = 0;
-	vSX126xGetRxBufferStatus( pucSize, &ucOffset );
+	SX126xGetRxBufferStatus( pucSize, &ucOffset );
 	if ( *pucSize > uxMaxSize ) {
 		return 1;
 	}
@@ -885,7 +885,7 @@ void vSX126xSetDio3AsTcxoCtrl( RadioTcxoCtrlVoltage_t eTcxoVoltage, uint32_t ulT
 
 void vSX126xSetRfFrequency( uint32_t ulFrequency )
 {
-	uint8_t  ucBuf[4];
+	uint8_t	 ucBuf[4];
 	uint32_t ulFreq = 0;
 
 	if ( bImageCalibrated == false ) {
@@ -893,7 +893,7 @@ void vSX126xSetRfFrequency( uint32_t ulFrequency )
 		bImageCalibrated = true;
 	}
 
-	ulFreq   = ( uint32_t )( (double) ulFrequency / (double) FREQ_STEP );
+	ulFreq	 = ( uint32_t )( (double) ulFrequency / (double) FREQ_STEP );
 	ucBuf[0] = ( uint8_t )( ( ulFreq >> 24 ) & 0xFF );
 	ucBuf[1] = ( uint8_t )( ( ulFreq >> 16 ) & 0xFF );
 	ucBuf[2] = ( uint8_t )( ( ulFreq >> 8 ) & 0xFF );
@@ -939,7 +939,7 @@ void vSX126xSetTxParams( int8_t cPower, RadioRampTimes_t eRampTime )
 void vSX126xSetModulationParams( xModulationParams_t *pxModulationParams )
 {
 	uint32_t ulTempVal = 0;
-	uint8_t  ucBuf[8]  = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+	uint8_t	 ucBuf[8]  = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
 	// Check if required configuration corresponds to the stored packet type
 	// If not, silently update radio packet type
@@ -1038,22 +1038,6 @@ xRadioStatus_t eSX126xGetStatus( void )
 	return eStatus;
 }
 
-void vSX126xGetRxBufferStatus( uint8_t *pucPayloadLength, uint8_t *pucRxStartucBufferPointer )
-{
-	uint8_t ucStatus[2];
-
-	vSX126xReadCommand( RADIO_GET_RXBUFFERSTATUS, ucStatus, 2 );
-	// In case of LORA fixed header, the payloadLength is obtained by reading
-	// the register REG_LR_PAYLOADLENGTH
-	if ( ( SX126xGetPacketType() == PACKET_TYPE_LORA ) && ( ucSX126xReadRegister( REG_LR_PACKETPARAMS ) >> 7 == 1 ) ) {
-		*pucPayloadLength = ucSX126xReadRegister( REG_LR_PAYLOADLENGTH );
-	}
-	else {
-		*pucPayloadLength = ucStatus[0];
-	}
-	*pucRxStartucBufferPointer = ucStatus[1];
-}
-
 void vSX126xGetPacketStatus( xPacketStatus_t *pxPktStatus )
 {
 	uint8_t ucStatus[3];
@@ -1065,7 +1049,7 @@ void vSX126xGetPacketStatus( xPacketStatus_t *pxPktStatus )
 		case PACKET_TYPE_GFSK:
 			pxPktStatus->xParams.xGfsk.ucRxStatus  = ucStatus[0];
 			pxPktStatus->xParams.xGfsk.cRssiSync   = -ucStatus[1] >> 1;
-			pxPktStatus->xParams.xGfsk.cRssiAvg	= -ucStatus[2] >> 1;
+			pxPktStatus->xParams.xGfsk.cRssiAvg	   = -ucStatus[2] >> 1;
 			pxPktStatus->xParams.xGfsk.ulFreqError = 0;
 			break;
 
@@ -1074,7 +1058,7 @@ void vSX126xGetPacketStatus( xPacketStatus_t *pxPktStatus )
 			// Returns SNR value [dB] rounded to the nearest integer value
 			pxPktStatus->xParams.xLoRa.cSnrPkt		  = ( ( (int8_t) ucStatus[1] ) + 2 ) >> 2;
 			pxPktStatus->xParams.xLoRa.cSignalRssiPkt = -ucStatus[2] >> 1;
-			pxPktStatus->xParams.xLoRa.ulFreqError	= ulFrequencyError;
+			pxPktStatus->xParams.xLoRa.ulFreqError	  = ulFrequencyError;
 			break;
 
 		default:
