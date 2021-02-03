@@ -454,7 +454,7 @@ uint16_t SX126xGetIrqStatus( void )
 
 void SX126xSetDio2AsRfSwitchCtrl( uint8_t enable )
 {
-	SX126xWriteCommand( RADIO_SET_RFSWITCHMODE, &enable, 1 );
+	vSX126xWriteCommand( RADIO_SET_RFSWITCHMODE, &enable, 1 );
 }
 
 void SX126xSetDio3AsTcxoCtrl( RadioTcxoCtrlVoltage_t tcxoVoltage, uint32_t timeout )
@@ -466,7 +466,7 @@ void SX126xSetDio3AsTcxoCtrl( RadioTcxoCtrlVoltage_t tcxoVoltage, uint32_t timeo
 	buf[2] = ( uint8_t )( ( timeout >> 8 ) & 0xFF );
 	buf[3] = ( uint8_t )( timeout & 0xFF );
 
-	SX126xWriteCommand( RADIO_SET_TCXOMODE, buf, 4 );
+	vSX126xWriteCommand( RADIO_SET_TCXOMODE, buf, 4 );
 }
 
 void SX126xSetRfFrequency( uint32_t frequency )
@@ -841,23 +841,6 @@ void vSX126xCheckDeviceReady( void )
 		// this is commented out as if the wakeup is not respected and you switch io2 it crashes the device
 	}
 	vSX126xWaitOnBusy();
-}
-
-void vSX126xSetDio2AsRfSwitchCtrl( uint8_t ucEnable )
-{
-	vSX126xWriteCommand( RADIO_SET_RFSWITCHMODE, &ucEnable, 1 );
-}
-
-void vSX126xSetDio3AsTcxoCtrl( RadioTcxoCtrlVoltage_t eTcxoVoltage, uint32_t ulTimeout )
-{
-	uint8_t ucBuf[4];
-
-	ucBuf[0] = eTcxoVoltage & 0x07;
-	ucBuf[1] = ( uint8_t )( ( ulTimeout >> 16 ) & 0xFF );
-	ucBuf[2] = ( uint8_t )( ( ulTimeout >> 8 ) & 0xFF );
-	ucBuf[3] = ( uint8_t )( ulTimeout & 0xFF );
-
-	vSX126xWriteCommand( RADIO_SET_TCXOMODE, ucBuf, 4 );
 }
 
 void vSX126xSetRfFrequency( uint32_t ulFrequency )

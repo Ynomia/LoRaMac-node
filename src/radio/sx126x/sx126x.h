@@ -1377,21 +1377,6 @@ void vSX126xWriteBuffer( uint8_t ucOffset, uint8_t *pucBuffer, uint8_t ucSize );
 void vSX126xReadBuffer( uint8_t ucOffset, uint8_t *pucBuffer, uint8_t ucSize );
 
 /*!
- * \brief Indicates if DIO2 is used to control an RF Switch
- *
- * \param [in] enable     true of false
- */
-void vSX126xSetDio2AsRfSwitchCtrl( uint8_t ucEnable );
-
-/*!
- * \brief Indicates if the Radio main clock is supplied from a tcxo
- *
- * \param [in] tcxoVoltage     voltage used to control the TCXO
- * \param [in] timeout         time given to the TCXO to go to 32MHz
- */
-void vSX126xSetDio3AsTcxoCtrl( RadioTcxoCtrlVoltage_t etcxoVoltage, uint32_t ulTimeout );
-
-/*!
  * \brief Sets the RF frequency
  *
  * \param [in]  frequency     RF frequency [Hz]
