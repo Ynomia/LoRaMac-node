@@ -1162,11 +1162,4 @@ typedef void( DioIrqHandler )( void *context );
  */
 void vSX126xInit( DioIrqHandler fnDioIrq );
 
-/*!
- * \brief Gets the current radio status
- *
- * \retval      status        Radio status
- */
-xRadioStatus_t eSX126xGetStatus( void );
-
 #endif // __SX126x_H__

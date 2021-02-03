@@ -125,7 +125,7 @@ void SX126xInit( DioIrqHandler dioIrq )
 	SX126xIoTcxoInit();
 
 	// Initialize RF switch control
-	// SX126xIoRfSwitchInit();
+	SX126xSetDio2AsRfSwitchCtrl( true );
 
 	SX126xSetOperatingMode( MODE_STDBY_RC );
 }
@@ -663,7 +663,7 @@ RadioStatus_t SX126xGetStatus( void )
 	uint8_t		  stat	 = 0;
 	RadioStatus_t status = { .Value = 0 };
 
-	stat					= SX126xReadCommand( RADIO_GET_STATUS, NULL, 0 );
+	vSX126xReadCommand( RADIO_GET_STATUS, (uint8_t *) &stat, 1 );
 	status.Fields.CmdStatus = ( stat & ( 0x07 << 1 ) ) >> 1;
 	status.Fields.ChipMode	= ( stat & ( 0x07 << 4 ) ) >> 4;
 	return status;
@@ -777,67 +777,10 @@ static uint32_t SX126xConvertFreqInHzToPllStep( uint32_t freqInHz )
 			 SX126X_PLL_STEP_SCALED );
 }
 
-/*!
- * \brief Radio registers definition
- */
-typedef struct
-{
-	uint16_t usAddr;  //!< The address of the register
-	uint8_t	 ucValue; //!< The value of the register
-} xRadioRegisters_t;
-
-/*!
- * \brief Stores the current packet type set in the radio
- */
-static RadioPacketTypes_t ePacketType;
-
-/*!
- * \brief Stores the last frequency error measured on LoRa received packet
- */
-volatile uint32_t ulFrequencyError = 0;
-
-/*!
- * \brief Hold the status of the Image calibration
- */
-static bool bImageCalibrated = false;
-
-/*
- * SX126x DIO IRQ callback functions prototype
- */
-
-/*!
- * \brief DIO 0 IRQ callback
- */
-void vSX126xOnDioIrq( void );
-
-/*!
- * \brief DIO 0 IRQ callback
- */
-void vSX126xSetPollingMode( void );
-
-/*!
- * \brief DIO 0 IRQ callback
- */
-void vSX126xSetInterruptMode( void );
-
-/*
- * \brief Process the IRQ if handled by the driver
- */
-void vSX126xProcessIrqs( void );
-
 /*
 * \If you need the TCXO add a setup to it here. It is not currently being used by our platform.
 */
 void vSX126xInit( DioIrqHandler fnDioIrq )
 {
 	vSX126xIoIrqInit( fnDioIrq );
-}
-
-xRadioStatus_t eSX126xGetStatus( void )
-{
-	uint8_t		   ucStat = 0;
-	xRadioStatus_t eStatus;
-	vSX126xReadCommand( RADIO_GET_STATUS, (uint8_t *) &ucStat, 1 );
-	eStatus.ucValue = ucStat;
-	return eStatus;
 }
