@@ -277,12 +277,12 @@ void SX126xSetTx( uint32_t timeout )
 {
 	uint8_t buf[3];
 
-	SX126xSetOperatingMode( MODE_TX );
+	vSX126xSetOperatingMode( MODE_TX );
 
 	buf[0] = ( uint8_t )( ( timeout >> 16 ) & 0xFF );
 	buf[1] = ( uint8_t )( ( timeout >> 8 ) & 0xFF );
 	buf[2] = ( uint8_t )( timeout & 0xFF );
-	SX126xWriteCommand( RADIO_SET_TX, buf, 3 );
+	vSX126xWriteCommand( RADIO_SET_TX, buf, 3 );
 }
 
 void SX126xSetRx( uint32_t timeout )
@@ -878,19 +878,7 @@ void vSX126xSendPayload( uint8_t *pucPayload, uint8_t ucSize, uint32_t ulTimeout
 {
 	vSX126xSetPayload( pucPayload, ucSize );
 
-	vSX126xSetTx( ulTimeout );
-}
-
-void vSX126xSetTx( uint32_t ulTimeout )
-{
-	uint8_t ucBuf[3];
-
-	vSX126xSetOperatingMode( MODE_TX );
-
-	ucBuf[0] = ( uint8_t )( ( ulTimeout >> 16 ) & 0xFF );
-	ucBuf[1] = ( uint8_t )( ( ulTimeout >> 8 ) & 0xFF );
-	ucBuf[2] = ( uint8_t )( ulTimeout & 0xFF );
-	vSX126xWriteCommand( RADIO_SET_TX, ucBuf, 3 );
+	SX126xSetTx( ulTimeout );
 }
 
 void vSX126xSetRxBoosted( uint32_t ulTimeout )

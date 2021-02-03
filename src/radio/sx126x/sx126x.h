@@ -1389,13 +1389,6 @@ uint8_t ucSX126xGetPayload( uint8_t *pucPayload, uint8_t *pucSize, uint8_t ucMax
 void vSX126xSendPayload( uint8_t *pucPayload, uint8_t ucSize, uint32_t ulTimeout );
 
 /*!
- * \brief Sets the radio in transmission mode
- *
- * \param [in]  timeout       Structure describing the transmission timeout value
- */
-void vSX126xSetTx( uint32_t ulTimeout );
-
-/*!
  * \brief Sets the radio in reception mode with Boosted LNA gain
  *
  * \param [in]  timeout       Structure describing the reception timeout value
