@@ -1498,14 +1498,6 @@ void vSX126xSetPacketParams( xPacketParams_t *pxPacketParams );
 void vSX126xSetCadParams( RadioLoRaCadSymbols_t eCadSymbolNum, uint8_t ucCadDetPeak, uint8_t ucCadDetMin, RadioCadExitModes_t eCadExitMode, uint32_t ulCadTimeout );
 
 /*!
- * \brief Sets the data buffer base address for transmission and reception
- *
- * \param [in]  txBaseAddress Transmission base address
- * \param [in]  rxBaseAddress Reception base address
- */
-void vSX126xSetBufferBaseAddress( uint8_t ucTxBaseAddress, uint8_t ucRxBaseAddress );
-
-/*!
  * \brief Gets the current radio status
  *
  * \retval      status        Radio status

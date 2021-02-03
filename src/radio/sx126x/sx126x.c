@@ -655,7 +655,7 @@ void SX126xSetBufferBaseAddress( uint8_t txBaseAddress, uint8_t rxBaseAddress )
 
 	buf[0] = txBaseAddress;
 	buf[1] = rxBaseAddress;
-	SX126xWriteCommand( RADIO_SET_BUFFERBASEADDRESS, buf, 2 );
+	vSX126xWriteCommand( RADIO_SET_BUFFERBASEADDRESS, buf, 2 );
 }
 
 RadioStatus_t SX126xGetStatus( void )
@@ -1057,15 +1057,6 @@ void vSX126xSetCadParams( RadioLoRaCadSymbols_t eCadSymbolNum, uint8_t ucCadDetP
 	ucBuf[6] = ( uint8_t )( ulCadTimeout & 0xFF );
 	vSX126xWriteCommand( RADIO_SET_CADPARAMS, ucBuf, 7 );
 	vSX126xSetOperatingMode( MODE_CAD );
-}
-
-void vSX126xSetBufferBaseAddress( uint8_t ucTxBaseAddress, uint8_t ucRxBaseAddress )
-{
-	uint8_t ucBuf[2];
-
-	ucBuf[0] = ucTxBaseAddress;
-	ucBuf[1] = ucRxBaseAddress;
-	vSX126xWriteCommand( RADIO_SET_BUFFERBASEADDRESS, ucBuf, 2 );
 }
 
 xRadioStatus_t eSX126xGetStatus( void )
