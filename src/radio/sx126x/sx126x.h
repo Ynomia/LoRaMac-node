@@ -909,13 +909,6 @@ void SX126xCalibrate( CalibrationParams_t calibParam );
 void SX126xCalibrateImage( uint32_t freq );
 
 /*!
- * \brief Activate the extention of the timeout when long preamble is used
- *
- * \param [in]  enable      The radio will extend the timeout to cope with long preamble
- */
-void SX126xSetLongPreamble( uint8_t enable );
-
-/*!
  * \brief Sets the transmission parameters
  *
  * \param [in]  paDutyCycle     Duty Cycle for the PA
@@ -1343,20 +1336,6 @@ void vSX126xInit( DioIrqHandler fnDioIrq );
  * \brief Wakeup the radio if it is in Sleep mode and check that Busy is low
  */
 void vSX126xCheckDeviceReady( void );
-
-/*!
- * \brief Calibrates the given radio block
- *
- * \param [in]  calibParam    The description of blocks to be calibrated
- */
-void vSX126xCalibrate( xCalibrationParams_t xCalibParam );
-
-/*!
- * \brief Activate the extention of the timeout when long preamble is used
- *
- * \param [in]  enable      The radio will extend the timeout to cope with long preamble
- */
-void vSX126xSetLongPreamble( uint8_t ucEnable );
 
 /*!
  * \brief Sets the RF frequency
