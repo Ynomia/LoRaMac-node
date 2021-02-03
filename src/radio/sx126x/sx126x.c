@@ -142,7 +142,7 @@ void SX126xCheckDeviceReady( void )
 
 void SX126xSetPayload( uint8_t *payload, uint8_t size )
 {
-	SX126xWriteBuffer( 0x00, payload, size );
+	vSX126xWriteBuffer( 0x00, payload, size );
 }
 
 uint8_t SX126xGetPayload( uint8_t *buffer, uint8_t *size, uint8_t maxSize )
@@ -843,14 +843,9 @@ void vSX126xCheckDeviceReady( void )
 	vSX126xWaitOnBusy();
 }
 
-void vSX126xSetPayload( uint8_t *pucPayload, uint8_t ucSize )
-{
-	vSX126xWriteBuffer( 0x00, pucPayload, ucSize );
-}
-
 void vSX126xSendPayload( uint8_t *pucPayload, uint8_t ucSize, uint32_t ulTimeout )
 {
-	vSX126xSetPayload( pucPayload, ucSize );
+	SX126xSetPayload( pucPayload, ucSize );
 
 	SX126xSetTx( ulTimeout );
 }

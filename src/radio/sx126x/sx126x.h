@@ -1345,14 +1345,6 @@ void vSX126xInit( DioIrqHandler fnDioIrq );
 void vSX126xCheckDeviceReady( void );
 
 /*!
- * \brief Saves the payload to be send in the radio buffer
- *
- * \param [in]  payload       A pointer to the payload
- * \param [in]  size          The size of the payload
- */
-void vSX126xSetPayload( uint8_t *ucPayload, uint8_t ucSize );
-
-/*!
  * \brief Sends a payload
  *
  * \param [in]  payload       A pointer to the payload to send
