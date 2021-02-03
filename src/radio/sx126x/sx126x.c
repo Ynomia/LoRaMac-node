@@ -674,7 +674,7 @@ int8_t SX126xGetRssiInst( void )
 	uint8_t buf[1];
 	int8_t	rssi = 0;
 
-	SX126xReadCommand( RADIO_GET_RSSIINST, buf, 1 );
+	vSX126xReadCommand( RADIO_GET_RSSIINST, buf, 1 );
 	rssi = -buf[0] >> 1;
 	return rssi;
 }
@@ -1075,16 +1075,6 @@ xRadioStatus_t eSX126xGetStatus( void )
 	vSX126xReadCommand( RADIO_GET_STATUS, (uint8_t *) &ucStat, 1 );
 	eStatus.ucValue = ucStat;
 	return eStatus;
-}
-
-int8_t cSX126xGetRssiInst( void )
-{
-	uint8_t ucBuf[1];
-	int8_t  cRssi = 0;
-
-	vSX126xReadCommand( RADIO_GET_RSSIINST, ucBuf, 1 );
-	cRssi = -ucBuf[0] >> 1;
-	return cRssi;
 }
 
 void vSX126xGetRxBufferStatus( uint8_t *pucPayloadLength, uint8_t *pucRxStartucBufferPointer )

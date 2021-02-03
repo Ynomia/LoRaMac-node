@@ -1513,13 +1513,6 @@ void vSX126xSetBufferBaseAddress( uint8_t ucTxBaseAddress, uint8_t ucRxBaseAddre
 xRadioStatus_t eSX126xGetStatus( void );
 
 /*!
- * \brief Returns the instantaneous RSSI value for the last packet received
- *
- * \retval      rssiInst      Instantaneous RSSI
- */
-int8_t cSX126xGetRssiInst( void );
-
-/*!
  * \brief Gets the last received packet buffer status
  *
  * \param [out] payloadLength Last received packet payload length

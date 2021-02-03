@@ -1088,7 +1088,7 @@ void RadioSetTxContinuousWave( uint32_t freq, int8_t power, uint16_t time )
 int16_t RadioRssi( RadioModems_t modem )
 {
 	UNUSED( modem );
-	return cSX126xGetRssiInst();
+	return SX126xGetRssiInst();
 }
 
 void RadioWrite( uint32_t addr, uint8_t data )
