@@ -1403,13 +1403,6 @@ void vSX126xCalibrate( xCalibrationParams_t xCalibParam );
 void vSX126xSetLongPreamble( uint8_t ucEnable );
 
 /*!
- * \brief Defines into which mode the chip goes after a TX / RX done
- *
- * \param [in]  fallbackMode    The mode in which the radio goes
- */
-void vSX126xSetRxTxFallbackMode( uint8_t ucFallbackMode );
-
-/*!
  * \brief Write data to the radio memory
  *
  * \param [in]  address       The address of the first byte to write in the radio
@@ -1444,16 +1437,6 @@ void vSX126xWriteBuffer( uint8_t ucOffset, uint8_t *pucBuffer, uint8_t ucSize );
  * \param [in]  size          The number of byte to be read
  */
 void vSX126xReadBuffer( uint8_t ucOffset, uint8_t *pucBuffer, uint8_t ucSize );
-
-/*!
- * \brief   Sets the IRQ mask and DIO masks
- *
- * \param [in]  irqMask       General IRQ mask
- * \param [in]  dio1Mask      DIO1 mask
- * \param [in]  dio2Mask      DIO2 mask
- * \param [in]  dio3Mask      DIO3 mask
- */
-void vSX126xSetDioIrqParams( uint16_t usIrqMask, uint16_t usDio1Mask, uint16_t usDio2Mask, uint16_t usDio3Mask );
 
 /*!
  * \brief Returns the current IRQ status

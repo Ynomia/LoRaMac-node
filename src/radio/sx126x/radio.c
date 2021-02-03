@@ -515,7 +515,7 @@ void RadioInit( RadioEvents_t *events )
 	SX126xSetRegulatorMode( USE_DCDC );
 	vSX126xSetBufferBaseAddress( 0x00, 0x00 );
 	vSX126xSetTxParams( 0, RADIO_RAMP_200_US );
-	vSX126xSetDioIrqParams( IRQ_RADIO_ALL, IRQ_RADIO_ALL, IRQ_RADIO_NONE, IRQ_RADIO_NONE );
+	SX126xSetDioIrqParams( IRQ_RADIO_ALL, IRQ_RADIO_ALL, IRQ_RADIO_NONE, IRQ_RADIO_NONE );
 	vSX126xAntSwOn(); //TODO
 
 	// Initialize driver timeout timers
@@ -610,7 +610,7 @@ uint32_t RadioRandom( void )
 	RadioSetModem( MODEM_LORA );
 
 	// Disable LoRa modem interrupts
-	vSX126xSetDioIrqParams( IRQ_RADIO_NONE, IRQ_RADIO_NONE, IRQ_RADIO_NONE, IRQ_RADIO_NONE );
+	SX126xSetDioIrqParams( IRQ_RADIO_NONE, IRQ_RADIO_NONE, IRQ_RADIO_NONE, IRQ_RADIO_NONE );
 
 	rnd = SX126xGetRandom();
 
@@ -978,7 +978,7 @@ uint32_t RadioTimeOnAir( RadioModems_t modem, uint32_t bandwidth,
 
 void RadioSend( uint8_t *buffer, uint8_t size )
 {
-	vSX126xSetDioIrqParams( IRQ_TX_DONE | IRQ_RX_TX_TIMEOUT,
+	SX126xSetDioIrqParams( IRQ_TX_DONE | IRQ_RX_TX_TIMEOUT,
 						   IRQ_TX_DONE | IRQ_RX_TX_TIMEOUT,
 						   IRQ_RADIO_NONE,
 						   IRQ_RADIO_NONE );
@@ -1015,7 +1015,7 @@ void RadioStandby( void )
 void LorawanRadioRx( uint32_t timeout )
 {
 	UNUSED( timeout );
-	vSX126xSetDioIrqParams( IRQ_RADIO_ALL, //IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT,
+	SX126xSetDioIrqParams( IRQ_RADIO_ALL, //IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT,
 							IRQ_RADIO_ALL, //IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT,
 							IRQ_RADIO_NONE,
 							IRQ_RADIO_NONE );
@@ -1025,7 +1025,7 @@ void LorawanRadioRx( uint32_t timeout )
 
 void RadioRx( uint32_t timeout )
 {
-	vSX126xSetDioIrqParams( IRQ_RADIO_ALL, //IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT,
+	SX126xSetDioIrqParams( IRQ_RADIO_ALL, //IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT,
 							IRQ_RADIO_ALL, //IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT,
 							IRQ_RADIO_NONE,
 							IRQ_RADIO_NONE );
@@ -1045,7 +1045,7 @@ void RadioRx( uint32_t timeout )
 
 void RadioRxBoosted( uint32_t timeout )
 {
-	vSX126xSetDioIrqParams( IRQ_RADIO_ALL, //IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT,
+	SX126xSetDioIrqParams( IRQ_RADIO_ALL, //IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT,
 							IRQ_RADIO_ALL, //IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT,
 							IRQ_RADIO_NONE,
 							IRQ_RADIO_NONE );
@@ -1070,7 +1070,7 @@ void RadioSetRxDutyCycle( uint32_t rxTime, uint32_t sleepTime )
 
 void RadioStartCad( void )
 {
-	vSX126xSetDioIrqParams( IRQ_CAD_DONE | IRQ_CAD_ACTIVITY_DETECTED, IRQ_CAD_DONE | IRQ_CAD_ACTIVITY_DETECTED, IRQ_RADIO_NONE, IRQ_RADIO_NONE );
+	SX126xSetDioIrqParams( IRQ_CAD_DONE | IRQ_CAD_ACTIVITY_DETECTED, IRQ_CAD_DONE | IRQ_CAD_ACTIVITY_DETECTED, IRQ_RADIO_NONE, IRQ_RADIO_NONE );
 	SX126xSetCad();
 }
 

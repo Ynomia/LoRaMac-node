@@ -426,7 +426,7 @@ void SX126xSetPaConfig( uint8_t paDutyCycle, uint8_t hpMax, uint8_t deviceSel, u
 
 void SX126xSetRxTxFallbackMode( uint8_t fallbackMode )
 {
-	SX126xWriteCommand( RADIO_SET_TXFALLBACKMODE, &fallbackMode, 1 );
+	vSX126xWriteCommand( RADIO_SET_TXFALLBACKMODE, &fallbackMode, 1 );
 }
 
 void SX126xSetDioIrqParams( uint16_t irqMask, uint16_t dio1Mask, uint16_t dio2Mask, uint16_t dio3Mask )
@@ -441,7 +441,7 @@ void SX126xSetDioIrqParams( uint16_t irqMask, uint16_t dio1Mask, uint16_t dio2Ma
 	buf[5] = ( uint8_t )( dio2Mask & 0x00FF );
 	buf[6] = ( uint8_t )( ( dio3Mask >> 8 ) & 0x00FF );
 	buf[7] = ( uint8_t )( dio3Mask & 0x00FF );
-	SX126xWriteCommand( RADIO_CFG_DIOIRQ, buf, 8 );
+	vSX126xWriteCommand( RADIO_CFG_DIOIRQ, buf, 8 );
 }
 
 uint16_t SX126xGetIrqStatus( void )
@@ -879,26 +879,6 @@ void vSX126xSendPayload( uint8_t *pucPayload, uint8_t ucSize, uint32_t ulTimeout
 	vSX126xSetPayload( pucPayload, ucSize );
 
 	SX126xSetTx( ulTimeout );
-}
-
-void vSX126xSetRxTxFallbackMode( uint8_t ucFallbackMode )
-{
-	vSX126xWriteCommand( RADIO_SET_TXFALLBACKMODE, &ucFallbackMode, 1 );
-}
-
-void vSX126xSetDioIrqParams( uint16_t usIrqMask, uint16_t usDio1Mask, uint16_t usDio2Mask, uint16_t usDio3Mask )
-{
-	uint8_t ucBuf[8];
-
-	ucBuf[0] = ( uint8_t )( ( usIrqMask >> 8 ) & 0x00FF );
-	ucBuf[1] = ( uint8_t )( usIrqMask & 0x00FF );
-	ucBuf[2] = ( uint8_t )( ( usDio1Mask >> 8 ) & 0x00FF );
-	ucBuf[3] = ( uint8_t )( usDio1Mask & 0x00FF );
-	ucBuf[4] = ( uint8_t )( ( usDio2Mask >> 8 ) & 0x00FF );
-	ucBuf[5] = ( uint8_t )( usDio2Mask & 0x00FF );
-	ucBuf[6] = ( uint8_t )( ( usDio3Mask >> 8 ) & 0x00FF );
-	ucBuf[7] = ( uint8_t )( usDio3Mask & 0x00FF );
-	vSX126xWriteCommand( RADIO_CFG_DIOIRQ, ucBuf, 8 );
 }
 
 uint16_t usSX126xGetIrqStatus( void )
