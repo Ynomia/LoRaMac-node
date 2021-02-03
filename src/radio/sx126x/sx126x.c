@@ -333,8 +333,8 @@ void SX126xSetCad( void )
 
 void SX126xSetTxContinuousWave( void )
 {
-	SX126xWriteCommand( RADIO_SET_TXCONTINUOUSWAVE, 0, 0 );
-	SX126xSetOperatingMode( MODE_TX );
+	vSX126xWriteCommand( RADIO_SET_TXCONTINUOUSWAVE, 0, 0 );
+	vSX126xSetOperatingMode( MODE_TX );
 }
 
 void SX126xSetTxInfinitePreamble( void )
@@ -879,11 +879,6 @@ void vSX126xSendPayload( uint8_t *pucPayload, uint8_t ucSize, uint32_t ulTimeout
 	vSX126xSetPayload( pucPayload, ucSize );
 
 	SX126xSetTx( ulTimeout );
-}
-
-void vSX126xSetTxContinuousWave( void )
-{
-	vSX126xWriteCommand( RADIO_SET_TXCONTINUOUSWAVE, 0, 0 );
 }
 
 void vSX126xSetTxInfinitePreamble( void )

@@ -1080,7 +1080,7 @@ void RadioSetTxContinuousWave( uint32_t freq, int8_t power, uint16_t time )
 
 	vSX126xSetRfFrequency( freq );
 	vSX126xSetRfTxPower( power );
-	vSX126xSetTxContinuousWave();
+	SX126xSetTxContinuousWave();
 	TimerSetValue( &TxTimeoutTimer, timeout );
 	TimerStart( &TxTimeoutTimer );
 }
