@@ -700,7 +700,7 @@ void SX126xGetPacketStatus( PacketStatus_t *pktStatus )
 {
 	uint8_t status[3];
 
-	SX126xReadCommand( RADIO_GET_PACKETSTATUS, status, 3 );
+	vSX126xReadCommand( RADIO_GET_PACKETSTATUS, status, 3 );
 
 	pktStatus->packetType = SX126xGetPacketType();
 	switch ( pktStatus->packetType ) {
@@ -840,37 +840,4 @@ xRadioStatus_t eSX126xGetStatus( void )
 	vSX126xReadCommand( RADIO_GET_STATUS, (uint8_t *) &ucStat, 1 );
 	eStatus.ucValue = ucStat;
 	return eStatus;
-}
-
-void vSX126xGetPacketStatus( xPacketStatus_t *pxPktStatus )
-{
-	uint8_t ucStatus[3];
-
-	vSX126xReadCommand( RADIO_GET_PACKETSTATUS, ucStatus, 3 );
-
-	pxPktStatus->ePacketType = SX126xGetPacketType();
-	switch ( pxPktStatus->ePacketType ) {
-		case PACKET_TYPE_GFSK:
-			pxPktStatus->xParams.xGfsk.ucRxStatus  = ucStatus[0];
-			pxPktStatus->xParams.xGfsk.cRssiSync   = -ucStatus[1] >> 1;
-			pxPktStatus->xParams.xGfsk.cRssiAvg	   = -ucStatus[2] >> 1;
-			pxPktStatus->xParams.xGfsk.ulFreqError = 0;
-			break;
-
-		case PACKET_TYPE_LORA:
-			pxPktStatus->xParams.xLoRa.cRssiPkt = -ucStatus[0] >> 1;
-			// Returns SNR value [dB] rounded to the nearest integer value
-			pxPktStatus->xParams.xLoRa.cSnrPkt		  = ( ( (int8_t) ucStatus[1] ) + 2 ) >> 2;
-			pxPktStatus->xParams.xLoRa.cSignalRssiPkt = -ucStatus[2] >> 1;
-			pxPktStatus->xParams.xLoRa.ulFreqError	  = ulFrequencyError;
-			break;
-
-		default:
-		case PACKET_TYPE_NONE:
-			// In that specific case, we set everything in the pxPktStatus to zeros
-			// and reset the packet type accordingly
-			memset( pxPktStatus, 0, sizeof( xPacketStatus_t ) );
-			pxPktStatus->ePacketType = PACKET_TYPE_NONE;
-			break;
-	}
 }

@@ -1130,67 +1130,6 @@ typedef union xRadioStatus_u
 } xRadioStatus_t;
 
 /*!
- * \brief The type describing the packet parameters for every packet types
- */
-typedef struct
-{
-	RadioPacketTypes_t ePacketType; //!< Packet to which the packet parameters are referring to.
-	struct
-	{
-		/*!
-         * \brief Holds the GFSK packet parameters
-         */
-		struct
-		{
-			uint16_t				 usPreambleLength;	 //!< The preamble Tx length for GFSK packet type in bit
-			RadioPreambleDetection_t ePreambleMinDetect; //!< The preamble Rx length minimal for GFSK packet type
-			uint8_t					 ucSyncWordLength;	 //!< The synchronization word length for GFSK packet type
-			RadioAddressComp_t		 eAddrComp;			 //!< Activated SyncWord correlators
-			RadioPacketLengthModes_t eHeaderType;		 //!< If the header is explicit, it will be transmitted in the GFSK packet. If the header is implicit, it will not be transmitted
-			uint8_t					 ucPayloadLength;	 //!< Size of the payload in the GFSK packet
-			RadioCrcTypes_t			 eCrcLength;		 //!< Size of the CRC block in the GFSK packet
-			RadioDcFree_t			 eDcFree;
-		} xGfsk;
-		/*!
-         * \brief Holds the LoRa packet parameters
-         */
-		struct
-		{
-			uint16_t					 usPreambleLength; //!< The preamble length is the number of LoRa symbols in the preamble
-			RadioLoRaPacketLengthsMode_t eHeaderType;	   //!< If the header is explicit, it will be transmitted in the LoRa packet. If the header is implicit, it will not be transmitted
-			uint8_t						 ucPayloadLength;  //!< Size of the payload in the LoRa packet
-			RadioLoRaCrcModes_t			 eCrcMode;		   //!< Size of CRC block in LoRa packet
-			RadioLoRaIQModes_t			 eInvertIQ;		   //!< Allows to swap IQ for LoRa packet
-		} xLoRa;
-	} xParams; //!< Holds the packet parameters structure
-} xPacketParams_t;
-
-/*!
- * \brief Represents the packet status for every packet type
- */
-typedef struct
-{
-	RadioPacketTypes_t ePacketType; //!< Packet to which the packet status are referring to.
-	struct
-	{
-		struct
-		{
-			uint8_t	 ucRxStatus;
-			int8_t	 cRssiAvg;	//!< The averaged RSSI
-			int8_t	 cRssiSync; //!< The RSSI measured on last packet
-			uint32_t ulFreqError;
-		} xGfsk;
-		struct
-		{
-			int8_t	 cRssiPkt; //!< The RSSI of the last packet
-			int8_t	 cSnrPkt;  //!< The SNR of the last packet
-			int8_t	 cSignalRssiPkt;
-			uint32_t ulFreqError;
-		} xLoRa;
-	} xParams;
-} xPacketStatus_t;
-
-/*!
  * Radio hardware and global parameters
  */
 typedef struct xSX126x_s
@@ -1203,7 +1142,7 @@ typedef struct xSX126x_s
 	xGpio_t				xChipSelect;
 	xSpiModule_t *		pxSpi;
 	PacketParams_t		PacketParams;
-	xPacketStatus_t		xPacketStatus;
+	PacketStatus_t		PacketStatus;
 	ModulationParams_t  ModulationParams;
 } xSX126x_t;
 
@@ -1229,12 +1168,5 @@ void vSX126xInit( DioIrqHandler fnDioIrq );
  * \retval      status        Radio status
  */
 xRadioStatus_t eSX126xGetStatus( void );
-
-/*!
- * \brief Gets the last received packet payload length
- *
- * \param [out] pktStatus     A structure of packet status
- */
-void vSX126xGetPacketStatus( xPacketStatus_t *pxPktStatus );
 
 #endif // __SX126x_H__

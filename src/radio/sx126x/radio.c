@@ -423,8 +423,8 @@ uint32_t RxTimeout = 0;
 
 bool RxContinuous = false;
 
-xPacketStatus_t RadioPktStatus;
-uint8_t			RadioRxPayload[255];
+PacketStatus_t RadioPktStatus;
+uint8_t		   RadioRxPayload[255];
 
 /*
  * SX126x DIO IRQ callback functions prototype
@@ -648,13 +648,13 @@ void RadioSetRxConfig( RadioModems_t modem, uint32_t bandwidth,
 			pxSx126xModule->ModulationParams.Params.Gfsk.ModulationShaping = MOD_SHAPING_G_BT_1;
 			pxSx126xModule->ModulationParams.Params.Gfsk.Bandwidth		   = RadioGetFskBandwidthRegValue( bandwidth << 1 ); // SX126x bandwidth is double sided
 
-			pxSx126xModule->PacketParams.PacketType						  = PACKET_TYPE_GFSK;
-			pxSx126xModule->PacketParams.Params.Gfsk.PreambleLength	  = ( preambleLen << 3 ); // convert byte into bit
+			pxSx126xModule->PacketParams.PacketType					   = PACKET_TYPE_GFSK;
+			pxSx126xModule->PacketParams.Params.Gfsk.PreambleLength	   = ( preambleLen << 3 ); // convert byte into bit
 			pxSx126xModule->PacketParams.Params.Gfsk.PreambleMinDetect = RADIO_PREAMBLE_DETECTOR_08_BITS;
-			pxSx126xModule->PacketParams.Params.Gfsk.SyncWordLength	  = 3 << 3; // convert byte into bit
-			pxSx126xModule->PacketParams.Params.Gfsk.AddrComp		  = RADIO_ADDRESSCOMP_FILT_OFF;
-			pxSx126xModule->PacketParams.Params.Gfsk.HeaderType		  = ( fixLen == true ) ? RADIO_PACKET_FIXED_LENGTH : RADIO_PACKET_VARIABLE_LENGTH;
-			pxSx126xModule->PacketParams.Params.Gfsk.PayloadLength	  = MaxPayloadLength;
+			pxSx126xModule->PacketParams.Params.Gfsk.SyncWordLength	   = 3 << 3; // convert byte into bit
+			pxSx126xModule->PacketParams.Params.Gfsk.AddrComp		   = RADIO_ADDRESSCOMP_FILT_OFF;
+			pxSx126xModule->PacketParams.Params.Gfsk.HeaderType		   = ( fixLen == true ) ? RADIO_PACKET_FIXED_LENGTH : RADIO_PACKET_VARIABLE_LENGTH;
+			pxSx126xModule->PacketParams.Params.Gfsk.PayloadLength	   = MaxPayloadLength;
 			if ( crcOn == true ) {
 				pxSx126xModule->PacketParams.Params.Gfsk.CrcLength = RADIO_CRC_2_BYTES_CCIT;
 			}
@@ -750,12 +750,12 @@ void RadioSetTxConfig( RadioModems_t modem, int8_t power, uint32_t fdev,
 			pxSx126xModule->ModulationParams.Params.Gfsk.Bandwidth		   = RadioGetFskBandwidthRegValue( bandwidth << 1 ); // SX126x bandwidth is double sided
 			pxSx126xModule->ModulationParams.Params.Gfsk.Fdev			   = fdev;
 
-			pxSx126xModule->PacketParams.PacketType						  = PACKET_TYPE_GFSK;
-			pxSx126xModule->PacketParams.Params.Gfsk.PreambleLength	  = ( preambleLen << 3 ); // convert byte into bit
+			pxSx126xModule->PacketParams.PacketType					   = PACKET_TYPE_GFSK;
+			pxSx126xModule->PacketParams.Params.Gfsk.PreambleLength	   = ( preambleLen << 3 ); // convert byte into bit
 			pxSx126xModule->PacketParams.Params.Gfsk.PreambleMinDetect = RADIO_PREAMBLE_DETECTOR_08_BITS;
-			pxSx126xModule->PacketParams.Params.Gfsk.SyncWordLength	  = 3 << 3; // convert byte into bit
-			pxSx126xModule->PacketParams.Params.Gfsk.AddrComp		  = RADIO_ADDRESSCOMP_FILT_OFF;
-			pxSx126xModule->PacketParams.Params.Gfsk.HeaderType		  = ( fixLen == true ) ? RADIO_PACKET_FIXED_LENGTH : RADIO_PACKET_VARIABLE_LENGTH;
+			pxSx126xModule->PacketParams.Params.Gfsk.SyncWordLength	   = 3 << 3; // convert byte into bit
+			pxSx126xModule->PacketParams.Params.Gfsk.AddrComp		   = RADIO_ADDRESSCOMP_FILT_OFF;
+			pxSx126xModule->PacketParams.Params.Gfsk.HeaderType		   = ( fixLen == true ) ? RADIO_PACKET_FIXED_LENGTH : RADIO_PACKET_VARIABLE_LENGTH;
 
 			if ( crcOn == true ) {
 				pxSx126xModule->PacketParams.Params.Gfsk.CrcLength = RADIO_CRC_2_BYTES_CCIT;
@@ -1221,9 +1221,9 @@ void RadioIrqProcess( void )
 					// WORKAROUND END
 				}
 				SX126xGetPayload( RadioRxPayload, &size, 255 );
-				vSX126xGetPacketStatus( &RadioPktStatus );
+				SX126xGetPacketStatus( &RadioPktStatus );
 				if ( ( RadioEvents != NULL ) && ( RadioEvents->RxDone != NULL ) ) {
-					RadioEvents->RxDone( RadioRxPayload, size, RadioPktStatus.xParams.xLoRa.cRssiPkt, RadioPktStatus.xParams.xLoRa.cSnrPkt );
+					RadioEvents->RxDone( RadioRxPayload, size, RadioPktStatus.Params.LoRa.RssiPkt, RadioPktStatus.Params.LoRa.SnrPkt );
 				}
 			}
 		}
