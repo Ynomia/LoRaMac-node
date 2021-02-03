@@ -1396,13 +1396,6 @@ void vSX126xSendPayload( uint8_t *pucPayload, uint8_t ucSize, uint32_t ulTimeout
 void vSX126xCalibrate( xCalibrationParams_t xCalibParam );
 
 /*!
- * \brief Calibrates the Image rejection depending of the frequency
- *
- * \param [in]  freq    The operating frequency
- */
-void vSX126xCalibrateImage( uint32_t ulFreq );
-
-/*!
  * \brief Activate the extention of the timeout when long preamble is used
  *
  * \param [in]  enable      The radio will extend the timeout to cope with long preamble

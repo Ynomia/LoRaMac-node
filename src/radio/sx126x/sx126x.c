@@ -383,7 +383,7 @@ void SX126xCalibrate( CalibrationParams_t calibParam )
 					  ( (uint8_t) calibParam.Fields.RC13MEnable << 1 ) |
 					  ( (uint8_t) calibParam.Fields.RC64KEnable ) );
 
-	SX126xWriteCommand( RADIO_CALIBRATE, &value, 1 );
+	vSX126xWriteCommand( RADIO_CALIBRATE, &value, 1 );
 }
 
 void SX126xCalibrateImage( uint32_t freq )
@@ -410,7 +410,7 @@ void SX126xCalibrateImage( uint32_t freq )
 		calFreq[0] = 0x6B;
 		calFreq[1] = 0x6F;
 	}
-	SX126xWriteCommand( RADIO_CALIBRATEIMAGE, calFreq, 2 );
+	vSX126xWriteCommand( RADIO_CALIBRATEIMAGE, calFreq, 2 );
 }
 
 void SX126xSetPaConfig( uint8_t paDutyCycle, uint8_t hpMax, uint8_t deviceSel, uint8_t paLut )
@@ -484,7 +484,7 @@ void SX126xSetRfFrequency( uint32_t frequency )
 	buf[1] = ( uint8_t )( ( freqInPllSteps >> 16 ) & 0xFF );
 	buf[2] = ( uint8_t )( ( freqInPllSteps >> 8 ) & 0xFF );
 	buf[3] = ( uint8_t )( freqInPllSteps & 0xFF );
-	SX126xWriteCommand( RADIO_SET_RFFREQUENCY, buf, 4 );
+	vSX126xWriteCommand( RADIO_SET_RFFREQUENCY, buf, 4 );
 }
 
 void SX126xSetPacketType( RadioPacketTypes_t packetType )
@@ -881,38 +881,6 @@ void vSX126xSendPayload( uint8_t *pucPayload, uint8_t ucSize, uint32_t ulTimeout
 	SX126xSetTx( ulTimeout );
 }
 
-void eSX126xCalibrate( xCalibrationParams_t xCalibParam )
-{
-	vSX126xWriteCommand( RADIO_CALIBRATE, (uint8_t *) &xCalibParam, 1 );
-}
-
-void vSX126xCalibrateImage( uint32_t ulFreq )
-{
-	uint8_t ucCalFreq[2];
-
-	if ( ulFreq > 900000000 ) {
-		ucCalFreq[0] = 0xE1;
-		ucCalFreq[1] = 0xE9;
-	}
-	else if ( ulFreq > 850000000 ) {
-		ucCalFreq[0] = 0xD7;
-		ucCalFreq[1] = 0xDB;
-	}
-	else if ( ulFreq > 770000000 ) {
-		ucCalFreq[0] = 0xC1;
-		ucCalFreq[1] = 0xC5;
-	}
-	else if ( ulFreq > 460000000 ) {
-		ucCalFreq[0] = 0x75;
-		ucCalFreq[1] = 0x81;
-	}
-	else if ( ulFreq > 425000000 ) {
-		ucCalFreq[0] = 0x6B;
-		ucCalFreq[1] = 0x6F;
-	}
-	vSX126xWriteCommand( RADIO_CALIBRATEIMAGE, ucCalFreq, 2 );
-}
-
 void vSX126xSetPaConfig( uint8_t ucPaDutyCycle, uint8_t ucHpMax, uint8_t ucDeviceSel, uint8_t ucPaLut )
 {
 	uint8_t ucBuf[4];
@@ -975,7 +943,7 @@ void vSX126xSetRfFrequency( uint32_t ulFrequency )
 	uint32_t ulFreq = 0;
 
 	if ( bImageCalibrated == false ) {
-		vSX126xCalibrateImage( ulFrequency );
+		SX126xCalibrateImage( ulFrequency );
 		bImageCalibrated = true;
 	}
 
