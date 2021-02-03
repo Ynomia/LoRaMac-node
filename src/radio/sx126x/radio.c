@@ -1065,13 +1065,13 @@ void RadioRxBoosted( uint32_t timeout )
 
 void RadioSetRxDutyCycle( uint32_t rxTime, uint32_t sleepTime )
 {
-	vSX126xSetRxDutyCycle( rxTime, sleepTime );
+	SX126xSetRxDutyCycle( rxTime, sleepTime );
 }
 
 void RadioStartCad( void )
 {
 	vSX126xSetDioIrqParams( IRQ_CAD_DONE | IRQ_CAD_ACTIVITY_DETECTED, IRQ_CAD_DONE | IRQ_CAD_ACTIVITY_DETECTED, IRQ_RADIO_NONE, IRQ_RADIO_NONE );
-	vSX126xSetCad();
+	SX126xSetCad();
 }
 
 void RadioSetTxContinuousWave( uint32_t freq, int8_t power, uint16_t time )

@@ -1389,11 +1389,6 @@ uint8_t ucSX126xGetPayload( uint8_t *pucPayload, uint8_t *pucSize, uint8_t ucMax
 void vSX126xSendPayload( uint8_t *pucPayload, uint8_t ucSize, uint32_t ulTimeout );
 
 /*!
- * \brief Sets the radio in FS mode
- */
-void vSX126xSetFs( void );
-
-/*!
  * \brief Sets the radio in transmission mode
  *
  * \param [in]  timeout       Structure describing the transmission timeout value
@@ -1413,19 +1408,6 @@ void vSX126xSetRx( uint32_t ulTimeout );
  * \param [in]  timeout       Structure describing the reception timeout value
  */
 void vSX126xSetRxBoosted( uint32_t ulTimeout );
-
-/*!
- * \brief Sets the Rx duty cycle management parameters
- *
- * \param [in]  rxTime        Structure describing reception timeout value
- * \param [in]  sleepTime     Structure describing sleep timeout value
- */
-void vSX126xSetRxDutyCycle( uint32_t ulRxTime, uint32_t ulSleepTime );
-
-/*!
- * \brief Sets the radio in CAD mode
- */
-void vSX126xSetCad( void );
 
 /*!
  * \brief Sets the radio in continuous wave transmission mode

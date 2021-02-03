@@ -269,8 +269,8 @@ void SX126xSetStandby( RadioStandbyModes_t standbyConfig )
 
 void SX126xSetFs( void )
 {
-	SX126xWriteCommand( RADIO_SET_FS, 0, 0 );
-	SX126xSetOperatingMode( MODE_FS );
+	vSX126xWriteCommand( RADIO_SET_FS, 0, 0 );
+	vSX126xSetOperatingMode( MODE_FS );
 }
 
 void SX126xSetTx( uint32_t timeout )
@@ -321,14 +321,14 @@ void SX126xSetRxDutyCycle( uint32_t rxTime, uint32_t sleepTime )
 	buf[3] = ( uint8_t )( ( sleepTime >> 16 ) & 0xFF );
 	buf[4] = ( uint8_t )( ( sleepTime >> 8 ) & 0xFF );
 	buf[5] = ( uint8_t )( sleepTime & 0xFF );
-	SX126xWriteCommand( RADIO_SET_RXDUTYCYCLE, buf, 6 );
-	SX126xSetOperatingMode( MODE_RX_DC );
+	vSX126xWriteCommand( RADIO_SET_RXDUTYCYCLE, buf, 6 );
+	vSX126xSetOperatingMode( MODE_RX_DC );
 }
 
 void SX126xSetCad( void )
 {
-	SX126xWriteCommand( RADIO_SET_CAD, 0, 0 );
-	SX126xSetOperatingMode( MODE_CAD );
+	vSX126xWriteCommand( RADIO_SET_CAD, 0, 0 );
+	vSX126xSetOperatingMode( MODE_CAD );
 }
 
 void SX126xSetTxContinuousWave( void )
@@ -881,12 +881,6 @@ void vSX126xSendPayload( uint8_t *pucPayload, uint8_t ucSize, uint32_t ulTimeout
 	vSX126xSetTx( ulTimeout );
 }
 
-void vSX126xSetFs( void )
-{
-	vSX126xWriteCommand( RADIO_SET_FS, 0, 0 );
-	vSX126xSetOperatingMode( MODE_FS );
-}
-
 void vSX126xSetTx( uint32_t ulTimeout )
 {
 	uint8_t ucBuf[3];
@@ -922,26 +916,6 @@ void vSX126xSetRxBoosted( uint32_t ulTimeout )
 	ucBuf[1] = ( uint8_t )( ( ulTimeout >> 8 ) & 0xFF );
 	ucBuf[2] = ( uint8_t )( ulTimeout & 0xFF );
 	vSX126xWriteCommand( RADIO_SET_RX, ucBuf, 3 );
-}
-
-void vSX126xSetRxDutyCycle( uint32_t ulRxTime, uint32_t ulSleepTime )
-{
-	uint8_t ucBuf[6];
-
-	ucBuf[0] = ( uint8_t )( ( ulRxTime >> 16 ) & 0xFF );
-	ucBuf[1] = ( uint8_t )( ( ulRxTime >> 8 ) & 0xFF );
-	ucBuf[2] = ( uint8_t )( ulRxTime & 0xFF );
-	ucBuf[3] = ( uint8_t )( ( ulSleepTime >> 16 ) & 0xFF );
-	ucBuf[4] = ( uint8_t )( ( ulSleepTime >> 8 ) & 0xFF );
-	ucBuf[5] = ( uint8_t )( ulSleepTime & 0xFF );
-	vSX126xWriteCommand( RADIO_SET_RXDUTYCYCLE, ucBuf, 6 );
-	vSX126xSetOperatingMode( MODE_RX_DC );
-}
-
-void vSX126xSetCad( void )
-{
-	vSX126xWriteCommand( RADIO_SET_CAD, 0, 0 );
-	vSX126xSetOperatingMode( MODE_CAD );
 }
 
 void vSX126xSetTxContinuousWave( void )
