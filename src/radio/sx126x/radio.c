@@ -981,7 +981,7 @@ void RadioSend( uint8_t *buffer, uint8_t size )
 						   IRQ_TX_DONE | IRQ_RX_TX_TIMEOUT,
 						   IRQ_RADIO_NONE,
 						   IRQ_RADIO_NONE );
-	SX126xSetModulationParams( &pxSx126xModule->ModulationParams );
+
 	if ( SX126xGetPacketType() == PACKET_TYPE_LORA ) {
 		pxSx126xModule->PacketParams.Params.LoRa.PayloadLength = size;
 	}
