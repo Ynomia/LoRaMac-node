@@ -1398,22 +1398,6 @@ void vSX126xSendPayload( uint8_t *pucPayload, uint8_t ucSize, uint32_t ulTimeout
 uint8_t ucSX126xSetSyncWord( uint8_t *pucSyncWord );
 
 /*!
- * \brief Sets the Initial value for the LFSR used for the CRC calculation
- *
- * \param [in]  seed          Initial LFSR value ( 2 bytes )
- *
- */
-void vSX126xSetCrcSeed( uint16_t usSeed );
-
-/*!
- * \brief Sets the seed used for the CRC calculation
- *
- * \param [in]  seed          The seed value
- *
- */
-void vSX126xSetCrcPolynomial( uint16_t usPolynomial );
-
-/*!
  * \brief Sets the Initial value of the LFSR used for the whitening in GFSK protocols
  *
  * \param [in]  seed          Initial LFSR value

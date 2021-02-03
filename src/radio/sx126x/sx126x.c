@@ -125,7 +125,7 @@ void SX126xInit( DioIrqHandler dioIrq )
 	SX126xIoTcxoInit();
 
 	// Initialize RF switch control
-	SX126xIoRfSwitchInit();
+	// SX126xIoRfSwitchInit();
 
 	SX126xSetOperatingMode( MODE_STDBY_RC );
 }
@@ -193,9 +193,9 @@ void SX126xSetCrcPolynomial( uint16_t polynomial )
 	buf[0] = ( uint8_t )( ( polynomial >> 8 ) & 0xFF );
 	buf[1] = ( uint8_t )( polynomial & 0xFF );
 
-	switch ( SX126xGetPacketType() ) {
+	switch ( eSX126xGetPacketType() ) {
 		case PACKET_TYPE_GFSK:
-			SX126xWriteRegisters( REG_LR_CRCPOLYBASEADDR, buf, 2 );
+			vSX126xWriteRegisters( REG_LR_CRCPOLYBASEADDR, buf, 2 );
 			break;
 
 		default:
@@ -887,30 +887,6 @@ uint8_t ucSX126xSetSyncWord( uint8_t *pucSyncWord )
 	return 0;
 }
 
-void vSX126xSetCrcSeed( uint16_t usSeed )
-{
-	uint8_t ucBuf[2];
-
-	ucBuf[0] = ( uint8_t )( ( usSeed >> 8 ) & 0xFF );
-	ucBuf[1] = ( uint8_t )( usSeed & 0xFF );
-
-	if ( eSX126xGetPacketType() == PACKET_TYPE_GFSK ) {
-		vSX126xWriteRegisters( REG_LR_CRCSEEDBASEADDR, ucBuf, 2 );
-	}
-}
-
-void vSX126xSetCrcPolynomial( uint16_t usPolynomial )
-{
-	uint8_t ucBuf[2];
-
-	ucBuf[0] = ( uint8_t )( ( usPolynomial >> 8 ) & 0xFF );
-	ucBuf[1] = ( uint8_t )( usPolynomial & 0xFF );
-
-	if ( eSX126xGetPacketType() == PACKET_TYPE_GFSK ) {
-		vSX126xWriteRegisters( REG_LR_CRCPOLYBASEADDR, ucBuf, 2 );
-	}
-}
-
 void vSX126xSetWhiteningSeed( uint16_t usSeed )
 {
 	uint8_t ucRegValue = 0;
@@ -1252,12 +1228,12 @@ void vSX126xSetPacketParams( xPacketParams_t *pxPacketParams )
 		case PACKET_TYPE_GFSK:
 			if ( pxPacketParams->xParams.xGfsk.eCrcLength == RADIO_CRC_2_BYTES_IBM ) {
 				SX126xSetCrcSeed( CRC_IBM_SEED );
-				vSX126xSetCrcPolynomial( CRC_POLYNOMIAL_IBM );
+				SX126xSetCrcPolynomial( CRC_POLYNOMIAL_IBM );
 				ucCrcVal = RADIO_CRC_2_BYTES;
 			}
 			else if ( pxPacketParams->xParams.xGfsk.eCrcLength == RADIO_CRC_2_BYTES_CCIT ) {
 				SX126xSetCrcSeed( CRC_CCITT_SEED );
-				vSX126xSetCrcPolynomial( CRC_POLYNOMIAL_CCITT );
+				SX126xSetCrcPolynomial( CRC_POLYNOMIAL_CCITT );
 				ucCrcVal = RADIO_CRC_2_BYTES_INV;
 			}
 			else {
