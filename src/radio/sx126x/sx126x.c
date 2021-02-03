@@ -132,12 +132,12 @@ void SX126xInit( DioIrqHandler dioIrq )
 
 void SX126xCheckDeviceReady( void )
 {
-	if ( ( SX126xGetOperatingMode() == MODE_SLEEP ) || ( SX126xGetOperatingMode() == MODE_RX_DC ) ) {
-		SX126xWakeup();
+	if ( ( eSX126xGetOperatingMode() == MODE_SLEEP ) || ( eSX126xGetOperatingMode() == MODE_RX_DC ) ) {
+		vSX126xWakeup();
 		// Switch is turned off when device is in sleep mode and turned on is all other modes
-		SX126xAntSwOn();
+		// SX126xAntSwOn(); //TODO
 	}
-	SX126xWaitOnBusy();
+	vSX126xWaitOnBusy();
 }
 
 void SX126xSetPayload( uint8_t *payload, uint8_t size )
@@ -831,16 +831,6 @@ void vSX126xProcessIrqs( void );
 void vSX126xInit( DioIrqHandler fnDioIrq )
 {
 	vSX126xIoIrqInit( fnDioIrq );
-}
-
-void vSX126xCheckDeviceReady( void )
-{
-	if ( ( eSX126xGetOperatingMode() == MODE_SLEEP ) || ( eSX126xGetOperatingMode() == MODE_RX_DC ) ) {
-		vSX126xWakeup();
-		// Switch is turned off when device is in sleep mode and turned on is all other modes
-		// this is commented out as if the wakeup is not respected and you switch io2 it crashes the device
-	}
-	vSX126xWaitOnBusy();
 }
 
 void vSX126xSetRfFrequency( uint32_t ulFrequency )

@@ -1333,11 +1333,6 @@ typedef struct
 void vSX126xInit( DioIrqHandler fnDioIrq );
 
 /*!
- * \brief Wakeup the radio if it is in Sleep mode and check that Busy is low
- */
-void vSX126xCheckDeviceReady( void );
-
-/*!
  * \brief Sets the RF frequency
  *
  * \param [in]  frequency     RF frequency [Hz]
