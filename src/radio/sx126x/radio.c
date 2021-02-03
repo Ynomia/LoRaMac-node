@@ -675,12 +675,11 @@ void RadioSetRxConfig( RadioModems_t modem, uint32_t bandwidth,
 			ucSX126xSetSyncWord( ( uint8_t[] ){ 0xC1, 0x94, 0xC1, 0x00, 0x00, 0x00, 0x00, 0x00 } );
 			vSX126xSetWhiteningSeed( 0x01FF );
 
-			RxTimeout = ( uint32_t )( symbTimeout * ( ( 1.0 / (double) datarate ) * 8.0 ) * 1000 );
+			RxTimeout = (uint32_t) symbTimeout * 8000UL / datarate;
 			break;
 
 		case MODEM_LORA:
 			vSX126xSetStopRxTimerOnPreambleDetect( false );
-			vSX126xSetLoRaSymbNumTimeout( symbTimeout );
 			pxSx126xModule->xModulationParams.ePacketType					 = PACKET_TYPE_LORA;
 			pxSx126xModule->xModulationParams.xParams.xLoRa.eSpreadingFactor = (RadioLoRaSpreadingFactors_t) datarate;
 			pxSx126xModule->xModulationParams.xParams.xLoRa.eBandwidth		 = Bandwidths[bandwidth];
@@ -719,6 +718,7 @@ void RadioSetRxConfig( RadioModems_t modem, uint32_t bandwidth,
 			RadioSetModem( ( pxSx126xModule->xModulationParams.ePacketType == PACKET_TYPE_GFSK ) ? MODEM_FSK : MODEM_LORA );
 			vSX126xSetModulationParams( &pxSx126xModule->xModulationParams );
 			vSX126xSetPacketParams( &pxSx126xModule->xPacketParams );
+			SX126xSetLoRaSymbNumTimeout( symbTimeout );
 
 			// WORKAROUND - Optimizing the Inverted IQ Operation, see DS_SX1261-2_V1.2 datasheet chapter 15.4
 			if ( pxSx126xModule->xPacketParams.xParams.xLoRa.eInvertIQ == LORA_IQ_INVERTED ) {
