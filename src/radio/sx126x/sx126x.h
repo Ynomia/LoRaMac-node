@@ -1461,23 +1461,6 @@ void vSX126xSetDio3AsTcxoCtrl( RadioTcxoCtrlVoltage_t etcxoVoltage, uint32_t ulT
 void vSX126xSetRfFrequency( uint32_t ulFrequency );
 
 /*!
- * \brief Sets the radio for the given protocol
- *
- * \param [in]  packetType    [PACKET_TYPE_GFSK, PACKET_TYPE_LORA]
- *
- * \remark This method has to be called before SetRfFrequency,
- *         SetModulationParams and SetPacketParams
- */
-void vSX126xSetPacketType( RadioPacketTypes_t ePacketType );
-
-/*!
- * \brief Gets the current radio protocol
- *
- * \retval      packetType    [PACKET_TYPE_GFSK, PACKET_TYPE_LORA]
- */
-RadioPacketTypes_t eSX126xGetPacketType( void );
-
-/*!
  * \brief Sets the transmission parameters
  *
  * \param [in]  power         RF output power [-18..13] dBm

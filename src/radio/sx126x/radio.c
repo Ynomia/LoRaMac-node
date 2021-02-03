@@ -546,13 +546,13 @@ void RadioSetModem( RadioModems_t modem )
 	switch ( modem ) {
 		default:
 		case MODEM_FSK:
-			vSX126xSetPacketType( PACKET_TYPE_GFSK );
+			SX126xSetPacketType( PACKET_TYPE_GFSK );
 			// When switching to GFSK mode the LoRa SyncWord register value is reset
 			// Thus, we also reset the RadioPublicNetwork variable
 			RadioPublicNetwork.Current = false;
 			break;
 		case MODEM_LORA:
-			vSX126xSetPacketType( PACKET_TYPE_LORA );
+			SX126xSetPacketType( PACKET_TYPE_LORA );
 			// Public/Private network register is reset when switching modems
 			if ( RadioPublicNetwork.Current != RadioPublicNetwork.Previous ) {
 				RadioPublicNetwork.Current = RadioPublicNetwork.Previous;
@@ -983,7 +983,7 @@ void RadioSend( uint8_t *buffer, uint8_t size )
 						   IRQ_RADIO_NONE,
 						   IRQ_RADIO_NONE );
 	vSX126xSetModulationParams( &pxSx126xModule->xModulationParams );
-	if ( eSX126xGetPacketType() == PACKET_TYPE_LORA ) {
+	if ( SX126xGetPacketType() == PACKET_TYPE_LORA ) {
 		pxSx126xModule->xPacketParams.xParams.xLoRa.ucPayloadLength = size;
 	}
 	else {

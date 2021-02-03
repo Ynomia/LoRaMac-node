@@ -176,7 +176,7 @@ void SX126xSetCrcSeed( uint16_t seed )
 	buf[0] = ( uint8_t )( ( seed >> 8 ) & 0xFF );
 	buf[1] = ( uint8_t )( seed & 0xFF );
 
-	switch ( eSX126xGetPacketType() ) {
+	switch ( SX126xGetPacketType() ) {
 		case PACKET_TYPE_GFSK:
 			vSX126xWriteRegisters( REG_LR_CRCSEEDBASEADDR, buf, 2 );
 			break;
@@ -193,7 +193,7 @@ void SX126xSetCrcPolynomial( uint16_t polynomial )
 	buf[0] = ( uint8_t )( ( polynomial >> 8 ) & 0xFF );
 	buf[1] = ( uint8_t )( polynomial & 0xFF );
 
-	switch ( eSX126xGetPacketType() ) {
+	switch ( SX126xGetPacketType() ) {
 		case PACKET_TYPE_GFSK:
 			vSX126xWriteRegisters( REG_LR_CRCPOLYBASEADDR, buf, 2 );
 			break;
@@ -207,7 +207,7 @@ void SX126xSetWhiteningSeed( uint16_t seed )
 {
 	uint8_t regValue = 0;
 
-	switch ( eSX126xGetPacketType() ) {
+	switch ( SX126xGetPacketType() ) {
 		case PACKET_TYPE_GFSK:
 			regValue = ucSX126xReadRegister( REG_LR_WHITSEEDBASEADDR_MSB ) & 0xFE;
 			regValue = ( ( seed >> 8 ) & 0x01 ) | regValue;
@@ -916,18 +916,6 @@ void vSX126xSetRfFrequency( uint32_t ulFrequency )
 	vSX126xWriteCommand( RADIO_SET_RFFREQUENCY, ucBuf, 4 );
 }
 
-void vSX126xSetPacketType( RadioPacketTypes_t ePacketTypeToSet )
-{
-	// Save packet type internally to avoid questioning the radio
-	ePacketType = ePacketTypeToSet;
-	vSX126xWriteCommand( RADIO_SET_PACKETTYPE, (uint8_t *) &ePacketTypeToSet, 1 );
-}
-
-RadioPacketTypes_t eSX126xGetPacketType( void )
-{
-	return ePacketType;
-}
-
 void vSX126xSetTxParams( int8_t cPower, RadioRampTimes_t eRampTime )
 {
 	uint8_t ucBuf[2];
@@ -1106,7 +1094,7 @@ void vSX126xGetRxBufferStatus( uint8_t *pucPayloadLength, uint8_t *pucRxStartucB
 	vSX126xReadCommand( RADIO_GET_RXBUFFERSTATUS, ucStatus, 2 );
 	// In case of LORA fixed header, the payloadLength is obtained by reading
 	// the register REG_LR_PAYLOADLENGTH
-	if ( ( eSX126xGetPacketType() == PACKET_TYPE_LORA ) && ( ucSX126xReadRegister( REG_LR_PACKETPARAMS ) >> 7 == 1 ) ) {
+	if ( ( SX126xGetPacketType() == PACKET_TYPE_LORA ) && ( ucSX126xReadRegister( REG_LR_PACKETPARAMS ) >> 7 == 1 ) ) {
 		*pucPayloadLength = ucSX126xReadRegister( REG_LR_PAYLOADLENGTH );
 	}
 	else {
@@ -1121,7 +1109,7 @@ void vSX126xGetPacketStatus( xPacketStatus_t *pxPktStatus )
 
 	vSX126xReadCommand( RADIO_GET_PACKETSTATUS, ucStatus, 3 );
 
-	pxPktStatus->ePacketType = eSX126xGetPacketType();
+	pxPktStatus->ePacketType = SX126xGetPacketType();
 	switch ( pxPktStatus->ePacketType ) {
 		case PACKET_TYPE_GFSK:
 			pxPktStatus->xParams.xGfsk.ucRxStatus  = ucStatus[0];
