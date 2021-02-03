@@ -1389,15 +1389,6 @@ uint8_t ucSX126xGetPayload( uint8_t *pucPayload, uint8_t *pucSize, uint8_t ucMax
 void vSX126xSendPayload( uint8_t *pucPayload, uint8_t ucSize, uint32_t ulTimeout );
 
 /*!
- * \brief Sets the Sync Word given by index used in GFSK
- *
- * \param [in]  syncWord      SyncWord bytes ( 8 bytes )
- *
- * \retval      status        [0: OK, 1: NOK]
- */
-uint8_t ucSX126xSetSyncWord( uint8_t *pucSyncWord );
-
-/*!
  * \brief Sets the Initial value of the LFSR used for the whitening in GFSK protocols
  *
  * \param [in]  seed          Initial LFSR value

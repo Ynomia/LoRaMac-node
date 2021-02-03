@@ -165,7 +165,7 @@ void SX126xSendPayload( uint8_t *payload, uint8_t size, uint32_t timeout )
 
 uint8_t SX126xSetSyncWord( uint8_t *syncWord )
 {
-	SX126xWriteRegisters( REG_LR_SYNCWORDBASEADDRESS, syncWord, 8 );
+	vSX126xWriteRegisters( REG_LR_SYNCWORDBASEADDRESS, syncWord, 8 );
 	return 0;
 }
 
@@ -879,12 +879,6 @@ void vSX126xSendPayload( uint8_t *pucPayload, uint8_t ucSize, uint32_t ulTimeout
 	vSX126xSetPayload( pucPayload, ucSize );
 
 	vSX126xSetTx( ulTimeout );
-}
-
-uint8_t ucSX126xSetSyncWord( uint8_t *pucSyncWord )
-{
-	vSX126xWriteRegisters( REG_LR_SYNCWORDBASEADDRESS, pucSyncWord, 8 );
-	return 0;
 }
 
 void vSX126xSetWhiteningSeed( uint16_t usSeed )
