@@ -681,7 +681,8 @@ typedef struct SX126x_s
 	xGpio_t			   DIO1;
 	xGpio_t			   DIO2;
 	xGpio_t			   DIO3;
-	xSpiModule_t	   Spi;
+    xGpio_t			   ChipSelect;
+	xSpiModule_t *	   Spi;
 	PacketParams_t	   PacketParams;
 	PacketStatus_t	   PacketStatus;
 	ModulationParams_t ModulationParams;

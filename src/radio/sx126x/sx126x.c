@@ -112,35 +112,35 @@ void SX126xProcessIrqs( void );
 
 void SX126xInit( DioIrqHandler dioIrq )
 {
-	// vSX126xReset(); //TODO
+	// SX126xReset(); //TODO
 
-	vSX126xIoIrqInit( dioIrq );
+	SX126xIoIrqInit( dioIrq );
 
-	vSX126xWakeup();
+	SX126xWakeup();
 	SX126xSetStandby( STDBY_RC );
 
 	// Initialize TCXO control
-	vSX126xIoTcxoInit();
+	SX126xIoTcxoInit();
 
 	// Initialize RF switch control
 	SX126xSetDio2AsRfSwitchCtrl( true );
 
-	vSX126xSetOperatingMode( MODE_STDBY_RC );
+	SX126xSetOperatingMode( MODE_STDBY_RC );
 }
 
 void SX126xCheckDeviceReady( void )
 {
 	if ( ( SX126xGetOperatingMode() == MODE_SLEEP ) || ( SX126xGetOperatingMode() == MODE_RX_DC ) ) {
-		vSX126xWakeup();
+		SX126xWakeup();
 		// Switch is turned off when device is in sleep mode and turned on is all other modes
-		// vSX126xAntSwOn(); //TODO
+		// SX126xAntSwOn(); //TODO
 	}
-	vSX126xWaitOnBusy();
+	SX126xWaitOnBusy();
 }
 
 void SX126xSetPayload( uint8_t *payload, uint8_t size )
 {
-	vSX126xWriteBuffer( 0x00, payload, size );
+	SX126xWriteBuffer( 0x00, payload, size );
 }
 
 uint8_t SX126xGetPayload( uint8_t *buffer, uint8_t *size, uint8_t maxSize )
@@ -151,7 +151,7 @@ uint8_t SX126xGetPayload( uint8_t *buffer, uint8_t *size, uint8_t maxSize )
 	if ( *size > maxSize ) {
 		return 1;
 	}
-	vSX126xReadBuffer( offset, buffer, *size );
+	SX126xReadBuffer( offset, buffer, *size );
 	return 0;
 }
 
@@ -163,7 +163,7 @@ void SX126xSendPayload( uint8_t *payload, uint8_t size, uint32_t timeout )
 
 uint8_t SX126xSetSyncWord( uint8_t *syncWord )
 {
-	vSX126xWriteRegisters( REG_LR_SYNCWORDBASEADDRESS, syncWord, 8 );
+	SX126xWriteRegisters( REG_LR_SYNCWORDBASEADDRESS, syncWord, 8 );
 	return 0;
 }
 
@@ -176,7 +176,7 @@ void SX126xSetCrcSeed( uint16_t seed )
 
 	switch ( SX126xGetPacketType() ) {
 		case PACKET_TYPE_GFSK:
-			vSX126xWriteRegisters( REG_LR_CRCSEEDBASEADDR, buf, 2 );
+			SX126xWriteRegisters( REG_LR_CRCSEEDBASEADDR, buf, 2 );
 			break;
 
 		default:
@@ -193,7 +193,7 @@ void SX126xSetCrcPolynomial( uint16_t polynomial )
 
 	switch ( SX126xGetPacketType() ) {
 		case PACKET_TYPE_GFSK:
-			vSX126xWriteRegisters( REG_LR_CRCPOLYBASEADDR, buf, 2 );
+			SX126xWriteRegisters( REG_LR_CRCPOLYBASEADDR, buf, 2 );
 			break;
 
 		default:
@@ -207,10 +207,10 @@ void SX126xSetWhiteningSeed( uint16_t seed )
 
 	switch ( SX126xGetPacketType() ) {
 		case PACKET_TYPE_GFSK:
-			regValue = ucSX126xReadRegister( REG_LR_WHITSEEDBASEADDR_MSB ) & 0xFE;
+			regValue = SX126xReadRegister( REG_LR_WHITSEEDBASEADDR_MSB ) & 0xFE;
 			regValue = ( ( seed >> 8 ) & 0x01 ) | regValue;
-			vSX126xWriteRegister( REG_LR_WHITSEEDBASEADDR_MSB, regValue ); // only 1 bit.
-			vSX126xWriteRegister( REG_LR_WHITSEEDBASEADDR_LSB, (uint8_t) seed );
+			SX126xWriteRegister( REG_LR_WHITSEEDBASEADDR_MSB, regValue ); // only 1 bit.
+			SX126xWriteRegister( REG_LR_WHITSEEDBASEADDR_LSB, (uint8_t) seed );
 			break;
 
 		default:
@@ -224,89 +224,89 @@ uint32_t SX126xGetRandom( void )
 	uint8_t	 regAnaLna	 = 0;
 	uint8_t	 regAnaMixer = 0;
 
-	regAnaLna = ucSX126xReadRegister( REG_ANA_LNA );
-	vSX126xWriteRegister( REG_ANA_LNA, regAnaLna & ~( 1 << 0 ) );
+	regAnaLna = SX126xReadRegister( REG_ANA_LNA );
+	SX126xWriteRegister( REG_ANA_LNA, regAnaLna & ~( 1 << 0 ) );
 
-	regAnaMixer = ucSX126xReadRegister( REG_ANA_MIXER );
-	vSX126xWriteRegister( REG_ANA_MIXER, regAnaMixer & ~( 1 << 7 ) );
+	regAnaMixer = SX126xReadRegister( REG_ANA_MIXER );
+	SX126xWriteRegister( REG_ANA_MIXER, regAnaMixer & ~( 1 << 7 ) );
 
 	// Set radio in continuous reception
 	SX126xSetRx( 0xFFFFFF ); // Rx Continuous
 
-	vSX126xReadRegisters( RANDOM_NUMBER_GENERATORBASEADDR, (uint8_t *) &number, 4 );
+	SX126xReadRegisters( RANDOM_NUMBER_GENERATORBASEADDR, (uint8_t *) &number, 4 );
 
 	SX126xSetStandby( STDBY_RC );
 
-	vSX126xWriteRegister( REG_ANA_LNA, regAnaLna );
-	vSX126xWriteRegister( REG_ANA_MIXER, regAnaMixer );
+	SX126xWriteRegister( REG_ANA_LNA, regAnaLna );
+	SX126xWriteRegister( REG_ANA_MIXER, regAnaMixer );
 
 	return number;
 }
 
 void SX126xSetSleep( SleepParams_t sleepConfig )
 {
-	vSX126xAntSwOff();
+	SX126xAntSwOff();
 
 	uint8_t value = ( ( (uint8_t) sleepConfig.Fields.WarmStart << 2 ) |
 					  ( (uint8_t) sleepConfig.Fields.Reset << 1 ) |
 					  ( (uint8_t) sleepConfig.Fields.WakeUpRTC ) );
-	vSX126xWriteCommand( RADIO_SET_SLEEP, &value, 1 );
-	vSX126xSetOperatingMode( MODE_SLEEP );
+	SX126xWriteCommand( RADIO_SET_SLEEP, &value, 1 );
+	SX126xSetOperatingMode( MODE_SLEEP );
 }
 
 void SX126xSetStandby( RadioStandbyModes_t standbyConfig )
 {
-	vSX126xWriteCommand( RADIO_SET_STANDBY, (uint8_t *) &standbyConfig, 1 );
+	SX126xWriteCommand( RADIO_SET_STANDBY, (uint8_t *) &standbyConfig, 1 );
 	if ( standbyConfig == STDBY_RC ) {
-		vSX126xSetOperatingMode( MODE_STDBY_RC );
+		SX126xSetOperatingMode( MODE_STDBY_RC );
 	}
 	else {
-		vSX126xSetOperatingMode( MODE_STDBY_XOSC );
+		SX126xSetOperatingMode( MODE_STDBY_XOSC );
 	}
 }
 
 void SX126xSetFs( void )
 {
-	vSX126xWriteCommand( RADIO_SET_FS, 0, 0 );
-	vSX126xSetOperatingMode( MODE_FS );
+	SX126xWriteCommand( RADIO_SET_FS, 0, 0 );
+	SX126xSetOperatingMode( MODE_FS );
 }
 
 void SX126xSetTx( uint32_t timeout )
 {
 	uint8_t buf[3];
 
-	vSX126xSetOperatingMode( MODE_TX );
+	SX126xSetOperatingMode( MODE_TX );
 
 	buf[0] = ( uint8_t )( ( timeout >> 16 ) & 0xFF );
 	buf[1] = ( uint8_t )( ( timeout >> 8 ) & 0xFF );
 	buf[2] = ( uint8_t )( timeout & 0xFF );
-	vSX126xWriteCommand( RADIO_SET_TX, buf, 3 );
+	SX126xWriteCommand( RADIO_SET_TX, buf, 3 );
 }
 
 void SX126xSetRx( uint32_t timeout )
 {
 	uint8_t buf[3];
 
-	vSX126xSetOperatingMode( MODE_RX );
+	SX126xSetOperatingMode( MODE_RX );
 
 	buf[0] = ( uint8_t )( ( timeout >> 16 ) & 0xFF );
 	buf[1] = ( uint8_t )( ( timeout >> 8 ) & 0xFF );
 	buf[2] = ( uint8_t )( timeout & 0xFF );
-	vSX126xWriteCommand( RADIO_SET_RX, buf, 3 );
+	SX126xWriteCommand( RADIO_SET_RX, buf, 3 );
 }
 
 void SX126xSetRxBoosted( uint32_t timeout )
 {
 	uint8_t buf[3];
 
-	vSX126xSetOperatingMode( MODE_RX );
+	SX126xSetOperatingMode( MODE_RX );
 
-	vSX126xWriteRegister( REG_RX_GAIN, 0x96 ); // max LNA gain, increase current by ~2mA for around ~3dB in sensivity
+	SX126xWriteRegister( REG_RX_GAIN, 0x96 ); // max LNA gain, increase current by ~2mA for around ~3dB in sensivity
 
 	buf[0] = ( uint8_t )( ( timeout >> 16 ) & 0xFF );
 	buf[1] = ( uint8_t )( ( timeout >> 8 ) & 0xFF );
 	buf[2] = ( uint8_t )( timeout & 0xFF );
-	vSX126xWriteCommand( RADIO_SET_RX, buf, 3 );
+	SX126xWriteCommand( RADIO_SET_RX, buf, 3 );
 }
 
 void SX126xSetRxDutyCycle( uint32_t rxTime, uint32_t sleepTime )
@@ -319,31 +319,31 @@ void SX126xSetRxDutyCycle( uint32_t rxTime, uint32_t sleepTime )
 	buf[3] = ( uint8_t )( ( sleepTime >> 16 ) & 0xFF );
 	buf[4] = ( uint8_t )( ( sleepTime >> 8 ) & 0xFF );
 	buf[5] = ( uint8_t )( sleepTime & 0xFF );
-	vSX126xWriteCommand( RADIO_SET_RXDUTYCYCLE, buf, 6 );
-	vSX126xSetOperatingMode( MODE_RX_DC );
+	SX126xWriteCommand( RADIO_SET_RXDUTYCYCLE, buf, 6 );
+	SX126xSetOperatingMode( MODE_RX_DC );
 }
 
 void SX126xSetCad( void )
 {
-	vSX126xWriteCommand( RADIO_SET_CAD, 0, 0 );
-	vSX126xSetOperatingMode( MODE_CAD );
+	SX126xWriteCommand( RADIO_SET_CAD, 0, 0 );
+	SX126xSetOperatingMode( MODE_CAD );
 }
 
 void SX126xSetTxContinuousWave( void )
 {
-	vSX126xWriteCommand( RADIO_SET_TXCONTINUOUSWAVE, 0, 0 );
-	vSX126xSetOperatingMode( MODE_TX );
+	SX126xWriteCommand( RADIO_SET_TXCONTINUOUSWAVE, 0, 0 );
+	SX126xSetOperatingMode( MODE_TX );
 }
 
 void SX126xSetTxInfinitePreamble( void )
 {
-	vSX126xWriteCommand( RADIO_SET_TXCONTINUOUSPREAMBLE, 0, 0 );
-	vSX126xSetOperatingMode( MODE_TX );
+	SX126xWriteCommand( RADIO_SET_TXCONTINUOUSPREAMBLE, 0, 0 );
+	SX126xSetOperatingMode( MODE_TX );
 }
 
 void SX126xSetStopRxTimerOnPreambleDetect( bool enable )
 {
-	vSX126xWriteCommand( RADIO_SET_STOPRXTIMERONPREAMBLE, (uint8_t *) &enable, 1 );
+	SX126xWriteCommand( RADIO_SET_STOPRXTIMERONPREAMBLE, (uint8_t *) &enable, 1 );
 }
 
 void SX126xSetLoRaSymbNumTimeout( uint8_t symbNum )
@@ -358,17 +358,17 @@ void SX126xSetLoRaSymbNumTimeout( uint8_t symbNum )
 	}
 
 	reg = mant << ( 2 * exp + 1 );
-	vSX126xWriteCommand( RADIO_SET_LORASYMBTIMEOUT, &reg, 1 );
+	SX126xWriteCommand( RADIO_SET_LORASYMBTIMEOUT, &reg, 1 );
 
 	if ( symbNum != 0 ) {
 		reg = exp + ( mant << 3 );
-		vSX126xWriteRegister( REG_LR_SYNCH_TIMEOUT, reg );
+		SX126xWriteRegister( REG_LR_SYNCH_TIMEOUT, reg );
 	}
 }
 
 void SX126xSetRegulatorMode( RadioRegulatorMode_t mode )
 {
-	vSX126xWriteCommand( RADIO_SET_REGULATORMODE, (uint8_t *) &mode, 1 );
+	SX126xWriteCommand( RADIO_SET_REGULATORMODE, (uint8_t *) &mode, 1 );
 }
 
 void SX126xCalibrate( CalibrationParams_t calibParam )
@@ -381,7 +381,7 @@ void SX126xCalibrate( CalibrationParams_t calibParam )
 					  ( (uint8_t) calibParam.Fields.RC13MEnable << 1 ) |
 					  ( (uint8_t) calibParam.Fields.RC64KEnable ) );
 
-	vSX126xWriteCommand( RADIO_CALIBRATE, &value, 1 );
+	SX126xWriteCommand( RADIO_CALIBRATE, &value, 1 );
 }
 
 void SX126xCalibrateImage( uint32_t freq )
@@ -408,7 +408,7 @@ void SX126xCalibrateImage( uint32_t freq )
 		calFreq[0] = 0x6B;
 		calFreq[1] = 0x6F;
 	}
-	vSX126xWriteCommand( RADIO_CALIBRATEIMAGE, calFreq, 2 );
+	SX126xWriteCommand( RADIO_CALIBRATEIMAGE, calFreq, 2 );
 }
 
 void SX126xSetPaConfig( uint8_t paDutyCycle, uint8_t hpMax, uint8_t deviceSel, uint8_t paLut )
@@ -419,12 +419,12 @@ void SX126xSetPaConfig( uint8_t paDutyCycle, uint8_t hpMax, uint8_t deviceSel, u
 	buf[1] = hpMax;
 	buf[2] = deviceSel;
 	buf[3] = paLut;
-	vSX126xWriteCommand( RADIO_SET_PACONFIG, buf, 4 );
+	SX126xWriteCommand( RADIO_SET_PACONFIG, buf, 4 );
 }
 
 void SX126xSetRxTxFallbackMode( uint8_t fallbackMode )
 {
-	vSX126xWriteCommand( RADIO_SET_TXFALLBACKMODE, &fallbackMode, 1 );
+	SX126xWriteCommand( RADIO_SET_TXFALLBACKMODE, &fallbackMode, 1 );
 }
 
 void SX126xSetDioIrqParams( uint16_t irqMask, uint16_t dio1Mask, uint16_t dio2Mask, uint16_t dio3Mask )
@@ -439,20 +439,20 @@ void SX126xSetDioIrqParams( uint16_t irqMask, uint16_t dio1Mask, uint16_t dio2Ma
 	buf[5] = ( uint8_t )( dio2Mask & 0x00FF );
 	buf[6] = ( uint8_t )( ( dio3Mask >> 8 ) & 0x00FF );
 	buf[7] = ( uint8_t )( dio3Mask & 0x00FF );
-	vSX126xWriteCommand( RADIO_CFG_DIOIRQ, buf, 8 );
+	SX126xWriteCommand( RADIO_CFG_DIOIRQ, buf, 8 );
 }
 
 uint16_t SX126xGetIrqStatus( void )
 {
 	uint8_t irqStatus[2];
 
-	vSX126xReadCommand( RADIO_GET_IRQSTATUS, irqStatus, 2 );
+	SX126xReadCommand( RADIO_GET_IRQSTATUS, irqStatus, 2 );
 	return ( irqStatus[0] << 8 ) | irqStatus[1];
 }
 
 void SX126xSetDio2AsRfSwitchCtrl( uint8_t enable )
 {
-	vSX126xWriteCommand( RADIO_SET_RFSWITCHMODE, &enable, 1 );
+	SX126xWriteCommand( RADIO_SET_RFSWITCHMODE, &enable, 1 );
 }
 
 void SX126xSetDio3AsTcxoCtrl( RadioTcxoCtrlVoltage_t tcxoVoltage, uint32_t timeout )
@@ -464,7 +464,7 @@ void SX126xSetDio3AsTcxoCtrl( RadioTcxoCtrlVoltage_t tcxoVoltage, uint32_t timeo
 	buf[2] = ( uint8_t )( ( timeout >> 8 ) & 0xFF );
 	buf[3] = ( uint8_t )( timeout & 0xFF );
 
-	vSX126xWriteCommand( RADIO_SET_TCXOMODE, buf, 4 );
+	SX126xWriteCommand( RADIO_SET_TCXOMODE, buf, 4 );
 }
 
 void SX126xSetRfFrequency( uint32_t frequency )
@@ -482,14 +482,14 @@ void SX126xSetRfFrequency( uint32_t frequency )
 	buf[1] = ( uint8_t )( ( freqInPllSteps >> 16 ) & 0xFF );
 	buf[2] = ( uint8_t )( ( freqInPllSteps >> 8 ) & 0xFF );
 	buf[3] = ( uint8_t )( freqInPllSteps & 0xFF );
-	vSX126xWriteCommand( RADIO_SET_RFFREQUENCY, buf, 4 );
+	SX126xWriteCommand( RADIO_SET_RFFREQUENCY, buf, 4 );
 }
 
 void SX126xSetPacketType( RadioPacketTypes_t packetType )
 {
 	// Save packet type internally to avoid questioning the radio
 	PacketType = packetType;
-	vSX126xWriteCommand( RADIO_SET_PACKETTYPE, (uint8_t *) &packetType, 1 );
+	SX126xWriteCommand( RADIO_SET_PACKETTYPE, (uint8_t *) &packetType, 1 );
 }
 
 RadioPacketTypes_t SX126xGetPacketType( void )
@@ -501,7 +501,7 @@ void SX126xSetTxParams( int8_t power, RadioRampTimes_t rampTime )
 {
 	uint8_t buf[2];
 
-	if ( ucSX126xGetDeviceId() == SX1261 ) {
+	if ( SX126xGetDeviceId() == SX1261 ) {
 		if ( power == 15 ) {
 			SX126xSetPaConfig( 0x06, 0x00, 0x01, 0x01 );
 		}
@@ -519,7 +519,7 @@ void SX126xSetTxParams( int8_t power, RadioRampTimes_t rampTime )
 	{
 		// WORKAROUND - Better Resistance of the SX1262 Tx to Antenna Mismatch, see DS_SX1261-2_V1.2 datasheet chapter 15.2
 		// RegTxClampConfig = @address 0x08D8
-		vSX126xWriteRegister( 0x08D8, ucSX126xReadRegister( 0x08D8 ) | ( 0x0F << 1 ) );
+		SX126xWriteRegister( 0x08D8, SX126xReadRegister( 0x08D8 ) | ( 0x0F << 1 ) );
 		// WORKAROUND END
 
 		SX126xSetPaConfig( 0x04, 0x07, 0x00, 0x01 );
@@ -532,7 +532,7 @@ void SX126xSetTxParams( int8_t power, RadioRampTimes_t rampTime )
 	}
 	buf[0] = power;
 	buf[1] = (uint8_t) rampTime;
-	vSX126xWriteCommand( RADIO_SET_TXPARAMS, buf, 2 );
+	SX126xWriteCommand( RADIO_SET_TXPARAMS, buf, 2 );
 }
 
 void SX126xSetModulationParams( ModulationParams_t *modulationParams )
@@ -560,7 +560,7 @@ void SX126xSetModulationParams( ModulationParams_t *modulationParams )
 			buf[5]	= ( tempVal >> 16 ) & 0xFF;
 			buf[6]	= ( tempVal >> 8 ) & 0xFF;
 			buf[7]	= ( tempVal & 0xFF );
-			vSX126xWriteCommand( RADIO_SET_MODULATIONPARAMS, buf, n );
+			SX126xWriteCommand( RADIO_SET_MODULATIONPARAMS, buf, n );
 			break;
 		case PACKET_TYPE_LORA:
 			n	   = 4;
@@ -569,7 +569,7 @@ void SX126xSetModulationParams( ModulationParams_t *modulationParams )
 			buf[2] = modulationParams->Params.LoRa.CodingRate;
 			buf[3] = modulationParams->Params.LoRa.LowDatarateOptimize;
 
-			vSX126xWriteCommand( RADIO_SET_MODULATIONPARAMS, buf, n );
+			SX126xWriteCommand( RADIO_SET_MODULATIONPARAMS, buf, n );
 
 			break;
 		default:
@@ -629,7 +629,7 @@ void SX126xSetPacketParams( PacketParams_t *packetParams )
 		case PACKET_TYPE_NONE:
 			return;
 	}
-	vSX126xWriteCommand( RADIO_SET_PACKETPARAMS, buf, n );
+	SX126xWriteCommand( RADIO_SET_PACKETPARAMS, buf, n );
 }
 
 void SX126xSetCadParams( RadioLoRaCadSymbols_t cadSymbolNum, uint8_t cadDetPeak, uint8_t cadDetMin, RadioCadExitModes_t cadExitMode, uint32_t cadTimeout )
@@ -643,8 +643,8 @@ void SX126xSetCadParams( RadioLoRaCadSymbols_t cadSymbolNum, uint8_t cadDetPeak,
 	buf[4] = ( uint8_t )( ( cadTimeout >> 16 ) & 0xFF );
 	buf[5] = ( uint8_t )( ( cadTimeout >> 8 ) & 0xFF );
 	buf[6] = ( uint8_t )( cadTimeout & 0xFF );
-	vSX126xWriteCommand( RADIO_SET_CADPARAMS, buf, 7 );
-	vSX126xSetOperatingMode( MODE_CAD );
+	SX126xWriteCommand( RADIO_SET_CADPARAMS, buf, 7 );
+	SX126xSetOperatingMode( MODE_CAD );
 }
 
 void SX126xSetBufferBaseAddress( uint8_t txBaseAddress, uint8_t rxBaseAddress )
@@ -653,7 +653,7 @@ void SX126xSetBufferBaseAddress( uint8_t txBaseAddress, uint8_t rxBaseAddress )
 
 	buf[0] = txBaseAddress;
 	buf[1] = rxBaseAddress;
-	vSX126xWriteCommand( RADIO_SET_BUFFERBASEADDRESS, buf, 2 );
+	SX126xWriteCommand( RADIO_SET_BUFFERBASEADDRESS, buf, 2 );
 }
 
 RadioStatus_t SX126xGetStatus( void )
@@ -661,7 +661,7 @@ RadioStatus_t SX126xGetStatus( void )
 	uint8_t		  stat	 = 0;
 	RadioStatus_t status = { .Value = 0 };
 
-	vSX126xReadCommand( RADIO_GET_STATUS, (uint8_t *) &stat, 1 );
+	SX126xReadCommand( RADIO_GET_STATUS, (uint8_t *) &stat, 1 );
 	status.Fields.CmdStatus = ( stat & ( 0x07 << 1 ) ) >> 1;
 	status.Fields.ChipMode	= ( stat & ( 0x07 << 4 ) ) >> 4;
 	return status;
@@ -672,7 +672,7 @@ int8_t SX126xGetRssiInst( void )
 	uint8_t buf[1];
 	int8_t	rssi = 0;
 
-	vSX126xReadCommand( RADIO_GET_RSSIINST, buf, 1 );
+	SX126xReadCommand( RADIO_GET_RSSIINST, buf, 1 );
 	rssi = -buf[0] >> 1;
 	return rssi;
 }
@@ -681,12 +681,12 @@ void SX126xGetRxBufferStatus( uint8_t *payloadLength, uint8_t *rxStartBufferPoin
 {
 	uint8_t status[2];
 
-	vSX126xReadCommand( RADIO_GET_RXBUFFERSTATUS, status, 2 );
+	SX126xReadCommand( RADIO_GET_RXBUFFERSTATUS, status, 2 );
 
 	// In case of LORA fixed header, the payloadLength is obtained by reading
 	// the register REG_LR_PAYLOADLENGTH
 	if ( ( SX126xGetPacketType() == PACKET_TYPE_LORA ) && ( LoRaHeaderType == LORA_PACKET_FIXED_LENGTH ) ) {
-		*payloadLength = ucSX126xReadRegister( REG_LR_PAYLOADLENGTH );
+		*payloadLength = SX126xReadRegister( REG_LR_PAYLOADLENGTH );
 	}
 	else {
 		*payloadLength = status[0];
@@ -698,7 +698,7 @@ void SX126xGetPacketStatus( PacketStatus_t *pktStatus )
 {
 	uint8_t status[3];
 
-	vSX126xReadCommand( RADIO_GET_PACKETSTATUS, status, 3 );
+	SX126xReadCommand( RADIO_GET_PACKETSTATUS, status, 3 );
 
 	pktStatus->packetType = SX126xGetPacketType();
 	switch ( pktStatus->packetType ) {
@@ -732,7 +732,7 @@ RadioError_t SX126xGetDeviceErrors( void )
 	uint8_t		 err[] = { 0, 0 };
 	RadioError_t error = { .Value = 0 };
 
-	vSX126xReadCommand( RADIO_GET_ERROR, (uint8_t *) err, 2 );
+	SX126xReadCommand( RADIO_GET_ERROR, (uint8_t *) err, 2 );
 	error.Fields.PaRamp		= ( err[0] & ( 1 << 0 ) ) >> 0;
 	error.Fields.PllLock	= ( err[1] & ( 1 << 6 ) ) >> 6;
 	error.Fields.XoscStart	= ( err[1] & ( 1 << 5 ) ) >> 5;
@@ -747,7 +747,7 @@ RadioError_t SX126xGetDeviceErrors( void )
 void SX126xClearDeviceErrors( void )
 {
 	uint8_t buf[2] = { 0x00, 0x00 };
-	vSX126xWriteCommand( RADIO_CLR_ERROR, buf, 2 );
+	SX126xWriteCommand( RADIO_CLR_ERROR, buf, 2 );
 }
 
 void SX126xClearIrqStatus( uint16_t irq )
@@ -756,7 +756,7 @@ void SX126xClearIrqStatus( uint16_t irq )
 
 	buf[0] = ( uint8_t )( ( (uint16_t) irq >> 8 ) & 0x00FF );
 	buf[1] = ( uint8_t )( (uint16_t) irq & 0x00FF );
-	vSX126xWriteCommand( RADIO_CLR_IRQSTATUS, buf, 2 );
+	SX126xWriteCommand( RADIO_CLR_IRQSTATUS, buf, 2 );
 }
 
 static uint32_t SX126xConvertFreqInHzToPllStep( uint32_t freqInHz )
