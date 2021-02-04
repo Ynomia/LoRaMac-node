@@ -682,28 +682,12 @@ typedef struct SX126x_s
 	xGpio_t			   DIO2;
 	xGpio_t			   DIO3;
     xGpio_t			   ChipSelect;
+    xGpio_t            AntPow;
 	xSpiModule_t *	   Spi;
 	PacketParams_t	   PacketParams;
 	PacketStatus_t	   PacketStatus;
 	ModulationParams_t ModulationParams;
 } SX126x_t;
-
-/*!
- * Radio hardware and global parameters
- */
-typedef struct xSX126x_s
-{
-	xGpio_t			   xReset;
-	xGpio_t			   xBUSY;
-	xGpio_t			   xDIO1;
-	xGpio_t			   xDIO2;
-	xGpio_t			   xDIO3;
-	xGpio_t			   xChipSelect;
-	xSpiModule_t *	   pxSpi;
-	PacketParams_t	   PacketParams;
-	PacketStatus_t	   PacketStatus;
-	ModulationParams_t ModulationParams;
-} xSX126x_t;
 
 /*!
  * Hardware IO IRQ callback function definition

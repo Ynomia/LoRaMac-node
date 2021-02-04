@@ -133,7 +133,7 @@ void SX126xCheckDeviceReady( void )
 	if ( ( SX126xGetOperatingMode() == MODE_SLEEP ) || ( SX126xGetOperatingMode() == MODE_RX_DC ) ) {
 		SX126xWakeup();
 		// Switch is turned off when device is in sleep mode and turned on is all other modes
-		// SX126xAntSwOn(); //TODO
+		SX126xAntSwOn();
 	}
 	SX126xWaitOnBusy();
 }
@@ -661,7 +661,7 @@ RadioStatus_t SX126xGetStatus( void )
 	uint8_t		  stat	 = 0;
 	RadioStatus_t status = { .Value = 0 };
 
-	SX126xReadCommand( RADIO_GET_STATUS, (uint8_t *) &stat, 1 );
+	stat					= SX126xReadCommand( RADIO_GET_STATUS, NULL, 0 );
 	status.Fields.CmdStatus = ( stat & ( 0x07 << 1 ) ) >> 1;
 	status.Fields.ChipMode	= ( stat & ( 0x07 << 4 ) ) >> 4;
 	return status;
