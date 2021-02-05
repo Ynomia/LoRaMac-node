@@ -37,6 +37,11 @@
 #ifndef __LORAMAC_HEADER_TYPES_H__
 #define __LORAMAC_HEADER_TYPES_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdint.h>
 
 /*! MAC header field size */
@@ -79,19 +84,16 @@
 #define LORAMAC_CF_LIST_FIELD_SIZE          16
 
 /*! FHDR Device address field size */
-#define LORAMAC_FHDR_DEV_ADDR_FIELD_SIZE LORAMAC_DEV_ADDR_FIELD_SIZE
-
-/*! FHDR Device address field size */
-#define LORAMAC_FHDR_DEV_ADD_FIELD_SIZE         4
+#define LORAMAC_FHDR_DEV_ADDR_FIELD_SIZE    LORAMAC_DEV_ADDR_FIELD_SIZE
 
 /*! FHDR Frame control field size */
-#define LORAMAC_FHDR_F_CTRL_FIELD_SIZE          1
+#define LORAMAC_FHDR_F_CTRL_FIELD_SIZE      1
 
 /*! FHDR Frame control field size */
-#define LORAMAC_FHDR_F_CNT_FIELD_SIZE           2
+#define LORAMAC_FHDR_F_CNT_FIELD_SIZE       2
 
 /*! FOpts maximum field size */
-#define LORAMAC_FHDR_F_OPTS_MAX_FIELD_SIZE          15
+#define LORAMAC_FHDR_F_OPTS_MAX_FIELD_SIZE  15
 
 /*! Port field size */
 #define LORAMAC_F_PORT_FIELD_SIZE           1
@@ -317,5 +319,9 @@ typedef struct sLoRaMacFrameHeader
 }LoRaMacFrameHeader_t;
 
 /*! \} addtogroup LORAMAC */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __LORAMAC_HEADER_TYPES_H__

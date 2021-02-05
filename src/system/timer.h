@@ -98,8 +98,6 @@ TimerTime_t TimerGetCurrentTime( void );
  */
 TimerTime_t TimerGetElapsedTime( TimerTime_t past );
 
-uint32_t RtcTick2Ms( uint32_t tick );
-
 /*!
  * \brief Computes the temperature compensation for a period of time on a
  *        specific temperature.

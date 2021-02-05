@@ -1,7 +1,7 @@
 /*!
- * \file      RegionAS923.h
+ * \file      RegionEU433.h
  *
- * \brief     Region definition for AS923
+ * \brief     Region definition for EU433
  *
  * \copyright Revised BSD License, see section \ref LICENSE.
  *
@@ -30,12 +30,12 @@
  *
  * \author    Johannes Bruder ( STACKFORCE )
  *
- * \defgroup  REGIONAS923 Region AS923
+ * \defgroup  REGIONEU433 Region EU433
  *            Implementation according to LoRaWAN Specification v1.0.2.
  * \{
  */
-#ifndef __REGION_AS923_H__
-#define __REGION_AS923_H__
+#ifndef __REGION_EU433_H__
+#define __REGION_EU433_H__
 
 #ifdef __cplusplus
 extern "C"
@@ -44,158 +44,117 @@ extern "C"
 
 #include "region/Region.h"
 
-
-/*!
- * Channel plan group AS923-1
- * AS923_FREQ_OFFSET = 0
- */
-#define CHANNEL_PLAN_GROUP_AS923_1                  1
-
-/*!
- * Channel plan group AS923-2
- * AS923_FREQ_OFFSET = -1.8MHz
- */
-#define CHANNEL_PLAN_GROUP_AS923_2                  2
-
-/*!
- * Channel plan group AS923-3
- * AS923_FREQ_OFFSET = -6.6MHz
- */
-#define CHANNEL_PLAN_GROUP_AS923_3                  3
-
-/*!
- * Channel plan group AS923-1
- * AS923_FREQ_OFFSET = 0
- */
-#define CHANNEL_PLAN_GROUP_AS923_1                  1
-
-/*!
- * Channel plan group AS923-2
- * AS923_FREQ_OFFSET = -1.8MHz
- */
-#define CHANNEL_PLAN_GROUP_AS923_2                  2
-
-/*!
- * Channel plan group AS923-3
- * AS923_FREQ_OFFSET = -6.6MHz
- */
-#define CHANNEL_PLAN_GROUP_AS923_3                  3
-
-/*!
- * Channel plan group AS923-1 for Japan
- * AS923_FREQ_OFFSET = 0
- */
-#define CHANNEL_PLAN_GROUP_AS923_1_JP               4
-
 /*!
  * LoRaMac maximum number of channels
  */
-#define AS923_MAX_NB_CHANNELS                       16
+#define EU433_MAX_NB_CHANNELS                       16
 
 /*!
  * Number of default channels
  */
-#define AS923_NUMB_DEFAULT_CHANNELS                 2
+#define EU433_NUMB_DEFAULT_CHANNELS                 3
 
 /*!
  * Number of channels to apply for the CF list
  */
-#define AS923_NUMB_CHANNELS_CF_LIST                 5
+#define EU433_NUMB_CHANNELS_CF_LIST                 5
 
 /*!
  * Minimal datarate that can be used by the node
  */
-#define AS923_TX_MIN_DATARATE                       DR_0
+#define EU433_TX_MIN_DATARATE                       DR_0
 
 /*!
  * Maximal datarate that can be used by the node
  */
-#define AS923_TX_MAX_DATARATE                       DR_7
+#define EU433_TX_MAX_DATARATE                       DR_7
 
 /*!
  * Minimal datarate that can be used by the node
  */
-#define AS923_RX_MIN_DATARATE                       DR_0
+#define EU433_RX_MIN_DATARATE                       DR_0
 
 /*!
  * Maximal datarate that can be used by the node
  */
-#define AS923_RX_MAX_DATARATE                       DR_7
+#define EU433_RX_MAX_DATARATE                       DR_7
 
 /*!
  * Default datarate used by the node
  */
-#define AS923_DEFAULT_DATARATE                      DR_2
-
-/*!
- * The minimum datarate which is used when the
- * dwell time is limited.
- */
-#define AS923_DWELL_LIMIT_DATARATE                  DR_2
+#define EU433_DEFAULT_DATARATE                      DR_0
 
 /*!
  * Minimal Rx1 receive datarate offset
  */
-#define AS923_MIN_RX1_DR_OFFSET                     0
+#define EU433_MIN_RX1_DR_OFFSET                     0
 
 /*!
  * Maximal Rx1 receive datarate offset
  */
-#define AS923_MAX_RX1_DR_OFFSET                     7
+#define EU433_MAX_RX1_DR_OFFSET                     5
 
 /*!
  * Minimal Tx output power that can be used by the node
  */
-#define AS923_MIN_TX_POWER                          TX_POWER_7
+#define EU433_MIN_TX_POWER                          TX_POWER_5
 
 /*!
  * Maximal Tx output power that can be used by the node
  */
-#define AS923_MAX_TX_POWER                          TX_POWER_0
+#define EU433_MAX_TX_POWER                          TX_POWER_0
 
 /*!
  * Default Tx output power used by the node
  */
-#define AS923_DEFAULT_TX_POWER                      TX_POWER_0
-
-/*!
- * Default uplink dwell time configuration
- */
-#define AS923_DEFAULT_UPLINK_DWELL_TIME             1
+#define EU433_DEFAULT_TX_POWER                      TX_POWER_0
 
 /*!
  * Default Max EIRP
  */
-#define AS923_DEFAULT_MAX_EIRP                      16.0f
+#define EU433_DEFAULT_MAX_EIRP                      12.15f
 
 /*!
  * Default antenna gain
  */
-#define AS923_DEFAULT_ANTENNA_GAIN                  2.15f
+#define EU433_DEFAULT_ANTENNA_GAIN                  2.15f
 
 /*!
  * Enabled or disabled the duty cycle
  */
-#define AS923_DUTY_CYCLE_ENABLED                    0
+#define EU433_DUTY_CYCLE_ENABLED                    1
 
 /*!
  * Maximum RX window duration
  */
-#define AS923_MAX_RX_WINDOW                         3000
+#define EU433_MAX_RX_WINDOW                         3000
 
-#if ( AS923_DEFAULT_DATARATE > DR_5 )
+/*!
+ * Verification of default datarate
+ */
+#if ( EU433_DEFAULT_DATARATE > DR_5 )
 #error "A default DR higher than DR_5 may lead to connectivity loss."
 #endif
 
 /*!
  * Second reception window channel frequency definition.
  */
-#define AS923_RX_WND_2_FREQ                         923200000
+#define EU433_RX_WND_2_FREQ                         434665000
 
 /*!
  * Second reception window channel datarate definition.
  */
-#define AS923_RX_WND_2_DR                           DR_2
+#define EU433_RX_WND_2_DR                           DR_0
+
+/*!
+ * LoRaMac maximum number of bands
+ */
+#define EU433_MAX_NB_BANDS                          1
+
+/*!
+ * Default uplink dwell time configuration
+ */
+#define EU433_DEFAULT_UPLINK_DWELL_TIME             0
 
 /*
  * CLASS B
@@ -203,132 +162,86 @@ extern "C"
 /*!
  * Beacon frequency
  */
-#define AS923_BEACON_CHANNEL_FREQ                   923400000
+#define EU433_BEACON_CHANNEL_FREQ                   434665000
 
 /*!
  * Ping slot channel frequency
  */
-#define AS923_PING_SLOT_CHANNEL_FREQ                923400000
+#define EU433_PING_SLOT_CHANNEL_FREQ                434665000
 
 /*!
  * Payload size of a beacon frame
  */
-#define AS923_BEACON_SIZE                           17
+#define EU433_BEACON_SIZE                           17
 
 /*!
  * Size of RFU 1 field
  */
-#define AS923_RFU1_SIZE                             1
+#define EU433_RFU1_SIZE                             1
 
 /*!
  * Size of RFU 2 field
  */
-#define AS923_RFU2_SIZE                             0
+#define EU433_RFU2_SIZE                             0
 
 /*!
  * Datarate of the beacon channel
  */
-#define AS923_BEACON_CHANNEL_DR                     DR_3
+#define EU433_BEACON_CHANNEL_DR                     DR_3
 
 /*!
  * Bandwith of the beacon channel
  */
-#define AS923_BEACON_CHANNEL_BW                     0
+#define EU433_BEACON_CHANNEL_BW                     0
 
 /*!
  * Ping slot channel datarate
  */
-#define AS923_PING_SLOT_CHANNEL_DR                  DR_3
-
-/*!
- * Maximum number of bands
- */
-#define AS923_MAX_NB_BANDS                          1
+#define EU433_PING_SLOT_CHANNEL_DR                  DR_3
 
 /*!
  * Band 0 definition
  * Band = { DutyCycle, TxMaxPower, LastBandUpdateTime, LastMaxCreditAssignTime, TimeCredits, MaxTimeCredits, ReadyForTransmission }
  */
-#define AS923_BAND0                                 { 100, AS923_MAX_TX_POWER, 0, 0, 0, 0, 0 } //  1.0 %
+#define EU433_BAND0                                 { 100, EU433_MAX_TX_POWER, 0, 0, 0, 0, 0 } //  1.0 %
 
 /*!
  * LoRaMac default channel 1
  * Channel = { Frequency [Hz], RX1 Frequency [Hz], { ( ( DrMax << 4 ) | DrMin ) }, Band }
  */
-#define AS923_LC1                                   { 923200000, 0, { ( ( DR_5 << 4 ) | DR_0 ) }, 0 }
+#define EU433_LC1                                   { 433175000, 0, { ( ( DR_5 << 4 ) | DR_0 ) }, 0 }
 
 /*!
  * LoRaMac default channel 2
  * Channel = { Frequency [Hz], RX1 Frequency [Hz], { ( ( DrMax << 4 ) | DrMin ) }, Band }
  */
-#define AS923_LC2                                   { 923400000, 0, { ( ( DR_5 << 4 ) | DR_0 ) }, 0 }
+#define EU433_LC2                                   { 433375000, 0, { ( ( DR_5 << 4 ) | DR_0 ) }, 0 }
+
+/*!
+ * LoRaMac default channel 3
+ * Channel = { Frequency [Hz], RX1 Frequency [Hz], { ( ( DrMax << 4 ) | DrMin ) }, Band }
+ */
+#define EU433_LC3                                   { 433575000, 0, { ( ( DR_5 << 4 ) | DR_0 ) }, 0 }
 
 /*!
  * LoRaMac channels which are allowed for the join procedure
  */
-#define AS923_JOIN_CHANNELS                         ( uint16_t )( LC( 1 ) | LC( 2 ) )
-
-/*!
- * RSSI threshold for a free channel [dBm]
- */
-#define AS923_RSSI_FREE_TH                          -80
-
-/*!
- * Specifies the time the node performs a carrier sense
- */
-#define AS923_CARRIER_SENSE_TIME                    5
+#define EU433_JOIN_CHANNELS                         ( uint16_t )( LC( 1 ) | LC( 2 ) | LC( 3 ) )
 
 /*!
  * Data rates table definition
  */
-static const uint8_t DataratesAS923[]  = { 12, 11, 10,  9,  8,  7, 7, 50 };
+static const uint8_t DataratesEU433[] = { 12, 11, 10,  9,  8,  7,  7, 50 };
 
 /*!
  * Bandwidths table definition in Hz
  */
-static const uint32_t BandwidthsAS923[] = { 125000, 125000, 125000, 125000, 125000, 125000, 250000, 0 };
+static const uint32_t BandwidthsEU433[] = { 125000, 125000, 125000, 125000, 125000, 125000, 250000, 0 };
 
 /*!
  * Maximum payload with respect to the datarate index.
- * The table is valid for the dwell time configuration of 0 for uplinks and downlinks.
  */
-static const uint8_t MaxPayloadOfDatarateDwell0AS923[] = { 51, 51, 115, 115, 242, 242, 242, 242 };
-
-/*!
- * Maximum payload with respect to the datarate index.
- * The table is only valid for uplinks.
- */
-static const uint8_t MaxPayloadOfDatarateDwell1AS923[] = { 0, 0, 11, 53, 125, 242, 242, 242 };
-
-/*!
- * Effective datarate offsets for receive window 1 when downlink dwell time is zero.
- */
-static const int8_t EffectiveRx1DrOffsetDownlinkDwell0AS923[8][8] =
-    {
-        { DR_0 , DR_0 , DR_0 , DR_0 , DR_0 , DR_0 , DR_1 , DR_2  }, // DR_0
-        { DR_1 , DR_0 , DR_0 , DR_0 , DR_0 , DR_0 , DR_2 , DR_3  }, // DR_1
-        { DR_2 , DR_1 , DR_0 , DR_0 , DR_0 , DR_0 , DR_3 , DR_4  }, // DR_2
-        { DR_3 , DR_2 , DR_1 , DR_0 , DR_0 , DR_0 , DR_4 , DR_5  }, // DR_3
-        { DR_4 , DR_3 , DR_2 , DR_1 , DR_0 , DR_0 , DR_5 , DR_6  }, // DR_4
-        { DR_5 , DR_4 , DR_3 , DR_2 , DR_1 , DR_0 , DR_6 , DR_7  }, // DR_5
-        { DR_6 , DR_5 , DR_4 , DR_3 , DR_2 , DR_1 , DR_7 , DR_7  }, // DR_6
-        { DR_7 , DR_6 , DR_5 , DR_4 , DR_3 , DR_2 , DR_7 , DR_7  }, // DR_7
-    };
-
-/*!
- * Effective datarate offsets for receive window 1 when downlink dwell time is one.
- */
-static const int8_t EffectiveRx1DrOffsetDownlinkDwell1AS923[8][8] =
-    {
-        { DR_2 , DR_2 , DR_2 , DR_2 , DR_2 , DR_2 , DR_2 , DR_2  }, // DR_0
-        { DR_2 , DR_2 , DR_2 , DR_2 , DR_2 , DR_2 , DR_2 , DR_3  }, // DR_1
-        { DR_2 , DR_2 , DR_2 , DR_2 , DR_2 , DR_2 , DR_3 , DR_4  }, // DR_2
-        { DR_3 , DR_2 , DR_2 , DR_2 , DR_2 , DR_2 , DR_4 , DR_5  }, // DR_3
-        { DR_4 , DR_3 , DR_2 , DR_2 , DR_2 , DR_2 , DR_5 , DR_6  }, // DR_4
-        { DR_5 , DR_4 , DR_3 , DR_2 , DR_2 , DR_2 , DR_6 , DR_7  }, // DR_5
-        { DR_6 , DR_5 , DR_4 , DR_3 , DR_2 , DR_2 , DR_7 , DR_7  }, // DR_6
-        { DR_7 , DR_6 , DR_5 , DR_4 , DR_3 , DR_2 , DR_7 , DR_7  }, // DR_7
-    };
+static const uint8_t MaxPayloadOfDatarateEU433[] = { 51, 51, 51, 115, 242, 242, 242, 242 };
 
 /*!
  * \brief The function gets a value of a specific phy attribute.
@@ -337,21 +250,21 @@ static const int8_t EffectiveRx1DrOffsetDownlinkDwell1AS923[8][8] =
  *
  * \retval Returns a structure containing the PHY parameter.
  */
-PhyParam_t RegionAS923GetPhyParam( GetPhyParams_t* getPhy );
+PhyParam_t RegionEU433GetPhyParam( GetPhyParams_t* getPhy );
 
 /*!
  * \brief Updates the last TX done parameters of the current channel.
  *
  * \param [IN] txDone Pointer to the function parameters.
  */
-void RegionAS923SetBandTxDone( SetBandTxDoneParams_t* txDone );
+void RegionEU433SetBandTxDone( SetBandTxDoneParams_t* txDone );
 
 /*!
  * \brief Initializes the channels masks and the channels.
  *
  * \param [IN] type Sets the initialization type.
  */
-void RegionAS923InitDefaults( InitDefaultsParams_t* params );
+void RegionEU433InitDefaults( InitDefaultsParams_t* params );
 
 /*!
  * \brief Verifies a parameter.
@@ -362,7 +275,7 @@ void RegionAS923InitDefaults( InitDefaultsParams_t* params );
  *
  * \retval Returns true, if the parameter is valid.
  */
-bool RegionAS923Verify( VerifyParams_t* verify, PhyAttribute_t phyAttribute );
+bool RegionEU433Verify( VerifyParams_t* verify, PhyAttribute_t phyAttribute );
 
 /*!
  * \brief The function parses the input buffer and sets up the channels of the
@@ -370,7 +283,7 @@ bool RegionAS923Verify( VerifyParams_t* verify, PhyAttribute_t phyAttribute );
  *
  * \param [IN] applyCFList Pointer to the function parameters.
  */
-void RegionAS923ApplyCFList( ApplyCFListParams_t* applyCFList );
+void RegionEU433ApplyCFList( ApplyCFListParams_t* applyCFList );
 
 /*!
  * \brief Sets a channels mask.
@@ -379,7 +292,7 @@ void RegionAS923ApplyCFList( ApplyCFListParams_t* applyCFList );
  *
  * \retval Returns true, if the channels mask could be set.
  */
-bool RegionAS923ChanMaskSet( ChanMaskSetParams_t* chanMaskSet );
+bool RegionEU433ChanMaskSet( ChanMaskSetParams_t* chanMaskSet );
 
 /*!
  * Computes the Rx window timeout and offset.
@@ -394,7 +307,7 @@ bool RegionAS923ChanMaskSet( ChanMaskSetParams_t* chanMaskSet );
  *
  * \param [OUT]rxConfigParams Returns updated WindowTimeout and WindowOffset fields.
  */
-void RegionAS923ComputeRxWindowParameters( int8_t datarate, uint8_t minRxSymbols, uint32_t rxError, RxConfigParams_t *rxConfigParams );
+void RegionEU433ComputeRxWindowParameters( int8_t datarate, uint8_t minRxSymbols, uint32_t rxError, RxConfigParams_t *rxConfigParams );
 
 /*!
  * \brief Configuration of the RX windows.
@@ -405,7 +318,7 @@ void RegionAS923ComputeRxWindowParameters( int8_t datarate, uint8_t minRxSymbols
  *
  * \retval Returns true, if the configuration was applied successfully.
  */
-bool RegionAS923RxConfig( RxConfigParams_t* rxConfig, int8_t* datarate );
+bool RegionEU433RxConfig( RxConfigParams_t* rxConfig, int8_t* datarate );
 
 /*!
  * \brief TX configuration.
@@ -418,7 +331,7 @@ bool RegionAS923RxConfig( RxConfigParams_t* rxConfig, int8_t* datarate );
  *
  * \retval Returns true, if the configuration was applied successfully.
  */
-bool RegionAS923TxConfig( TxConfigParams_t* txConfig, int8_t* txPower, TimerTime_t* txTimeOnAir );
+bool RegionEU433TxConfig( TxConfigParams_t* txConfig, int8_t* txPower, TimerTime_t* txTimeOnAir );
 
 /*!
  * \brief The function processes a Link ADR Request.
@@ -427,7 +340,7 @@ bool RegionAS923TxConfig( TxConfigParams_t* txConfig, int8_t* txPower, TimerTime
  *
  * \retval Returns the status of the operation, according to the LoRaMAC specification.
  */
-uint8_t RegionAS923LinkAdrReq( LinkAdrReqParams_t* linkAdrReq, int8_t* drOut, int8_t* txPowOut, uint8_t* nbRepOut, uint8_t* nbBytesParsed );
+uint8_t RegionEU433LinkAdrReq( LinkAdrReqParams_t* linkAdrReq, int8_t* drOut, int8_t* txPowOut, uint8_t* nbRepOut, uint8_t* nbBytesParsed );
 
 /*!
  * \brief The function processes a RX Parameter Setup Request.
@@ -436,7 +349,7 @@ uint8_t RegionAS923LinkAdrReq( LinkAdrReqParams_t* linkAdrReq, int8_t* drOut, in
  *
  * \retval Returns the status of the operation, according to the LoRaMAC specification.
  */
-uint8_t RegionAS923RxParamSetupReq( RxParamSetupReqParams_t* rxParamSetupReq );
+uint8_t RegionEU433RxParamSetupReq( RxParamSetupReqParams_t* rxParamSetupReq );
 
 /*!
  * \brief The function processes a Channel Request.
@@ -445,7 +358,7 @@ uint8_t RegionAS923RxParamSetupReq( RxParamSetupReqParams_t* rxParamSetupReq );
  *
  * \retval Returns the status of the operation, according to the LoRaMAC specification.
  */
-int8_t RegionAS923NewChannelReq( NewChannelReqParams_t* newChannelReq );
+int8_t RegionEU433NewChannelReq( NewChannelReqParams_t* newChannelReq );
 
 /*!
  * \brief The function processes a TX ParamSetup Request.
@@ -456,7 +369,7 @@ int8_t RegionAS923NewChannelReq( NewChannelReqParams_t* newChannelReq );
  *         Returns -1, if the functionality is not implemented. In this case, the end node
  *         shall not process the command.
  */
-int8_t RegionAS923TxParamSetupReq( TxParamSetupReqParams_t* txParamSetupReq );
+int8_t RegionEU433TxParamSetupReq( TxParamSetupReqParams_t* txParamSetupReq );
 
 /*!
  * \brief The function processes a DlChannel Request.
@@ -465,7 +378,7 @@ int8_t RegionAS923TxParamSetupReq( TxParamSetupReqParams_t* txParamSetupReq );
  *
  * \retval Returns the status of the operation, according to the LoRaMAC specification.
  */
-int8_t RegionAS923DlChannelReq( DlChannelReqParams_t* dlChannelReq );
+int8_t RegionEU433DlChannelReq( DlChannelReqParams_t* dlChannelReq );
 
 /*!
  * \brief Alternates the datarate of the channel for the join request.
@@ -474,7 +387,7 @@ int8_t RegionAS923DlChannelReq( DlChannelReqParams_t* dlChannelReq );
  *
  * \retval Datarate to apply.
  */
-int8_t RegionAS923AlternateDr( int8_t currentDr, AlternateDrType_t type );
+int8_t RegionEU433AlternateDr( int8_t currentDr, AlternateDrType_t type );
 
 /*!
  * \brief Searches and set the next random available channel
@@ -488,7 +401,7 @@ int8_t RegionAS923AlternateDr( int8_t currentDr, AlternateDrType_t type );
  *
  * \retval Function status [1: OK, 0: Unable to find a channel on the current datarate]
  */
-LoRaMacStatus_t RegionAS923NextChannel( NextChanParams_t* nextChanParams, uint8_t* channel, TimerTime_t* time, TimerTime_t* aggregatedTimeOff );
+LoRaMacStatus_t RegionEU433NextChannel( NextChanParams_t* nextChanParams, uint8_t* channel, TimerTime_t* time, TimerTime_t* aggregatedTimeOff );
 
 /*!
  * \brief Adds a channel.
@@ -497,7 +410,7 @@ LoRaMacStatus_t RegionAS923NextChannel( NextChanParams_t* nextChanParams, uint8_
  *
  * \retval Status of the operation.
  */
-LoRaMacStatus_t RegionAS923ChannelAdd( ChannelAddParams_t* channelAdd );
+LoRaMacStatus_t RegionEU433ChannelAdd( ChannelAddParams_t* channelAdd );
 
 /*!
  * \brief Removes a channel.
@@ -506,7 +419,7 @@ LoRaMacStatus_t RegionAS923ChannelAdd( ChannelAddParams_t* channelAdd );
  *
  * \retval Returns true, if the channel was removed successfully.
  */
-bool RegionAS923ChannelsRemove( ChannelRemoveParams_t* channelRemove  );
+bool RegionEU433ChannelsRemove( ChannelRemoveParams_t* channelRemove  );
 
 /*!
  * \brief Computes new datarate according to the given offset
@@ -519,19 +432,19 @@ bool RegionAS923ChannelsRemove( ChannelRemoveParams_t* channelRemove  );
  *
  * \retval newDr Computed datarate.
  */
-uint8_t RegionAS923ApplyDrOffset( uint8_t downlinkDwellTime, int8_t dr, int8_t drOffset );
+uint8_t RegionEU433ApplyDrOffset( uint8_t downlinkDwellTime, int8_t dr, int8_t drOffset );
 
 /*!
  * \brief Sets the radio into beacon reception mode
  *
  * \param [IN] rxBeaconSetup Pointer to the function parameters
  */
- void RegionAS923RxBeaconSetup( RxBeaconSetup_t* rxBeaconSetup, uint8_t* outDr );
+void RegionEU433RxBeaconSetup( RxBeaconSetup_t* rxBeaconSetup, uint8_t* outDr );
 
-/*! \} defgroup REGIONAS923 */
+/*! \} defgroup REGIONEU433 */
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // __REGION_AS923_H__
+#endif // __REGION_EU433_H__
