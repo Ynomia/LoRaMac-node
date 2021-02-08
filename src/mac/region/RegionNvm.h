@@ -92,10 +92,13 @@ typedef struct sRegionNvmDataGroup1
      * LoRaMac bands
      */
     Band_t Bands[ REGION_NVM_MAX_NB_BANDS ];
+#if defined( REGION_US915 ) || defined( REGION_AU915 ) || defined( REGION_CN470 )
     /*!
      * LoRaMac channels remaining
      */
     uint16_t ChannelsMaskRemaining[ REGION_NVM_CHANNELS_MASK_SIZE ];
+#endif
+#if defined( REGION_US915 ) || defined( REGION_AU915 )
     /*!
      * Index of current in use 8 bit group (0: bit 0 - 7, 1: bit 8 - 15, ...,
      * 7: bit 56 - 63)
@@ -105,6 +108,7 @@ typedef struct sRegionNvmDataGroup1
      * Counter of join trials needed to alternate between datarates.
      */
     uint8_t JoinTrialsCounter;
+#endif
     /*!
      * CRC32 value of the Region data structure.
      */
