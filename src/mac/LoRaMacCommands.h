@@ -35,11 +35,6 @@
 #ifndef __LORAMAC_COMMANDS_H__
 #define __LORAMAC_COMMANDS_H__
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 #include <stdint.h>
 #include <stddef.h>
 #include "LoRaMacTypes.h"
@@ -119,9 +114,30 @@ typedef void ( *LoRaMacCommandsNvmEvent )( void );
 /*!
  * \brief Initialization of LoRaMac MAC commands module
  *
+ * \param[IN]    commandsNvmCtxChanged - Callback function which will be called when the
+ *                                      non-volatile context needs to be saved.
+ *
  * \retval                            - Status of the operation
  */
-LoRaMacCommandStatus_t LoRaMacCommandsInit( void );
+LoRaMacCommandStatus_t LoRaMacCommandsInit( LoRaMacCommandsNvmEvent commandsNvmCtxChanged );
+
+/*!
+ * Restores the internal non-volatile context from passed pointer.
+ *
+ * \param[IN]     commandsNvmCtx     - Pointer to non-volatile MAC commands module context to be restored.
+ *
+ * \retval                     - Status of the operation
+ */
+LoRaMacCommandStatus_t LoRaMacCommandsRestoreNvmCtx( void* commandsNvmCtx );
+
+/*!
+ * Returns a pointer to the internal non-volatile context.
+ *
+ * \param[IN]     commandsNvmCtxSize - Size of the module non-volatile context
+ *
+ * \retval                    - Points to a structure where the module store its non-volatile context
+ */
+void* LoRaMacCommandsGetNvmCtx( size_t* commandsNvmCtxSize );
 
 /*!
  * \brief Adds a new MAC command to be sent.
@@ -206,10 +222,6 @@ LoRaMacCommandStatus_t LoRaMacCommandsStickyCmdsPending( bool* cmdsPending );
 uint8_t LoRaMacCommandsGetCmdSize( uint8_t cid );
 
 /*! \} addtogroup LORAMAC */
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // __LORAMAC_COMMANDS_H__
 

@@ -1,3 +1,4 @@
+// clang-format off
 /*
  / _____)             _              | |
 ( (____  _____ ____ _| |_ _____  ____| |__
@@ -21,6 +22,8 @@ Maintainer: Miguel Luis ( Semtech ), Gregory Cristian ( Semtech ) and Daniel Jae
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "log.h"
+
 #include "timer.h"
 #include "utilities.h"
 #include "LoRaMac.h"
@@ -30,7 +33,7 @@ Maintainer: Miguel Luis ( Semtech ), Gregory Cristian ( Semtech ) and Daniel Jae
 /*
  * LoRaMac Confirm Queue Context NVM structure
  */
-typedef struct sLoRaMacConfirmQueueNvmData
+typedef struct sLoRaMacConfirmQueueNvmCtx
 {
     /*!
     * MlmeConfirm queue data structure
@@ -44,7 +47,7 @@ typedef struct sLoRaMacConfirmQueueNvmData
     * Variable which holds a common status
     */
     LoRaMacEventInfoStatus_t CommonStatus;
-} LoRaMacConfirmQueueNvmData_t;
+} LoRaMacConfirmQueueNvmCtx_t;
 
 /*
  * LoRaMac Confirm Queue Context structure
@@ -63,11 +66,20 @@ typedef struct sLoRaMacConfirmQueueCtx
     * Pointer to the last element of the ring buffer
     */
     MlmeConfirmQueue_t* BufferEnd;
+    /*
+     * Callback function to notify the upper layer about context change
+     */
+    LoRaMacConfirmQueueNvmEvent LoRaMacConfirmQueueNvmEvent;
     /*!
     * Non-volatile module context.
     */
-    LoRaMacConfirmQueueNvmData_t Nvm;
+    LoRaMacConfirmQueueNvmCtx_t* ConfirmQueueNvmCtx;
 } LoRaMacConfirmQueueCtx_t;
+
+/*
+ * Non-volatile module context.
+ */
+static LoRaMacConfirmQueueNvmCtx_t ConfirmQueueNvmCtx;
 
 /*
  * Module context.
@@ -76,10 +88,10 @@ static LoRaMacConfirmQueueCtx_t ConfirmQueueCtx;
 
 static MlmeConfirmQueue_t* IncreaseBufferPointer( MlmeConfirmQueue_t* bufferPointer )
 {
-    if( bufferPointer == &ConfirmQueueCtx.Nvm.MlmeConfirmQueue[LORA_MAC_MLME_CONFIRM_QUEUE_LEN - 1] )
+    if( bufferPointer == &ConfirmQueueCtx.ConfirmQueueNvmCtx->MlmeConfirmQueue[LORA_MAC_MLME_CONFIRM_QUEUE_LEN - 1] )
     {
         // Reset to the first element
-        bufferPointer = ConfirmQueueCtx.Nvm.MlmeConfirmQueue;
+        bufferPointer = ConfirmQueueCtx.ConfirmQueueNvmCtx->MlmeConfirmQueue;
     }
     else
     {
@@ -91,10 +103,10 @@ static MlmeConfirmQueue_t* IncreaseBufferPointer( MlmeConfirmQueue_t* bufferPoin
 
 static MlmeConfirmQueue_t* DecreaseBufferPointer( MlmeConfirmQueue_t* bufferPointer )
 {
-    if( bufferPointer == ConfirmQueueCtx.Nvm.MlmeConfirmQueue )
+    if( bufferPointer == ConfirmQueueCtx.ConfirmQueueNvmCtx->MlmeConfirmQueue )
     {
         // Reset to the last element
-        bufferPointer = &ConfirmQueueCtx.Nvm.MlmeConfirmQueue[LORA_MAC_MLME_CONFIRM_QUEUE_LEN - 1];
+        bufferPointer = &ConfirmQueueCtx.ConfirmQueueNvmCtx->MlmeConfirmQueue[LORA_MAC_MLME_CONFIRM_QUEUE_LEN - 1];
     }
     else
     {
@@ -103,66 +115,71 @@ static MlmeConfirmQueue_t* DecreaseBufferPointer( MlmeConfirmQueue_t* bufferPoin
     return bufferPointer;
 }
 
-static bool IsListEmpty( uint8_t count )
-{
-    if( count == 0 )
-    {
-        return true;
-    }
-    return false;
-}
-
-static bool IsListFull( uint8_t count )
-{
-    if( count >= LORA_MAC_MLME_CONFIRM_QUEUE_LEN )
-    {
-        return true;
-    }
-    return false;
-}
-
 static MlmeConfirmQueue_t* GetElement( Mlme_t request, MlmeConfirmQueue_t* bufferStart, MlmeConfirmQueue_t* bufferEnd )
 {
     MlmeConfirmQueue_t* element = bufferStart;
 
-    if( IsListEmpty( ConfirmQueueCtx.Nvm.MlmeConfirmQueueCnt ) == true )
-    {
-        return NULL;
-    }
-
-    for( uint8_t elementCnt = 0; elementCnt < ConfirmQueueCtx.Nvm.MlmeConfirmQueueCnt; elementCnt++ )
+    while( element != bufferEnd )
     {
         if( element->Request == request )
         {
             // We have found the element
             return element;
         }
-        element = IncreaseBufferPointer( element );
+        else
+        {
+            element = IncreaseBufferPointer( element );
+        }
     }
-
     return NULL;
 }
 
-void LoRaMacConfirmQueueInit( LoRaMacPrimitives_t* primitives )
+void LoRaMacConfirmQueueInit( LoRaMacPrimitives_t* primitives, LoRaMacConfirmQueueNvmEvent confirmQueueNvmCtxChanged )
 {
     ConfirmQueueCtx.Primitives = primitives;
 
+    // Assign nvm context
+    ConfirmQueueCtx.ConfirmQueueNvmCtx = &ConfirmQueueNvmCtx;
+
     // Init counter
-    ConfirmQueueCtx.Nvm.MlmeConfirmQueueCnt = 0;
+    ConfirmQueueCtx.ConfirmQueueNvmCtx->MlmeConfirmQueueCnt = 0;
 
     // Init buffer
-    ConfirmQueueCtx.BufferStart = ConfirmQueueCtx.Nvm.MlmeConfirmQueue;
-    ConfirmQueueCtx.BufferEnd = ConfirmQueueCtx.Nvm.MlmeConfirmQueue;
+    ConfirmQueueCtx.BufferStart = ConfirmQueueCtx.ConfirmQueueNvmCtx->MlmeConfirmQueue;
+    ConfirmQueueCtx.BufferEnd = ConfirmQueueCtx.ConfirmQueueNvmCtx->MlmeConfirmQueue;
 
-    memset1( ( uint8_t* )ConfirmQueueCtx.Nvm.MlmeConfirmQueue, 0xFF, sizeof( ConfirmQueueCtx.Nvm.MlmeConfirmQueue ) );
+    memset1( ( uint8_t* )ConfirmQueueCtx.ConfirmQueueNvmCtx->MlmeConfirmQueue, 0xFF, sizeof( ConfirmQueueCtx.ConfirmQueueNvmCtx->MlmeConfirmQueue ) );
 
     // Common status
-    ConfirmQueueCtx.Nvm.CommonStatus = LORAMAC_EVENT_INFO_STATUS_ERROR;
+    ConfirmQueueCtx.ConfirmQueueNvmCtx->CommonStatus = LORAMAC_EVENT_INFO_STATUS_ERROR;
+
+    // Assign callback
+    ConfirmQueueCtx.LoRaMacConfirmQueueNvmEvent = confirmQueueNvmCtxChanged;
+}
+
+bool LoRaMacConfirmQueueRestoreNvmCtx( void* confirmQueueNvmCtx )
+{
+    // Restore module context
+    if( confirmQueueNvmCtx != NULL )
+    {
+        memcpy1( ( uint8_t* )&ConfirmQueueNvmCtx, ( uint8_t* ) confirmQueueNvmCtx, sizeof( ConfirmQueueNvmCtx ) );
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+void* LoRaMacConfirmQueueGetNvmCtx( size_t* confirmQueueNvmCtxSize )
+{
+    *confirmQueueNvmCtxSize = sizeof( ConfirmQueueNvmCtx );
+    return &ConfirmQueueNvmCtx;
 }
 
 bool LoRaMacConfirmQueueAdd( MlmeConfirmQueue_t* mlmeConfirm )
 {
-    if( IsListFull( ConfirmQueueCtx.Nvm.MlmeConfirmQueueCnt ) == true )
+    if( ConfirmQueueCtx.ConfirmQueueNvmCtx->MlmeConfirmQueueCnt >= LORA_MAC_MLME_CONFIRM_QUEUE_LEN )
     {
         // Protect the buffer against overwrites
         return false;
@@ -172,9 +189,9 @@ bool LoRaMacConfirmQueueAdd( MlmeConfirmQueue_t* mlmeConfirm )
     ConfirmQueueCtx.BufferEnd->Request = mlmeConfirm->Request;
     ConfirmQueueCtx.BufferEnd->Status = mlmeConfirm->Status;
     ConfirmQueueCtx.BufferEnd->RestrictCommonReadyToHandle = mlmeConfirm->RestrictCommonReadyToHandle;
-    ConfirmQueueCtx.BufferEnd->ReadyToHandle = mlmeConfirm->ReadyToHandle;
+    ConfirmQueueCtx.BufferEnd->ReadyToHandle = false;
     // Increase counter
-    ConfirmQueueCtx.Nvm.MlmeConfirmQueueCnt++;
+    ConfirmQueueCtx.ConfirmQueueNvmCtx->MlmeConfirmQueueCnt++;
     // Update end pointer
     ConfirmQueueCtx.BufferEnd = IncreaseBufferPointer( ConfirmQueueCtx.BufferEnd );
 
@@ -183,13 +200,13 @@ bool LoRaMacConfirmQueueAdd( MlmeConfirmQueue_t* mlmeConfirm )
 
 bool LoRaMacConfirmQueueRemoveLast( void )
 {
-    if( IsListEmpty( ConfirmQueueCtx.Nvm.MlmeConfirmQueueCnt ) == true )
+    if( ConfirmQueueCtx.ConfirmQueueNvmCtx->MlmeConfirmQueueCnt == 0 )
     {
         return false;
     }
 
     // Increase counter
-    ConfirmQueueCtx.Nvm.MlmeConfirmQueueCnt--;
+    ConfirmQueueCtx.ConfirmQueueNvmCtx->MlmeConfirmQueueCnt--;
     // Update start pointer
     ConfirmQueueCtx.BufferEnd = DecreaseBufferPointer( ConfirmQueueCtx.BufferEnd );
 
@@ -198,13 +215,13 @@ bool LoRaMacConfirmQueueRemoveLast( void )
 
 bool LoRaMacConfirmQueueRemoveFirst( void )
 {
-    if( IsListEmpty( ConfirmQueueCtx.Nvm.MlmeConfirmQueueCnt ) == true )
+    if( ConfirmQueueCtx.ConfirmQueueNvmCtx->MlmeConfirmQueueCnt == 0 )
     {
         return false;
     }
 
     // Increase counter
-    ConfirmQueueCtx.Nvm.MlmeConfirmQueueCnt--;
+    ConfirmQueueCtx.ConfirmQueueNvmCtx->MlmeConfirmQueueCnt--;
     // Update start pointer
     ConfirmQueueCtx.BufferStart = IncreaseBufferPointer( ConfirmQueueCtx.BufferStart );
 
@@ -215,7 +232,7 @@ void LoRaMacConfirmQueueSetStatus( LoRaMacEventInfoStatus_t status, Mlme_t reque
 {
     MlmeConfirmQueue_t* element = NULL;
 
-    if( IsListEmpty( ConfirmQueueCtx.Nvm.MlmeConfirmQueueCnt ) == false )
+    if( ConfirmQueueCtx.ConfirmQueueNvmCtx->MlmeConfirmQueueCnt > 0 )
     {
         element = GetElement( request, ConfirmQueueCtx.BufferStart, ConfirmQueueCtx.BufferEnd );
         if( element != NULL )
@@ -230,7 +247,7 @@ LoRaMacEventInfoStatus_t LoRaMacConfirmQueueGetStatus( Mlme_t request )
 {
     MlmeConfirmQueue_t* element = NULL;
 
-    if( IsListEmpty( ConfirmQueueCtx.Nvm.MlmeConfirmQueueCnt ) == false )
+    if( ConfirmQueueCtx.ConfirmQueueNvmCtx->MlmeConfirmQueueCnt > 0 )
     {
         element = GetElement( request, ConfirmQueueCtx.BufferStart, ConfirmQueueCtx.BufferEnd );
         if( element != NULL )
@@ -245,9 +262,9 @@ void LoRaMacConfirmQueueSetStatusCmn( LoRaMacEventInfoStatus_t status )
 {
     MlmeConfirmQueue_t* element = ConfirmQueueCtx.BufferStart;
 
-    ConfirmQueueCtx.Nvm.CommonStatus = status;
+    ConfirmQueueCtx.ConfirmQueueNvmCtx->CommonStatus = status;
 
-    if( IsListEmpty( ConfirmQueueCtx.Nvm.MlmeConfirmQueueCnt ) == false )
+    if( ConfirmQueueCtx.ConfirmQueueNvmCtx->MlmeConfirmQueueCnt > 0 )
     {
         do
         {
@@ -265,7 +282,7 @@ void LoRaMacConfirmQueueSetStatusCmn( LoRaMacEventInfoStatus_t status )
 
 LoRaMacEventInfoStatus_t LoRaMacConfirmQueueGetStatusCmn( void )
 {
-    return ConfirmQueueCtx.Nvm.CommonStatus;
+    return ConfirmQueueCtx.ConfirmQueueNvmCtx->CommonStatus;
 }
 
 bool LoRaMacConfirmQueueIsCmdActive( Mlme_t request )
@@ -279,16 +296,14 @@ bool LoRaMacConfirmQueueIsCmdActive( Mlme_t request )
 
 void LoRaMacConfirmQueueHandleCb( MlmeConfirm_t* mlmeConfirm )
 {
-    uint8_t nbElements = ConfirmQueueCtx.Nvm.MlmeConfirmQueueCnt;
+    uint8_t nbElements = ConfirmQueueCtx.ConfirmQueueNvmCtx->MlmeConfirmQueueCnt;
     bool readyToHandle = false;
     MlmeConfirmQueue_t mlmeConfirmToStore;
-
     for( uint8_t i = 0; i < nbElements; i++ )
     {
         mlmeConfirm->MlmeRequest = ConfirmQueueCtx.BufferStart->Request;
         mlmeConfirm->Status = ConfirmQueueCtx.BufferStart->Status;
         readyToHandle = ConfirmQueueCtx.BufferStart->ReadyToHandle;
-
         if( readyToHandle == true )
         {
             ConfirmQueueCtx.Primitives->MacMlmeConfirm( mlmeConfirm );
@@ -314,12 +329,12 @@ void LoRaMacConfirmQueueHandleCb( MlmeConfirm_t* mlmeConfirm )
 
 uint8_t LoRaMacConfirmQueueGetCnt( void )
 {
-    return ConfirmQueueCtx.Nvm.MlmeConfirmQueueCnt;
+    return ConfirmQueueCtx.ConfirmQueueNvmCtx->MlmeConfirmQueueCnt;
 }
 
 bool LoRaMacConfirmQueueIsFull( void )
 {
-    if( IsListFull( ConfirmQueueCtx.Nvm.MlmeConfirmQueueCnt ) == true )
+    if( ConfirmQueueCtx.ConfirmQueueNvmCtx->MlmeConfirmQueueCnt >= LORA_MAC_MLME_CONFIRM_QUEUE_LEN )
     {
         return true;
     }
