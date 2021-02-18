@@ -76,16 +76,16 @@ void RadioSetChannel( uint32_t freq );
 bool RadioIsChannelFree( uint32_t freq, uint32_t rxBandwidth, int16_t rssiThresh, uint32_t maxCarrierSenseTime );
 
 /*!
- * \brief Generates a 32 bits random value based on the RSSI readings
+ * \brief Generates a 16 bits random value based on the RSSI readings
  *
  * \remark This function sets the radio in LoRa modem mode and disables
  *         all interrupts.
  *         After calling this function either Radio.SetRxConfig or
  *         Radio.SetTxConfig functions must be called.
  *
- * \retval randomValue    32 bits random value
+ * \retval randomValue    16 bits random value
  */
-uint32_t RadioRandom( void );
+uint16_t RadioRandom( void );
 
 /*!
  * \brief Sets the reception parameters
@@ -604,9 +604,9 @@ bool RadioIsChannelFree( uint32_t freq, uint32_t rxBandwidth, int16_t rssiThresh
 	return status;
 }
 
-uint32_t RadioRandom( void )
+uint16_t RadioRandom( void )
 {
-	uint32_t rnd = 0;
+	uint16_t rnd = 0;
 
 	/*
      * Radio setup for random number generation

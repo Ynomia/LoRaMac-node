@@ -31,10 +31,6 @@
 #ifndef AES_H
 #define AES_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdint.h>
 
 #if 1
@@ -161,10 +157,6 @@ void aes_decrypt_256( const uint8_t in[N_BLOCK],
                       uint8_t out[N_BLOCK],
                       const uint8_t key[2 * N_BLOCK],
                       uint8_t o_key[2 * N_BLOCK] );
-#endif
-
-#ifdef __cplusplus
-}
 #endif
 
 #endif
