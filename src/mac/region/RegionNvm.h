@@ -52,6 +52,7 @@ typedef enum eRegionCN470ChannelPlan
     CHANNEL_PLAN_26MHZ_TYPE_B
 }RegionCN470ChannelPlan_t;
 
+#define REGION_AU915
 // Selection of REGION_NVM_MAX_NB_CHANNELS
 #if defined( REGION_CN470 )
     #define REGION_NVM_MAX_NB_CHANNELS                 96

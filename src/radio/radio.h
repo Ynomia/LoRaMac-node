@@ -111,6 +111,11 @@ typedef struct
      * \brief  Gnss Done Done callback prototype.
     */
 	void ( *WifiDone )( void );
+     
+	/*!
+     * \brief Notify of a radio event from ISR.
+     */
+	void ( *notify )( void );
 } RadioEvents_t;
 
 /*!
@@ -384,6 +389,10 @@ struct Radio_s
      * \brief Process radio irq
      */
 	void ( *IrqProcess )( void );
+	/*!
+     * \brief Set radio notification.
+     */
+	void ( *SetEventNotify )( void ( *notify )( void ) );
 	/*
      * The next functions are available only on SX126x radios.
      */

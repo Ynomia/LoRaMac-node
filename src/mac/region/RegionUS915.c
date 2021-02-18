@@ -28,8 +28,6 @@
  *
  * \author    Daniel Jaeckle ( STACKFORCE )
 */
-#ifdef REGION_US915
-
 #include "radio.h"
 #include "RegionCommon.h"
 #include "RegionUS915.h"
@@ -928,5 +926,3 @@ void RegionUS915RxBeaconSetup( RxBeaconSetup_t* rxBeaconSetup, uint8_t* outDr )
     // Store downlink datarate
     *outDr = US915_BEACON_CHANNEL_DR;
 }
-
-#endif //REGION_US915
