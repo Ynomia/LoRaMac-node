@@ -34,43 +34,42 @@
 #ifndef __SECURE_ELEMENT_H__
 #define __SECURE_ELEMENT_H__
 
-#include <stdint.h>
 #include "LoRaMacCrypto.h"
+#include <stdint.h>
 
 /*!
  * Return values.
  */
-typedef enum eSecureElementStatus
-{
-    /*!
+typedef enum eSecureElementStatus {
+	/*!
      * No error occurred
      */
-    SECURE_ELEMENT_SUCCESS = 0,
-    /*!
+	SECURE_ELEMENT_SUCCESS = 0,
+	/*!
      * CMAC does not match
      */
-    SECURE_ELEMENT_FAIL_CMAC,
-    /*!
+	SECURE_ELEMENT_FAIL_CMAC,
+	/*!
      * Null pointer exception
      */
-    SECURE_ELEMENT_ERROR_NPE,
-    /*!
+	SECURE_ELEMENT_ERROR_NPE,
+	/*!
      * Invalid key identifier exception
      */
-    SECURE_ELEMENT_ERROR_INVALID_KEY_ID,
-    /*!
+	SECURE_ELEMENT_ERROR_INVALID_KEY_ID,
+	/*!
      * Invalid LoRaWAN specification version
      */
-    SECURE_ELEMENT_ERROR_INVALID_LORAWAM_SPEC_VERSION,
-    /*!
+	SECURE_ELEMENT_ERROR_INVALID_LORAWAM_SPEC_VERSION,
+	/*!
      * Incompatible buffer size
      */
-    SECURE_ELEMENT_ERROR_BUF_SIZE,
-    /*!
+	SECURE_ELEMENT_ERROR_BUF_SIZE,
+	/*!
      * Undefined Error occurred
      */
-    SECURE_ELEMENT_ERROR,
-}SecureElementStatus_t;
+	SECURE_ELEMENT_ERROR,
+} SecureElementStatus_t;
 
 /*!
  * Signature of callback function to be called by the Secure Element driver when the
@@ -94,7 +93,7 @@ SecureElementStatus_t SecureElementInit( SecureElementNvmEvent seNvmCtxChanged )
  * \param[IN]     seNvmCtx         - Pointer to non-volatile module context to be restored.
  * \retval                         - Status of the operation
  */
-SecureElementStatus_t SecureElementRestoreNvmCtx( void* seNvmCtx );
+SecureElementStatus_t SecureElementRestoreNvmCtx( void *seNvmCtx );
 
 /*!
  * Returns a pointer to the internal non-volatile context.
@@ -102,7 +101,7 @@ SecureElementStatus_t SecureElementRestoreNvmCtx( void* seNvmCtx );
  * \param[IN]     seNvmCtxSize    - Size of the module non volatile context
  * \retval                        - Points to a structure where the module store its non volatile context
  */
-void* SecureElementGetNvmCtx( size_t* seNvmCtxSize );
+void *SecureElementGetNvmCtx( size_t *seNvmCtxSize );
 
 /*!
  * Sets a key
@@ -111,7 +110,7 @@ void* SecureElementGetNvmCtx( size_t* seNvmCtxSize );
  * \param[IN]  key            - Key value
  * \retval                    - Status of the operation
  */
-SecureElementStatus_t SecureElementSetKey( KeyIdentifier_t keyID, uint8_t* key );
+SecureElementStatus_t SecureElementSetKey( KeyIdentifier_t keyID, uint8_t *key );
 
 /*!
  * Computes a CMAC of a message using provided initial Bx block
@@ -123,7 +122,7 @@ SecureElementStatus_t SecureElementSetKey( KeyIdentifier_t keyID, uint8_t* key )
  * \param[OUT] cmac           - Computed cmac
  * \retval                    - Status of the operation
  */
-SecureElementStatus_t SecureElementComputeAesCmac( uint8_t* micBxBuffer, uint8_t* buffer, uint16_t size, KeyIdentifier_t keyID, uint32_t* cmac );
+SecureElementStatus_t SecureElementComputeAesCmac( uint8_t *micBxBuffer, uint8_t *buffer, uint16_t size, KeyIdentifier_t keyID, uint32_t *cmac );
 
 /*!
  * Verifies a CMAC (computes and compare with expected cmac)
@@ -134,7 +133,7 @@ SecureElementStatus_t SecureElementComputeAesCmac( uint8_t* micBxBuffer, uint8_t
  * \param[IN]  keyID          - Key identifier to determine the AES key to be used
  * \retval                    - Status of the operation
  */
-SecureElementStatus_t SecureElementVerifyAesCmac( uint8_t* buffer, uint16_t size, uint32_t expectedCmac, KeyIdentifier_t keyID );
+SecureElementStatus_t SecureElementVerifyAesCmac( uint8_t *buffer, uint16_t size, uint32_t expectedCmac, KeyIdentifier_t keyID );
 
 /*!
  * Encrypt a buffer
@@ -145,7 +144,7 @@ SecureElementStatus_t SecureElementVerifyAesCmac( uint8_t* buffer, uint16_t size
  * \param[OUT] encBuffer      - Encrypted buffer
  * \retval                    - Status of the operation
  */
-SecureElementStatus_t SecureElementAesEncrypt( uint8_t* buffer, uint16_t size, KeyIdentifier_t keyID, uint8_t* encBuffer );
+SecureElementStatus_t SecureElementAesEncrypt( uint8_t *buffer, uint16_t size, KeyIdentifier_t keyID, uint8_t *encBuffer );
 
 /*!
  * Derives and store a key
@@ -156,14 +155,14 @@ SecureElementStatus_t SecureElementAesEncrypt( uint8_t* buffer, uint16_t size, K
  * \param[IN]  targetKeyID    - Key identifier of the key which will be derived
  * \retval                    - Status of the operation
  */
-SecureElementStatus_t SecureElementDeriveAndStoreKey( Version_t version, uint8_t* input, KeyIdentifier_t rootKeyID, KeyIdentifier_t targetKeyID );
+SecureElementStatus_t SecureElementDeriveAndStoreKey( Version_t version, uint8_t *input, KeyIdentifier_t rootKeyID, KeyIdentifier_t targetKeyID );
 
 /*!
  * Generates a random number
  *
- * \param[OUT] randomNum      - 32 bit random number
+ * \param[OUT] randomNum      - 16 bit random number
  * \retval                    - Status of the operation
  */
-SecureElementStatus_t SecureElementRandomNumber( uint32_t* randomNum );
+SecureElementStatus_t SecureElementRandomNumber( uint16_t *randomNum );
 
 #endif //  __SECURE_ELEMENT_H__

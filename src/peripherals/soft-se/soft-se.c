@@ -332,7 +332,7 @@ SecureElementStatus_t SecureElementDeriveAndStoreKey( Version_t version, uint8_t
 	return SECURE_ELEMENT_SUCCESS;
 }
 
-SecureElementStatus_t SecureElementRandomNumber( uint32_t *randomNum )
+SecureElementStatus_t SecureElementRandomNumber( uint16_t *randomNum )
 {
 	if ( randomNum == NULL ) {
 		return SECURE_ELEMENT_ERROR_NPE;
