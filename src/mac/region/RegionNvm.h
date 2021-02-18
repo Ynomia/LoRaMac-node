@@ -40,19 +40,6 @@ extern "C"
 
 #include "LoRaMacTypes.h"
 
-/*!
- * Channel plan for region CN470
- */
-typedef enum eRegionCN470ChannelPlan
-{
-    CHANNEL_PLAN_UNKNOWN,
-    CHANNEL_PLAN_20MHZ_TYPE_A,
-    CHANNEL_PLAN_20MHZ_TYPE_B,
-    CHANNEL_PLAN_26MHZ_TYPE_A,
-    CHANNEL_PLAN_26MHZ_TYPE_B
-}RegionCN470ChannelPlan_t;
-
-#define REGION_AU915
 // Selection of REGION_NVM_MAX_NB_CHANNELS
 #if defined( REGION_CN470 )
     #define REGION_NVM_MAX_NB_CHANNELS                 96
@@ -93,13 +80,11 @@ typedef struct sRegionNvmDataGroup1
      * LoRaMac bands
      */
     Band_t Bands[ REGION_NVM_MAX_NB_BANDS ];
-#if defined( REGION_US915 ) || defined( REGION_AU915 ) || defined( REGION_CN470 )
+#if defined( REGION_US915 ) || defined( REGION_AU915 )
     /*!
      * LoRaMac channels remaining
      */
     uint16_t ChannelsMaskRemaining[ REGION_NVM_CHANNELS_MASK_SIZE ];
-#endif
-#if defined( REGION_US915 ) || defined( REGION_AU915 )
     /*!
      * Index of current in use 8 bit group (0: bit 0 - 7, 1: bit 8 - 15, ...,
      * 7: bit 56 - 63)
@@ -134,22 +119,6 @@ typedef struct sRegionNvmDataGroup2
      * LoRaMac channels default mask
      */
     uint16_t ChannelsDefaultMask[ REGION_NVM_CHANNELS_MASK_SIZE ];
-#if defined( REGION_CN470 )
-    /*!
-     * Holds the channel plan.
-     */
-    RegionCN470ChannelPlan_t ChannelPlan;
-    /*!
-     * Holds the common join channel, if its an OTAA device, otherwise
-     * this value is 0.
-     */
-    uint8_t CommonJoinChannelIndex;
-    /*!
-     * Identifier which specifies if the device is an OTAA device. Set
-     * to true, if its an OTAA device.
-     */
-    bool IsOtaaDevice;
-#endif
     /*!
      * CRC32 value of the Region data structure.
      */
