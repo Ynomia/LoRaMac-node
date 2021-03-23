@@ -148,7 +148,11 @@ static TimerTime_t DutyCycleWaitTime = 0;
 
 /*!
  * Indicates if an uplink is pending upon MAC layer request
+<<<<<<< Updated upstream
  * 
+=======
+ *
+>>>>>>> Stashed changes
  * TODO: Create a new structure to store the current handler states/status
  *       and add the below variable to it.
  */

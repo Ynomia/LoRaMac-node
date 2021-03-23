@@ -23,22 +23,19 @@
 #ifndef __UTILITIES_H__
 #define __UTILITIES_H__
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
+//#include "nordic_common.h"
+#include "csiro_math.h"
 #include <stdint.h>
 
 /*!
  * Generic definition
  */
 #ifndef SUCCESS
-#define SUCCESS                                     1
+#define SUCCESS 1
 #endif
 
 #ifndef FAIL
-#define FAIL                                        0
+#define FAIL 0
 #endif
 
 /*!
@@ -48,9 +45,8 @@ extern "C"
  * \param [IN] b 2nd value
  * \retval minValue Minimum value
  */
-#ifndef MIN
-#define MIN( a, b ) ( ( ( a ) < ( b ) ) ? ( a ) : ( b ) )
-#endif
+
+//#define MIN( a, b ) ( ( ( a ) < ( b ) ) ? ( a ) : ( b ) )
 
 /*!
  * \brief Returns the maximum value between a and b
@@ -59,9 +55,8 @@ extern "C"
  * \param [IN] b 2nd value
  * \retval maxValue Maximum value
  */
-#ifndef MAX
-#define MAX( a, b ) ( ( ( a ) > ( b ) ) ? ( a ) : ( b ) )
-#endif
+
+//#define MAX( a, b ) ( ( ( a ) > ( b ) ) ? ( a ) : ( b ) )
 
 /*!
  * \brief Returns 2 raised to the power of n
@@ -76,15 +71,15 @@ extern "C"
  */
 typedef union Version_u
 {
-    struct Version_s
-    {
-        uint8_t Revision;
-        uint8_t Patch;
-        uint8_t Minor;
-        uint8_t Major;
-    }Fields;
-    uint32_t Value;
-}Version_t;
+	struct Version_s
+	{
+		uint8_t Rfu;
+		uint8_t Revision;
+		uint8_t Minor;
+		uint8_t Major;
+	} Fields;
+	uint32_t Value;
+} Version_t;
 
 /*!
  * \brief Initializes the pseudo random generator initial value
@@ -142,52 +137,17 @@ void memset1( uint8_t *dst, uint8_t value, uint16_t size );
 int8_t Nibble2HexChar( uint8_t a );
 
 /*!
- * \brief Computes a CCITT 32 bits CRC
- *
- * \param [IN] buffer   Data buffer used to compute the CRC
- * \param [IN] length   Data buffer length
- *
- * \retval crc          The computed buffer of length CRC
- */
-uint32_t Crc32( uint8_t *buffer, uint16_t length );
-
-/*!
- * \brief Computes the initial value of the CCITT 32 bits CRC. This function
- *        can be used with functions \ref Crc32Update and \ref Crc32Finalize.
- *
- * \retval crc          Initial crc value.
- */
-uint32_t Crc32Init( void );
-
-/*!
- * \brief Updates the value of the crc value.
- *
- * \param [IN] crcInit  Previous or initial crc value.
- * \param [IN] buffer   Data pointer.
- * \param [IN] length   Length of the data.
- *
- * \retval crc          Updated crc value.
- */
-uint32_t Crc32Update( uint32_t crcInit, uint8_t *buffer, uint16_t length );
-
-/*!
- * \brief Finalizes the crc value after the calls to \ref Crc32Update.
- *
- * \param [IN] crc      Recent crc value.
- *
- * \retval crc          Updated crc value.
- */
-uint32_t Crc32Finalize( uint32_t crc );
-
-/*!
  * Begins critical section
  */
-#define CRITICAL_SECTION_BEGIN( ) uint32_t mask; BoardCriticalSectionBegin( &mask )
+#define CRITICAL_SECTION_BEGIN()
+// 	uint32_t mask;
+// 	BoardCriticalSectionBegin( &mask )
 
-/*!
- * Ends critical section
- */
-#define CRITICAL_SECTION_END( ) BoardCriticalSectionEnd( &mask )
+// /*!
+//  * Ends critical section
+//  */
+#define CRITICAL_SECTION_END()
+// BoardCriticalSectionEnd( &mask )
 
 /*
  * ============================================================================
@@ -200,17 +160,13 @@ uint32_t Crc32Finalize( uint32_t crc );
  *
  * \param [IN] mask Pointer to a variable where to store the CPU IRQ mask
  */
-void BoardCriticalSectionBegin( uint32_t *mask );
+// void BoardCriticalSectionBegin( uint32_t *mask );
 
 /*!
  * Ends critical section
  *
  * \param [IN] mask Pointer to a variable where the CPU IRQ mask was stored
  */
-void BoardCriticalSectionEnd( uint32_t *mask );
-
-#ifdef __cplusplus
-}
-#endif
+// void BoardCriticalSectionEnd( uint32_t *mask );
 
 #endif // __UTILITIES_H__

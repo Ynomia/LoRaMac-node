@@ -720,7 +720,7 @@ typedef struct
  * Public functions prototypes
  * ============================================================================
  */
- 
+
 /*!
  * \brief Initializes the radio driver
  */
