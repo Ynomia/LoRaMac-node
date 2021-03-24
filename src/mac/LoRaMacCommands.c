@@ -68,9 +68,14 @@ typedef struct sLoRaMacCommandsCtx
 } LoRaMacCommandsCtx_t;
 
 /*!
+ * Callback function to notify the upper layer about context change
+ */
+static LoRaMacCommandsNvmEvent CommandsNvmCtxChanged;
+
+/*!
  * Non-volatile module context.
  */
-static LoRaMacCommandsCtx_t CommandsCtx;
+static LoRaMacCommandsCtx_t NvmCtx;
 
 /* Memory management functions */
 
@@ -103,7 +108,7 @@ static MacCommand_t* MallocNewMacCommandSlot( void )
 {
     uint8_t itr = 0;
 
-    while( IsSlotFree( ( const MacCommand_t* )&CommandsCtx.MacCommandSlots[itr] ) == false )
+    while( IsSlotFree( ( const MacCommand_t* )&NvmCtx.MacCommandSlots[itr] ) == false )
     {
         itr++;
         if( itr == NUM_OF_MAC_COMMANDS )
@@ -112,7 +117,7 @@ static MacCommand_t* MallocNewMacCommandSlot( void )
         }
     }
 
-    return &CommandsCtx.MacCommandSlots[itr];
+    return &NvmCtx.MacCommandSlots[itr];
 }
 
 /*!
@@ -283,14 +288,48 @@ static bool IsSticky( uint8_t cid )
     }
 }
 
-LoRaMacCommandStatus_t LoRaMacCommandsInit( void )
+/*
+ * \brief Wrapper function for the NvmCtx
+ */
+static void NvmCtxCallback( void )
+{
+    if( CommandsNvmCtxChanged != NULL )
+    {
+        CommandsNvmCtxChanged( );
+    }
+}
+
+LoRaMacCommandStatus_t LoRaMacCommandsInit( LoRaMacCommandsNvmEvent commandsNvmCtxChanged )
 {
     // Initialize with default
-    memset1( ( uint8_t* )&CommandsCtx, 0, sizeof( CommandsCtx ) );
+    memset1( ( uint8_t* )&NvmCtx, 0, sizeof( NvmCtx ) );
 
-    LinkedListInit( &CommandsCtx.MacCommandList );
+    LinkedListInit( &NvmCtx.MacCommandList );
+
+    // Assign callback
+    CommandsNvmCtxChanged = commandsNvmCtxChanged;
 
     return LORAMAC_COMMANDS_SUCCESS;
+}
+
+LoRaMacCommandStatus_t LoRaMacCommandsRestoreNvmCtx( void* commandsNvmCtx )
+{
+    // Restore module context
+    if( commandsNvmCtx != NULL )
+    {
+        memcpy1( ( uint8_t* )&NvmCtx, ( uint8_t* )commandsNvmCtx, sizeof( NvmCtx ) );
+        return LORAMAC_COMMANDS_SUCCESS;
+    }
+    else
+    {
+        return LORAMAC_COMMANDS_ERROR_NPE;
+    }
+}
+
+void* LoRaMacCommandsGetNvmCtx( size_t* commandsNvmCtxSize )
+{
+    *commandsNvmCtxSize = sizeof( NvmCtx );
+    return &NvmCtx;
 }
 
 LoRaMacCommandStatus_t LoRaMacCommandsAddCmd( uint8_t cid, uint8_t* payload, size_t payloadSize )
@@ -310,7 +349,7 @@ LoRaMacCommandStatus_t LoRaMacCommandsAddCmd( uint8_t cid, uint8_t* payload, siz
     }
 
     // Add it to the list of Mac commands
-    if( LinkedListAdd( &CommandsCtx.MacCommandList, newCmd ) == false )
+    if( LinkedListAdd( &NvmCtx.MacCommandList, newCmd ) == false )
     {
         return LORAMAC_COMMANDS_ERROR;
     }
@@ -321,7 +360,9 @@ LoRaMacCommandStatus_t LoRaMacCommandsAddCmd( uint8_t cid, uint8_t* payload, siz
     memcpy1( ( uint8_t* )newCmd->Payload, payload, payloadSize );
     newCmd->IsSticky = IsSticky( cid );
 
-    CommandsCtx.SerializedCmdsSize += ( CID_FIELD_SIZE + payloadSize );
+    NvmCtx.SerializedCmdsSize += ( CID_FIELD_SIZE + payloadSize );
+
+    NvmCtxCallback( );
 
     return LORAMAC_COMMANDS_SUCCESS;
 }
@@ -334,18 +375,20 @@ LoRaMacCommandStatus_t LoRaMacCommandsRemoveCmd( MacCommand_t* macCmd )
     }
 
     // Remove the Mac command element from MacCommandList
-    if( LinkedListRemove( &CommandsCtx.MacCommandList, macCmd ) == false )
+    if( LinkedListRemove( &NvmCtx.MacCommandList, macCmd ) == false )
     {
         return LORAMAC_COMMANDS_ERROR_CMD_NOT_FOUND;
     }
 
-    CommandsCtx.SerializedCmdsSize -= ( CID_FIELD_SIZE + macCmd->PayloadSize );
+    NvmCtx.SerializedCmdsSize -= ( CID_FIELD_SIZE + macCmd->PayloadSize );
 
     // Free the MacCommand Slot
     if( FreeMacCommandSlot( macCmd ) == false )
     {
         return LORAMAC_COMMANDS_ERROR;
     }
+
+    NvmCtxCallback( );
 
     return LORAMAC_COMMANDS_SUCCESS;
 }
@@ -355,7 +398,7 @@ LoRaMacCommandStatus_t LoRaMacCommandsGetCmd( uint8_t cid, MacCommand_t** macCmd
     MacCommand_t* curElement;
 
     // Start at the head of the list
-    curElement = CommandsCtx.MacCommandList.First;
+    curElement = NvmCtx.MacCommandList.First;
 
     // Loop through all elements until we find the element with the given CID
     while( ( curElement != NULL ) && ( curElement->CID != cid ) )
@@ -380,7 +423,7 @@ LoRaMacCommandStatus_t LoRaMacCommandsRemoveNoneStickyCmds( void )
     MacCommand_t* nexElement;
 
     // Start at the head of the list
-    curElement = CommandsCtx.MacCommandList.First;
+    curElement = NvmCtx.MacCommandList.First;
 
     // Loop through all elements
     while( curElement != NULL )
@@ -406,7 +449,7 @@ LoRaMacCommandStatus_t LoRaMacCommandsRemoveStickyAnsCmds( void )
     MacCommand_t* nexElement;
 
     // Start at the head of the list
-    curElement = CommandsCtx.MacCommandList.First;
+    curElement = NvmCtx.MacCommandList.First;
 
     // Loop through all elements
     while( curElement != NULL )
@@ -428,13 +471,13 @@ LoRaMacCommandStatus_t LoRaMacCommandsGetSizeSerializedCmds( size_t* size )
     {
         return LORAMAC_COMMANDS_ERROR_NPE;
     }
-    *size = CommandsCtx.SerializedCmdsSize;
+    *size = NvmCtx.SerializedCmdsSize;
     return LORAMAC_COMMANDS_SUCCESS;
 }
 
 LoRaMacCommandStatus_t LoRaMacCommandsSerializeCmds( size_t availableSize, size_t* effectiveSize, uint8_t* buffer )
 {
-    MacCommand_t* curElement = CommandsCtx.MacCommandList.First;
+    MacCommand_t* curElement = NvmCtx.MacCommandList.First;
     MacCommand_t* nextElement;
     uint8_t itr = 0;
 
@@ -482,7 +525,7 @@ LoRaMacCommandStatus_t LoRaMacCommandsStickyCmdsPending( bool* cmdsPending )
         return LORAMAC_COMMANDS_ERROR_NPE;
     }
     MacCommand_t* curElement;
-    curElement = CommandsCtx.MacCommandList.First;
+    curElement = NvmCtx.MacCommandList.First;
 
     *cmdsPending = false;
 

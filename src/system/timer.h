@@ -23,36 +23,22 @@
 #ifndef __TIMER_H__
 #define __TIMER_H__
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
-#include <stddef.h>
+#include "rtc.h"
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
-/*!
- * \brief Timer object description
- */
-typedef struct TimerEvent_s
-{
-    uint32_t Timestamp;                  //! Current timer value
-    uint32_t ReloadValue;                //! Timer delay value
-    bool IsStarted;                      //! Is the timer currently running
-    bool IsNext2Expire;                  //! Is the next timer to expire
-    void ( *Callback )( void* context ); //! Timer IRQ callback function
-    void *Context;                       //! User defined data object pointer to pass back
-    struct TimerEvent_s *Next;           //! Pointer to the next Timer object.
-}TimerEvent_t;
+typedef xTimerEvent_t TimerEvent_t;
 
 /*!
  * \brief Timer time variable definition
  */
 #ifndef TimerTime_t
-typedef uint32_t TimerTime_t;
-#define TIMERTIME_T_MAX                             ( ( uint32_t )~0 )
+typedef uint64_t TimerTime_t;
+#define TIMERTIME_T_MAX ( (uint32_t) ~0 )
 #endif
+
+void vTimerTaskInit( void );
 
 /*!
  * \brief Initializes the timer object
@@ -71,12 +57,15 @@ void TimerInit( TimerEvent_t *obj, void ( *callback )( void *context ) );
  * \param [IN] context User defined data object pointer to pass back
  *                     on IRQ handler callback
  */
-void TimerSetContext( TimerEvent_t *obj, void* context );
+void TimerSetContext( TimerEvent_t *obj, void *context );
 
 /*!
- * Timer IRQ event handler
+ * \brief Set timer new timeout value
+ *
+ * \param [IN] obj   Structure containing the timer object parameters
+ * \param [IN] value New timer timeout value
  */
-void TimerIrqHandler( void );
+void TimerSetValue( TimerEvent_t *obj, uint32_t value );
 
 /*!
  * \brief Starts and adds the timer object to the list of timer events
@@ -86,36 +75,11 @@ void TimerIrqHandler( void );
 void TimerStart( TimerEvent_t *obj );
 
 /*!
- * \brief Checks if the provided timer is running
- *
- * \param [IN] obj Structure containing the timer object parameters
- *
- * \retval status  returns the timer activity status [true: Started,
- *                                                    false: Stopped]
- */
-bool TimerIsStarted( TimerEvent_t *obj );
-
-/*!
  * \brief Stops and removes the timer object from the list of timer events
  *
  * \param [IN] obj Structure containing the timer object parameters
  */
 void TimerStop( TimerEvent_t *obj );
-
-/*!
- * \brief Resets the timer object
- *
- * \param [IN] obj Structure containing the timer object parameters
- */
-void TimerReset( TimerEvent_t *obj );
-
-/*!
- * \brief Set timer new timeout value
- *
- * \param [IN] obj   Structure containing the timer object parameters
- * \param [IN] value New timer timeout value
- */
-void TimerSetValue( TimerEvent_t *obj, uint32_t value );
 
 /*!
  * \brief Read the current time
@@ -134,6 +98,8 @@ TimerTime_t TimerGetCurrentTime( void );
  */
 TimerTime_t TimerGetElapsedTime( TimerTime_t past );
 
+uint32_t RtcTick2Ms( uint32_t tick );
+
 /*!
  * \brief Computes the temperature compensation for a period of time on a
  *        specific temperature.
@@ -144,14 +110,5 @@ TimerTime_t TimerGetElapsedTime( TimerTime_t past );
  * \retval Compensated time period
  */
 TimerTime_t TimerTempCompensation( TimerTime_t period, float temperature );
-
-/*!
- * \brief Processes pending timer events
- */
-void TimerProcess( void );
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // __TIMER_H__

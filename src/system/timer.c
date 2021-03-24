@@ -1,386 +1,111 @@
-/*!
- * \file      timer.c
- *
- * \brief     Timer objects and scheduling management implementation
- *
- * \copyright Revised BSD License, see section \ref LICENSE.
- *
- * \code
- *                ______                              _
- *               / _____)             _              | |
- *              ( (____  _____ ____ _| |_ _____  ____| |__
- *               \____ \| ___ |    (_   _) ___ |/ ___)  _ \
- *               _____) ) ____| | | || |_| ____( (___| | | |
- *              (______/|_____)_|_|_| \__)_____)\____)_| |_|
- *              (C)2013-2017 Semtech
- *
- * \endcode
- *
- * \author    Miguel Luis ( Semtech )
- *
- * \author    Gregory Cristian ( Semtech )
- */
-#include "utilities.h"
-#include "board.h"
-#include "rtc-board.h"
 #include "timer.h"
+#include "FreeRTOS.h"
+#include "radio.h"
+#include "rtc.h"
+#include "task.h"
+#include <stdint.h>
 
-/*!
- * Safely execute call back
- */
-#define ExecuteCallBack( _callback_, context ) \
-    do                                         \
-    {                                          \
-        if( _callback_ == NULL )               \
-        {                                      \
-            while( 1 );                        \
-        }                                      \
-        else                                   \
-        {                                      \
-            _callback_( context );             \
-        }                                      \
-    }while( 0 );
+// clang-format off
+// sub-second number of bits
+#define N_PREDIV_S 									10
 
-/*!
- * Timers list head pointer
- */
-static TimerEvent_t *TimerListHead = NULL;
+// Synchronous prediv
+#define PREDIV_S 									( ( 1 << N_PREDIV_S ) - 1 )
 
-/*!
- * \brief Adds or replace the head timer of the list.
- *
- * \remark The list is automatically sorted. The list head always contains the
- *         next timer to expire.
- *
- * \param [IN]  obj Timer object to be become the new head
- * \param [IN]  remainingTime Remaining time of the previous head to be replaced
- */
-static void TimerInsertNewHeadTimer( TimerEvent_t *obj );
+// Asynchronous prediv
+#define PREDIV_A 									( 1 << ( 15 - N_PREDIV_S ) ) - 1
 
-/*!
- * \brief Adds a timer to the list.
- *
- * \remark The list is automatically sorted. The list head always contains the
- *         next timer to expire.
- *
- * \param [IN]  obj Timer object to be added to the list
- * \param [IN]  remainingTime Remaining time of the running head after which the object may be added
- */
-static void TimerInsertTimer( TimerEvent_t *obj );
+// RTC Time base in us
+#define USEC_NUMBER                                 1000000
+#define MSEC_NUMBER                                 ( USEC_NUMBER / 1000 )
 
-/*!
- * \brief Sets a timeout with the duration "timestamp"
- *
- * \param [IN] timestamp Delay duration
- */
-static void TimerSetTimeout( TimerEvent_t *obj );
+#define COMMON_FACTOR 3
+#define CONV_NUMER 									( MSEC_NUMBER >> COMMON_FACTOR )
+#define CONV_DENOM                                  ( 1 << ( N_PREDIV_S - COMMON_FACTOR ) )
+// clang-format on
 
-/*!
- * \brief Check if the Object to be added is not already in the list
- *
- * \param [IN] timestamp Delay duration
- * \retval true (the object is already in the list) or false
- */
-static bool TimerExists( TimerEvent_t *obj );
+/* Function Declarations ------------------------------------*/
+void vTimerTaskFunction( void *pvParams );
+void vTimerDone( TimerEvent_t *obj );
 
-void TimerInit( TimerEvent_t *obj, void ( *callback )( void *context ) )
+/* Private Variables ----------------------------------------*/
+
+static TimerEvent_t *xGlobalHandle;
+
+STATIC_TASK_STRUCTURES( TimerTask, configMINIMAL_STACK_SIZE, tskIDLE_PRIORITY );
+STATIC_SEMAPHORE_STRUCTURES( xRadioInteruptHandle );
+
+/* Functions ----------------------------------------------- */
+void vTimerTaskInit( void )
 {
-    obj->Timestamp = 0;
-    obj->ReloadValue = 0;
-    obj->IsStarted = false;
-    obj->IsNext2Expire = false;
-    obj->Callback = callback;
-    obj->Context = NULL;
-    obj->Next = NULL;
+	STATIC_TASK_CREATE( TimerTask, vTimerTaskFunction, "Timer Task", NULL );
 }
 
-void TimerSetContext( TimerEvent_t *obj, void* context )
+void TimerInit( TimerEvent_t *obj, void ( *fnCallback )( void *pvContext ) )
 {
-    obj->Context = context;
+	obj->xTimerCallback = fnCallback;
+	obj->pvContext		= NULL;
+	obj->ulTicksExpiry  = 0;
+	STATIC_SEMAPHORE_CREATE_BINARY( xRadioInteruptHandle );
 }
 
-void TimerStart( TimerEvent_t *obj )
+void TimerSetContext( TimerEvent_t *obj, void *context )
 {
-    uint32_t elapsedTime = 0;
-
-    CRITICAL_SECTION_BEGIN( );
-
-    if( ( obj == NULL ) || ( TimerExists( obj ) == true ) )
-    {
-        CRITICAL_SECTION_END( );
-        return;
-    }
-
-    obj->Timestamp = obj->ReloadValue;
-    obj->IsStarted = true;
-    obj->IsNext2Expire = false;
-
-    if( TimerListHead == NULL )
-    {
-        RtcSetTimerContext( );
-        // Inserts a timer at time now + obj->Timestamp
-        TimerInsertNewHeadTimer( obj );
-    }
-    else
-    {
-        elapsedTime = RtcGetTimerElapsedTime( );
-        obj->Timestamp += elapsedTime;
-
-        if( obj->Timestamp < TimerListHead->Timestamp )
-        {
-            TimerInsertNewHeadTimer( obj );
-        }
-        else
-        {
-            TimerInsertTimer( obj );
-        }
-    }
-    CRITICAL_SECTION_END( );
-}
-
-static void TimerInsertTimer( TimerEvent_t *obj )
-{
-    TimerEvent_t* cur = TimerListHead;
-    TimerEvent_t* next = TimerListHead->Next;
-
-    while( cur->Next != NULL )
-    {
-        if( obj->Timestamp > next->Timestamp )
-        {
-            cur = next;
-            next = next->Next;
-        }
-        else
-        {
-            cur->Next = obj;
-            obj->Next = next;
-            return;
-        }
-    }
-    cur->Next = obj;
-    obj->Next = NULL;
-}
-
-static void TimerInsertNewHeadTimer( TimerEvent_t *obj )
-{
-    TimerEvent_t* cur = TimerListHead;
-
-    if( cur != NULL )
-    {
-        cur->IsNext2Expire = false;
-    }
-
-    obj->Next = cur;
-    TimerListHead = obj;
-    TimerSetTimeout( TimerListHead );
-}
-
-bool TimerIsStarted( TimerEvent_t *obj )
-{
-    return obj->IsStarted;
-}
-
-void TimerIrqHandler( void )
-{
-    TimerEvent_t* cur;
-    TimerEvent_t* next;
-
-    uint32_t old =  RtcGetTimerContext( );
-    uint32_t now =  RtcSetTimerContext( );
-    uint32_t deltaContext = now - old; // intentional wrap around
-
-    // Update timeStamp based upon new Time Reference
-    // because delta context should never exceed 2^32
-    if( TimerListHead != NULL )
-    {
-        for( cur = TimerListHead; cur->Next != NULL; cur = cur->Next )
-        {
-            next = cur->Next;
-            if( next->Timestamp > deltaContext )
-            {
-                next->Timestamp -= deltaContext;
-            }
-            else
-            {
-                next->Timestamp = 0;
-            }
-        }
-    }
-
-    // Execute immediately the alarm callback
-    if ( TimerListHead != NULL )
-    {
-        cur = TimerListHead;
-        TimerListHead = TimerListHead->Next;
-        cur->IsStarted = false;
-        ExecuteCallBack( cur->Callback, cur->Context );
-    }
-
-    // Remove all the expired object from the list
-    while( ( TimerListHead != NULL ) && ( TimerListHead->Timestamp < RtcGetTimerElapsedTime( ) ) )
-    {
-        cur = TimerListHead;
-        TimerListHead = TimerListHead->Next;
-        cur->IsStarted = false;
-        ExecuteCallBack( cur->Callback, cur->Context );
-    }
-
-    // Start the next TimerListHead if it exists AND NOT running
-    if( ( TimerListHead != NULL ) && ( TimerListHead->IsNext2Expire == false ) )
-    {
-        TimerSetTimeout( TimerListHead );
-    }
-}
-
-void TimerStop( TimerEvent_t *obj )
-{
-    CRITICAL_SECTION_BEGIN( );
-
-    TimerEvent_t* prev = TimerListHead;
-    TimerEvent_t* cur = TimerListHead;
-
-    // List is empty or the obj to stop does not exist
-    if( ( TimerListHead == NULL ) || ( obj == NULL ) )
-    {
-        CRITICAL_SECTION_END( );
-        return;
-    }
-
-    obj->IsStarted = false;
-
-    if( TimerListHead == obj ) // Stop the Head
-    {
-        if( TimerListHead->IsNext2Expire == true ) // The head is already running
-        {
-            TimerListHead->IsNext2Expire = false;
-            if( TimerListHead->Next != NULL )
-            {
-                TimerListHead = TimerListHead->Next;
-                TimerSetTimeout( TimerListHead );
-            }
-            else
-            {
-                RtcStopAlarm( );
-                TimerListHead = NULL;
-            }
-        }
-        else // Stop the head before it is started
-        {
-            if( TimerListHead->Next != NULL )
-            {
-                TimerListHead = TimerListHead->Next;
-            }
-            else
-            {
-                TimerListHead = NULL;
-            }
-        }
-    }
-    else // Stop an object within the list
-    {
-        while( cur != NULL )
-        {
-            if( cur == obj )
-            {
-                if( cur->Next != NULL )
-                {
-                    cur = cur->Next;
-                    prev->Next = cur;
-                }
-                else
-                {
-                    cur = NULL;
-                    prev->Next = cur;
-                }
-                break;
-            }
-            else
-            {
-                prev = cur;
-                cur = cur->Next;
-            }
-        }
-    }
-    CRITICAL_SECTION_END( );
-}
-
-static bool TimerExists( TimerEvent_t *obj )
-{
-    TimerEvent_t* cur = TimerListHead;
-
-    while( cur != NULL )
-    {
-        if( cur == obj )
-        {
-            return true;
-        }
-        cur = cur->Next;
-    }
-    return false;
-}
-
-void TimerReset( TimerEvent_t *obj )
-{
-    TimerStop( obj );
-    TimerStart( obj );
+	obj->pvContext = context;
 }
 
 void TimerSetValue( TimerEvent_t *obj, uint32_t value )
 {
-    uint32_t minValue = 0;
-    uint32_t ticks = RtcMs2Tick( value );
 
-    TimerStop( obj );
+	obj->ulTicksExpiry = ulRtcMsToTick( value );
+}
 
-    minValue = RtcGetMinimumTimeout( );
+void TimerStart( TimerEvent_t *obj )
+{
+	obj->pxAlarmCallback = (void *) vTimerDone;
+	obj->xHandle		 = xRtcAlarmSetup( obj->ulTicksExpiry, obj );
+}
 
-    if( ticks < minValue )
-    {
-        ticks = minValue;
-    }
-
-    obj->Timestamp = ticks;
-    obj->ReloadValue = ticks;
+void TimerStop( TimerEvent_t *obj )
+{
+	UNUSED( obj );
+	//vRtxAlarmStop( obj->xHandle );
 }
 
 TimerTime_t TimerGetCurrentTime( void )
 {
-    uint32_t now = RtcGetTimerValue( );
-    return  RtcTick2Ms( now );
+	uint64_t now   = ullRtcTickCount();
+	uint32_t nowMs = ulRtcTicksToMs( now );
+	return nowMs;
 }
 
 TimerTime_t TimerGetElapsedTime( TimerTime_t past )
 {
-    if ( past == 0 )
-    {
-        return 0;
-    }
-    uint32_t nowInTicks = RtcGetTimerValue( );
-    uint32_t pastInTicks = RtcMs2Tick( past );
+	if ( past == 0 ) {
+		return 0;
+	}
+	uint32_t nowInTicks  = ullRtcTickCount();
+	uint32_t pastInTicks = ulRtcMsToTick( past );
 
-    // Intentional wrap around. Works Ok if tick duration below 1ms
-    return RtcTick2Ms( nowInTicks - pastInTicks );
+	// Intentional wrap around. Works Ok if tick duration below 1ms
+	return ulRtcTicksToMs( nowInTicks - pastInTicks );
 }
 
-static void TimerSetTimeout( TimerEvent_t *obj )
+void vTimerDone( TimerEvent_t *obj )
 {
-    int32_t minTicks= RtcGetMinimumTimeout( );
-    obj->IsNext2Expire = true;
-
-    // In case deadline too soon
-    if( obj->Timestamp  < ( RtcGetTimerElapsedTime( ) + minTicks ) )
-    {
-        obj->Timestamp = RtcGetTimerElapsedTime( ) + minTicks;
-    }
-    RtcSetAlarm( obj->Timestamp );
+	xGlobalHandle						= obj;
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+	xSemaphoreGiveFromISR( xRadioInteruptHandle, &xHigherPriorityTaskWoken );
 }
 
-TimerTime_t TimerTempCompensation( TimerTime_t period, float temperature )
+void vTimerTaskFunction( void *pvParams )
 {
-    return RtcTempCompensation( period, temperature );
-}
+	UNUSED( pvParams );
 
-void TimerProcess( void )
-{
-    RtcProcess( );
+	while ( 1 ) {
+		xSemaphoreTake( xRadioInteruptHandle, portMAX_DELAY );
+		if ( xGlobalHandle->xTimerCallback != NULL ) {
+			xGlobalHandle->xTimerCallback( xGlobalHandle->pvContext );
+		}
+	}
 }
