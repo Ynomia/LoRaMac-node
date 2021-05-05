@@ -45,6 +45,9 @@
 #include "LoRaMacFCntHandler.h"
 #include "LoRaMacCommands.h"
 #include "LoRaMacAdr.h"
+#include "LoRaMacSerializer.h"
+#include "radio.h"
+
 #include "LoRaMac.h"
 
 #ifndef LORAMAC_VERSION
@@ -1748,7 +1751,6 @@ static void OnRxWindow2TimerEvent( void* context )
     MacCtx.RxWindow2Config.RxContinuous = false;
     MacCtx.RxWindow2Config.RxSlot = RX_SLOT_WIN_2;
     RxWindowSetup( &MacCtx.RxWindowTimer2, &MacCtx.RxWindow2Config );
-    eLog( LOG_LORAWAN, LOG_DEBUG, "OnRxWindow2TimerEvent: DownlinkDwellTime=%d, WindowTimeout=%d \r\n", MacCtx.NvmCtx->MacParams.DownlinkDwellTime, MacCtx.RxWindow2Config.WindowTimeout );
 }
 
 static void OnAckTimeoutTimerEvent( void* context )
@@ -2322,6 +2324,8 @@ LoRaMacStatus_t SendReJoinReq( JoinReqIdentifier_t joinReqType )
     {
         case JOIN_REQ:
         {
+            SwitchClass( CLASS_A );
+
             MacCtx.TxMsg.Type = LORAMAC_MSG_TYPE_JOIN_REQUEST;
             MacCtx.TxMsg.Message.JoinReq.Buffer = MacCtx.PktBuffer;
             MacCtx.TxMsg.Message.JoinReq.BufSize = LORAMAC_PHY_MAXPAYLOAD;
@@ -2344,6 +2348,105 @@ LoRaMacStatus_t SendReJoinReq( JoinReqIdentifier_t joinReqType )
     // Schedule frame
     status = ScheduleTx( allowDelayedTx );
     return status;
+}
+
+static LoRaMacStatus_t CheckForClassBCollision( void )
+{
+    if( LoRaMacClassBIsBeaconExpected( ) == true )
+    {
+        return LORAMAC_STATUS_BUSY_BEACON_RESERVED_TIME;
+    }
+
+    if( MacCtx.NvmCtx->DeviceClass == CLASS_B )
+    {
+        if( LoRaMacClassBIsPingExpected( ) == true )
+        {
+            return LORAMAC_STATUS_BUSY_PING_SLOT_WINDOW_TIME;
+        }
+        else if( LoRaMacClassBIsMulticastExpected( ) == true )
+        {
+            return LORAMAC_STATUS_BUSY_PING_SLOT_WINDOW_TIME;
+        }
+    }
+    return LORAMAC_STATUS_OK;
+}
+
+static void ComputeRxWindowParameters( void )
+{
+    // Compute Rx1 windows parameters
+    RegionComputeRxWindowParameters( MacCtx.NvmCtx->Region,
+                                     RegionApplyDrOffset( MacCtx.NvmCtx->Region,
+                                                          MacCtx.NvmCtx->MacParams.DownlinkDwellTime,
+                                                          MacCtx.NvmCtx->MacParams.ChannelsDatarate,
+                                                          MacCtx.NvmCtx->MacParams.Rx1DrOffset ),
+                                     MacCtx.NvmCtx->MacParams.MinRxSymbols,
+                                     MacCtx.NvmCtx->MacParams.SystemMaxRxError,
+                                     &MacCtx.RxWindow1Config );
+    // Compute Rx2 windows parameters
+    RegionComputeRxWindowParameters( MacCtx.NvmCtx->Region,
+                                     MacCtx.NvmCtx->MacParams.Rx2Channel.Datarate,
+                                     MacCtx.NvmCtx->MacParams.MinRxSymbols,
+                                     MacCtx.NvmCtx->MacParams.SystemMaxRxError,
+                                     &MacCtx.RxWindow2Config );
+
+    // Default setup, in case the device joined
+    MacCtx.RxWindow1Delay = MacCtx.NvmCtx->MacParams.ReceiveDelay1 + MacCtx.RxWindow1Config.WindowOffset;
+    MacCtx.RxWindow2Delay = MacCtx.NvmCtx->MacParams.ReceiveDelay2 + MacCtx.RxWindow2Config.WindowOffset;
+
+    if( MacCtx.NvmCtx->NetworkActivation == ACTIVATION_TYPE_NONE )
+    {
+        MacCtx.RxWindow1Delay = MacCtx.NvmCtx->MacParams.JoinAcceptDelay1 + MacCtx.RxWindow1Config.WindowOffset;
+        MacCtx.RxWindow2Delay = MacCtx.NvmCtx->MacParams.JoinAcceptDelay2 + MacCtx.RxWindow2Config.WindowOffset;
+    }
+}
+
+static LoRaMacStatus_t VerifyTxFrame( void )
+{
+    size_t macCmdsSize = 0;
+
+    if( MacCtx.NvmCtx->NetworkActivation != ACTIVATION_TYPE_NONE )
+    {
+        if( LoRaMacCommandsGetSizeSerializedCmds( &macCmdsSize ) != LORAMAC_COMMANDS_SUCCESS )
+        {
+            return LORAMAC_STATUS_MAC_COMMAD_ERROR;
+        }
+
+        if( ValidatePayloadLength( MacCtx.AppDataSize, MacCtx.NvmCtx->MacParams.ChannelsDatarate, macCmdsSize ) == false )
+        {
+            return LORAMAC_STATUS_LENGTH_ERROR;
+        }
+    }
+    return LORAMAC_STATUS_OK;
+}
+
+static LoRaMacStatus_t SerializeTxFrame( void )
+{
+    LoRaMacSerializerStatus_t serializeStatus;
+
+    switch( MacCtx.TxMsg.Type )
+    {
+        case LORAMAC_MSG_TYPE_JOIN_REQUEST:
+            serializeStatus = LoRaMacSerializerJoinRequest( &MacCtx.TxMsg.Message.JoinReq );
+            if( LORAMAC_SERIALIZER_SUCCESS != serializeStatus )
+            {
+                return LORAMAC_STATUS_CRYPTO_ERROR;
+            }
+            MacCtx.PktBufferLen = MacCtx.TxMsg.Message.JoinReq.BufSize;
+            break;
+        case LORAMAC_MSG_TYPE_DATA:
+            serializeStatus = LoRaMacSerializerData( &MacCtx.TxMsg.Message.Data );
+            if( LORAMAC_SERIALIZER_SUCCESS != serializeStatus )
+            {
+                return LORAMAC_STATUS_CRYPTO_ERROR;
+            }
+            MacCtx.PktBufferLen = MacCtx.TxMsg.Message.Data.BufSize;
+            break;
+        case LORAMAC_MSG_TYPE_JOIN_ACCEPT:
+        case LORAMAC_MSG_TYPE_UNDEF:
+        default:
+            return LORAMAC_STATUS_PARAMETER_INVALID;
+    }
+    return LORAMAC_STATUS_OK;
 }
 
 static LoRaMacStatus_t ScheduleTx( bool allowDelayedTx )
