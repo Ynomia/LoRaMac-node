@@ -104,7 +104,6 @@
  */
 #define LORA_MAC_COMMAND_MAX_LENGTH                 128
 
-
 /*!
  * Bitmap value
  */
@@ -437,10 +436,6 @@ typedef struct sLoRaMacParams
      * Antenna gain of the node
      */
 	float AntennaGain;
-	/*!
-     * Indicates if the node supports repeaters
-     */
-	bool RepeaterSupport;
 } LoRaMacParams_t;
 
 /*!
@@ -1972,12 +1967,6 @@ typedef union uMibParam
      * Related MIB type: \ref MIB_PUBLIC_NETWORK
      */
 	bool EnablePublicNetwork;
-	/*!
-     * Enable or disable repeater support
-     *
-     * Related MIB type: \ref MIB_REPEATER_SUPPORT
-     */
-	bool EnableRepeaterSupport;
 	/*!
      * LoRaWAN Channel
      *

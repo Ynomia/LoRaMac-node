@@ -645,10 +645,6 @@ typedef enum ePhyAttribute
      */
     PHY_MAX_PAYLOAD,
     /*!
-     * Maximum payload possible when repeater support is enabled.
-     */
-    PHY_MAX_PAYLOAD_REPEATER,
-    /*!
      * Duty cycle.
      */
     PHY_DUTY_CYCLE,

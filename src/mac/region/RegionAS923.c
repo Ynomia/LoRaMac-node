@@ -225,15 +225,6 @@ PhyParam_t RegionAS923GetPhyParam( GetPhyParams_t *getPhy )
 			}
 			break;
 		}
-		case PHY_MAX_PAYLOAD_REPEATER: {
-			if ( getPhy->UplinkDwellTime == 0 ) {
-				phyParam.Value = MaxPayloadOfDatarateRepeaterDwell0AS923[getPhy->Datarate];
-			}
-			else {
-				phyParam.Value = MaxPayloadOfDatarateDwell1UpAS923[getPhy->Datarate];
-			}
-			break;
-		}
 		case PHY_DUTY_CYCLE: {
 			phyParam.Value = AS923_DUTY_CYCLE_ENABLED;
 			break;
