@@ -2606,6 +2606,9 @@ static void RemoveMacCommands( LoRaMacRxSlot_t rxSlot, LoRaMacFrameCtrl_t fCtrl,
 
 static void ResetMacParameters( void )
 {
+    LoRaMacClassBCallback_t classBCallbacks;
+    LoRaMacClassBParams_t classBParams;
+
     MacCtx.NvmCtx->NetworkActivation = ACTIVATION_TYPE_NONE;
 
     // ADR counter
@@ -2644,6 +2647,41 @@ static void ResetMacParameters( void )
     // Initialize channel index.
     MacCtx.Channel = 0;
     MacCtx.NvmCtx->LastTxChannel = MacCtx.Channel;
+
+    // Initialize Rx2 config parameters.
+    MacCtx.RxWindow2Config.Channel = MacCtx.Channel;
+    MacCtx.RxWindow2Config.Frequency = MacCtx.NvmCtx->MacParams.Rx2Channel.Frequency;
+    MacCtx.RxWindow2Config.DownlinkDwellTime = MacCtx.NvmCtx->MacParams.DownlinkDwellTime;
+    MacCtx.RxWindow2Config.RxContinuous = false;
+    MacCtx.RxWindow2Config.RxSlot = RX_SLOT_WIN_2;
+
+    // Initialize RxC config parameters.
+    MacCtx.RxWindowCConfig = MacCtx.RxWindow2Config;
+    MacCtx.RxWindowCConfig.RxContinuous = true;
+    MacCtx.RxWindowCConfig.RxSlot = RX_SLOT_WIN_CLASS_C;
+
+    // Initialize class b
+    // Apply callback
+    classBCallbacks.GetTemperatureLevel = NULL;
+    classBCallbacks.MacProcessNotify = NULL;
+
+    if( MacCtx.MacCallbacks != NULL )
+    {
+        classBCallbacks.GetTemperatureLevel = MacCtx.MacCallbacks->GetTemperatureLevel;
+        classBCallbacks.MacProcessNotify = MacCtx.MacCallbacks->MacProcessNotify;
+    }
+
+    // Must all be static. Don't use local references.
+    classBParams.MlmeIndication = &MacCtx.MlmeIndication;
+    classBParams.McpsIndication = &MacCtx.McpsIndication;
+    classBParams.MlmeConfirm = &MacCtx.MlmeConfirm;
+    classBParams.LoRaMacFlags = &MacCtx.MacFlags;
+    classBParams.LoRaMacDevAddr = &MacCtx.NvmCtx->DevAddr;
+    classBParams.LoRaMacRegion = &MacCtx.NvmCtx->Region;
+    classBParams.LoRaMacParams = &MacCtx.NvmCtx->MacParams;
+    classBParams.MulticastChannels = &MacCtx.NvmCtx->MulticastChannelList[0];
+
+    //LoRaMacClassBInit( &classBParams, &classBCallbacks, &Nvm.ClassB );
 }
 
 /*!
