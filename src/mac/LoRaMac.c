@@ -553,7 +553,7 @@ static LoRaMacStatus_t SecureFrame( uint8_t txDr, uint8_t txCh );
  *
  * \param [IN] channel     The last Tx channel index
  */
-static void CalculateBackOff( uint8_t channel );
+static void CalculateBackOff( void );
 
 /*
  * \brief Function to remove pending MAC commands
@@ -2460,7 +2460,7 @@ static LoRaMacStatus_t ScheduleTx( bool allowDelayedTx )
     }
 
     // Update back-off
-    CalculateBackOff( MacCtx.NvmCtx->LastTxChannel );
+    CalculateBackOff( );
 
     // Serialize frame
     status = SerializeTxFrame( );
@@ -2551,6 +2551,11 @@ static LoRaMacStatus_t SecureFrame( uint8_t txDr, uint8_t txCh )
                 return LORAMAC_STATUS_FCNT_HANDLER_ERROR;
             }
 
+            if( ( MacCtx.ChannelsNbTransCounter >= 1 ) || ( MacCtx.AckTimeoutRetriesCounter > 1 ) )
+            {
+                fCntUp -= 1;
+            }
+
             macCryptoStatus = LoRaMacCryptoSecureMessage( fCntUp, txDr, txCh, &MacCtx.TxMsg.Message.Data );
             if( LORAMAC_CRYPTO_SUCCESS != macCryptoStatus )
             {
@@ -2566,34 +2571,16 @@ static LoRaMacStatus_t SecureFrame( uint8_t txDr, uint8_t txCh )
     return LORAMAC_STATUS_OK;
 }
 
-static void CalculateBackOff( uint8_t channel )
+static void CalculateBackOff( void )
 {
-    CalcBackOffParams_t calcBackOff;
-
-    if( MacCtx.NvmCtx->NetworkActivation == ACTIVATION_TYPE_NONE )
+    // Make sure that the calculation of the backoff time for the aggregated time off will only be done in
+    // case the value is zero. It will be set to zero in the function RegionNextChannel.
+    if( MacCtx.NvmCtx->AggregatedTimeOff == 0 )
     {
-        calcBackOff.Joined = false;
+        // Update aggregated time-off. This must be an assignment and no incremental
+        // update as we do only calculate the time-off based on the last transmission
+        MacCtx.NvmCtx->AggregatedTimeOff = ( MacCtx.TxTimeOnAir * MacCtx.NvmCtx->AggregatedDCycle - MacCtx.TxTimeOnAir );
     }
-    else
-    {
-        calcBackOff.Joined = true;
-    }
-    calcBackOff.DutyCycleEnabled = MacCtx.NvmCtx->DutyCycleOn;
-    calcBackOff.Channel = channel;
-    calcBackOff.ElapsedTime = SysTimeSub( SysTimeGetMcuTime( ), MacCtx.NvmCtx->InitializationTime );
-    calcBackOff.TxTimeOnAir = MacCtx.TxTimeOnAir;
-    calcBackOff.LastTxIsJoinRequest = false;
-    if( ( MacCtx.MacFlags.Bits.MlmeReq == 1 ) && ( LoRaMacConfirmQueueIsCmdActive( MLME_JOIN ) == true ) )
-    {
-        calcBackOff.LastTxIsJoinRequest = true;
-    }
-
-    // Update regional back-off
-    RegionCalcBackOff( MacCtx.NvmCtx->Region, &calcBackOff );
-
-    // Update aggregated time-off. This must be an assignment and no incremental
-    // update as we do only calculate the time-off based on the last transmission
-    MacCtx.NvmCtx->AggregatedTimeOff = ( MacCtx.TxTimeOnAir * MacCtx.NvmCtx->AggregatedDCycle - MacCtx.TxTimeOnAir );
 }
 
 static void RemoveMacCommands( LoRaMacRxSlot_t rxSlot, LoRaMacFrameCtrl_t fCtrl, Mcps_t request )
