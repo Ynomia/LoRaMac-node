@@ -576,7 +576,7 @@ bool RadioIsChannelFree( uint32_t freq, uint32_t rxBandwidth, int16_t rssiThresh
 	uint32_t carrierSenseTime = 0;
 
 	RadioSetModem( MODEM_FSK );
-
+	eLog ( LOG_LORAWAN, LOG_DEBUG, "RadioIsChannelFree = %d\r\n", freq);
 	RadioSetChannel( freq );
 
 	// TODO Set Rx bandwidth. Other parameters are not used.

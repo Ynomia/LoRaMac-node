@@ -477,7 +477,7 @@ void SX126xSetRfFrequency( uint32_t frequency )
 	}
 
 	uint32_t freqInPllSteps = SX126xConvertFreqInHzToPllStep( frequency );
-
+	eLog ( LOG_LORAWAN, LOG_DEBUG, "%d, %d\r\n", frequency, freqInPllSteps);
 	buf[0] = ( uint8_t )( ( freqInPllSteps >> 24 ) & 0xFF );
 	buf[1] = ( uint8_t )( ( freqInPllSteps >> 16 ) & 0xFF );
 	buf[2] = ( uint8_t )( ( freqInPllSteps >> 8 ) & 0xFF );
