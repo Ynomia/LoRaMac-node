@@ -36,6 +36,7 @@
 // Definitions
 #define CHANNELS_MASK_SIZE 1
 
+#define AS923_LBT_RX_BANDWIDTH            200000
 /*!
  * Region specific context
  */
@@ -833,10 +834,10 @@ LoRaMacStatus_t RegionAS923NextChannel( NextChanParams_t *nextChanParams, uint8_
 		for ( uint8_t i = 0, j = randr( 0, nbEnabledChannels - 1 ); i < AS923_MAX_NB_CHANNELS; i++ ) {
 			channelNext = enabledChannels[j];
 			j			= ( j + 1 ) % nbEnabledChannels;
-
+			eLog ( LOG_LORAWAN, LOG_DEBUG, "channelNext = %d, Frequency = %d\r\n", channelNext, NvmCtx.Channels[channelNext].Frequency);
 			// Perform carrier sense for AS923_CARRIER_SENSE_TIME
 			// If the channel is free, we can stop the LBT mechanism
-			if ( Radio.IsChannelFree( MODEM_LORA, NvmCtx.Channels[channelNext].Frequency, AS923_RSSI_FREE_TH, AS923_CARRIER_SENSE_TIME ) == true ) {
+			if ( Radio.IsChannelFree( NvmCtx.Channels[channelNext].Frequency, AS923_LBT_RX_BANDWIDTH, AS923_RSSI_FREE_TH, AS923_CARRIER_SENSE_TIME) == true ) {
 				// Free channel found
 				*channel = channelNext;
 				*time	= 0;
