@@ -66,6 +66,7 @@ bool LoRaMacAdrCalcNext( CalcNextAdrParams_t* adrNext, int8_t* drOut, int8_t* tx
         // Verify, if we need to set the TX power to default
         if( adrNext->AdrAckCounter >= ( adrNext->AdrAckLimit + adrNext->AdrAckDelay ) )
         {
+<<<<<<< HEAD
             // Set TX Power to default
             getPhy.Attribute = PHY_DEF_TX_POWER;
             phyParam = RegionGetPhyParam( adrNext->Region, &getPhy );
@@ -79,13 +80,41 @@ bool LoRaMacAdrCalcNext( CalcNextAdrParams_t* adrNext, int8_t* drOut, int8_t* tx
             if( ( ( adrNext->AdrAckCounter - adrNext->AdrAckLimit ) % adrNext->AdrAckDelay ) == 0 )
             {
                 if( datarate == minTxDatarate )
+=======
+            if( adrNext->AdrAckCounter >=  adrNext->AdrAckLimit )
+            {
+                adrAckReq = true;
+                // Set TX Power to maximum
+                getPhy.Attribute = PHY_MAX_TX_POWER;
+                phyParam = RegionGetPhyParam( adrNext->Region, &getPhy );
+                txPower = phyParam.Value;
+            }
+            else
+            {
+                adrAckReq = false;
+            }
+            if( adrNext->AdrAckCounter >= ( adrNext->AdrAckLimit + adrNext->AdrAckDelay ) )
+            {
+                if( ( adrNext->AdrAckCounter % adrNext->AdrAckDelay ) == 1 )
+>>>>>>> release/v1.8
                 {
                     // Restore the channel mask
                     if( adrNext->UpdateChanMask == true )
                     {
+<<<<<<< HEAD
                         InitDefaultsParams_t params;
                         params.Type = INIT_TYPE_ACTIVATE_DEFAULT_CHANNELS;
                         RegionInitDefaults( adrNext->Region, &params );
+=======
+                        // We must set adrAckReq to false as soon as we reach the lowest datarate
+                        adrAckReq = false;
+                        if( adrNext->UpdateChanMask == true )
+                        {
+                            InitDefaultsParams_t params;
+                            params.Type = INIT_TYPE_RESTORE_DEFAULT_CHANNELS;
+                            RegionInitDefaults( adrNext->Region, &params );
+                        }
+>>>>>>> release/v1.8
                     }
 
                     // Restore NbTrans
