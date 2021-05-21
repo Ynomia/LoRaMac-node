@@ -4769,6 +4769,7 @@ LoRaMacStatus_t LoRaMacMcpsRequest( McpsReq_t* mcpsRequest )
         {
             MacCtx.McpsConfirm.McpsRequest = mcpsRequest->Type;
             MacCtx.MacFlags.Bits.McpsReq = 1;
+            EventMacNvmCtxChanged( );
         }
         else
         {
@@ -4776,7 +4777,9 @@ LoRaMacStatus_t LoRaMacMcpsRequest( McpsReq_t* mcpsRequest )
         }
     }
 
-    EventMacNvmCtxChanged( );
+    // Fill return structure
+    mcpsRequest->ReqReturn.DutyCycleWaitTime = MacCtx.DutyCycleWaitTime;
+
     return status;
 }
 
@@ -4789,5 +4792,34 @@ void LoRaMacTestSetDutyCycleOn( bool enable )
     if( RegionVerify( MacCtx.NvmCtx->Region, &verify, PHY_DUTY_CYCLE ) == true )
     {
         MacCtx.NvmCtx->DutyCycleOn = enable;
+    }
+}
+
+LoRaMacStatus_t LoRaMacDeInitialization( void )
+{
+    // Check the current state of the LoRaMac
+    if ( LoRaMacStop( ) == LORAMAC_STATUS_OK )
+    {
+        // Stop Timers
+        TimerStop( &MacCtx.TxDelayedTimer );
+        TimerStop( &MacCtx.RxWindowTimer1 );
+        TimerStop( &MacCtx.RxWindowTimer2 );
+        TimerStop( &MacCtx.AckTimeoutTimer );
+
+        // Take care about class B
+        LoRaMacClassBHaltBeaconing( );
+
+        // Reset Mac parameters
+        ResetMacParameters( );
+
+        // Switch off Radio
+        Radio.Sleep( );
+
+        // Return success
+        return LORAMAC_STATUS_OK;
+    }
+    else
+    {
+        return LORAMAC_STATUS_BUSY;
     }
 }

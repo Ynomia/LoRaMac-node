@@ -30,8 +30,8 @@
 */
 #include "utilities.h"
 
-#include "RegionAS923.h"
 #include "RegionCommon.h"
+#include "RegionAS923.h"
 
 // Definitions
 #define CHANNELS_MASK_SIZE 1
