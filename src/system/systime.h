@@ -130,7 +130,7 @@ SysTime_t SysTimeGetMcuTime( void );
  * 
  * \retval timeMs The RTC converted time value in ms
  */
-// uint32_t SysTime2Ms( SysTime_t sysTime );
+uint32_t SysTimeToMs( SysTime_t sysTime );
 
 /*!
  * \brief Convert a calendar time into time since UNIX epoch as a uint32_t.

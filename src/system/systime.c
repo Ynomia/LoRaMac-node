@@ -113,7 +113,7 @@ void SysTimeSet( SysTime_t sysTime )
 	// sysTime is epoch
 	deltaTime = SysTimeSub( sysTime, calendarTime );
 
-	// RtcBkupWrite( deltaTime.Seconds, (uint32_t) deltaTime.SubSeconds );
+	RtcBkupWrite( deltaTime.Seconds, (uint32_t) deltaTime.SubSeconds );
 }
 
 SysTime_t SysTimeGet( void )
@@ -128,7 +128,7 @@ SysTime_t SysTimeGet( void )
 	calendarTime.SubSeconds = pxDateTime.usSecondsFraction;
 	// calendarTime.Seconds = RtcGetCalendarTime( (uint16_t *) &calendarTime.SubSeconds );
 
-	// RtcBkupRead( &deltaTime.Seconds, (uint32_t *) &deltaTime.SubSeconds );
+	RtcBkupRead( &deltaTime.Seconds, (uint32_t *) &deltaTime.SubSeconds );
 
 	sysTime = SysTimeAdd( deltaTime, calendarTime );
 
@@ -148,10 +148,10 @@ SysTime_t SysTimeGetMcuTime( void )
 	return calendarTime;
 }
 
-uint32_t SysTime2Ms( SysTime_t sysTime )
+uint32_t SysTimeToMs( SysTime_t sysTime )
 {
 	SysTime_t deltaTime;
-	// RtcBkupRead( &deltaTime.Seconds, (uint32_t *) &deltaTime.SubSeconds );
+	RtcBkupRead( &deltaTime.Seconds, (uint32_t *) &deltaTime.SubSeconds );
 	SysTime_t calendarTime = SysTimeSub( sysTime, deltaTime );
 	return calendarTime.Seconds * 1000 + calendarTime.SubSeconds;
 }
