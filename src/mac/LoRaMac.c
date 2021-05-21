@@ -63,6 +63,11 @@
 #define LORAMAC_PHY_MAXPAYLOAD                      255
 
 /*!
+ * Maximum MAC commands buffer size
+ */
+#define LORA_MAC_COMMAND_MAX_LENGTH                 128
+
+/*!
  * Maximum length of the fOpts field
  */
 #define LORA_MAC_COMMAND_MAX_FOPTS_LENGTH           15
@@ -159,14 +164,6 @@ typedef struct sLoRaMacNvmCtx
     * Enables/Disables duty cycle management (Test only)
     */
     bool DutyCycleOn;
-    /*
-     * Current channel index
-     */
-    uint8_t LastTxChannel;
-    /*
-     * Holds the current rx window slot
-     */
-    bool RepeaterSupport;
     /*
      * Buffer containing the MAC layer commands
      */
@@ -890,27 +887,25 @@ static void ProcessRadioTxDone( void )
         TimerStart( &MacCtx.AckTimeoutTimer );
     }
 
-    // Store last Tx channel
-    MacCtx.NvmCtx->LastTxChannel = MacCtx.Channel;
+    // Update Aggregated last tx done time
+    MacCtx.NvmCtx->LastTxDoneTime = TxDoneParams.CurTime;
+
     // Update last tx done time for the current channel
     txDone.Channel = MacCtx.Channel;
+    txDone.LastTxDoneTime = TxDoneParams.CurTime;
+    txDone.ElapsedTimeSinceStartUp = SysTimeSub( SysTimeGetMcuTime( ), MacCtx.NvmCtx->InitializationTime );
+    txDone.LastTxAirTime = MacCtx.TxTimeOnAir;
+    txDone.Joined  = true;
     if( MacCtx.NvmCtx->NetworkActivation == ACTIVATION_TYPE_NONE )
     {
         txDone.Joined  = false;
     }
-    else
-    {
-        txDone.Joined  = true;
-    }
-    txDone.LastTxDoneTime = TxDoneParams.CurTime;
+
     RegionSetBandTxDone( MacCtx.NvmCtx->Region, &txDone );
-    // Update Aggregated last tx done time
-    MacCtx.NvmCtx->LastTxDoneTime = TxDoneParams.CurTime;
 
     if( MacCtx.NodeAckRequested == false )
     {
         MacCtx.McpsConfirm.Status = LORAMAC_EVENT_INFO_STATUS_OK;
-        MacCtx.ChannelsNbTransCounter++;
     }
 }
 
@@ -2632,7 +2627,6 @@ static void ResetMacParameters( void )
 
     // Initialize channel index.
     MacCtx.Channel = 0;
-    MacCtx.NvmCtx->LastTxChannel = MacCtx.Channel;
 
     // Initialize Rx2 config parameters.
     MacCtx.RxWindow2Config.Channel = MacCtx.Channel;
