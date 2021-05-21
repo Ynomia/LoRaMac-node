@@ -2705,7 +2705,7 @@ static void ResetMacParameters( void )
 
     // Reset to application defaults
     InitDefaultsParams_t params;
-    params.Type = INIT_TYPE_RESTORE_DEFAULT_CHANNELS;
+    params.Type = INIT_TYPE_RESET_TO_DEFAULT_CHANNELS;
     params.NvmCtx = NULL;
     RegionInitDefaults( MacCtx.NvmCtx->Region, &params );
 
@@ -2745,7 +2745,7 @@ static void ResetMacParameters( void )
     classBParams.LoRaMacParams = &MacCtx.NvmCtx->MacParams;
     classBParams.MulticastChannels = &MacCtx.NvmCtx->MulticastChannelList[0];
 
-    //LoRaMacClassBInit( &classBParams, &classBCallbacks, &Nvm.ClassB );
+    LoRaMacClassBInit( &classBParams, &classBCallbacks, &EventClassBNvmCtxChanged );
 }
 
 /*!
@@ -3124,7 +3124,7 @@ static bool CheckRetransUnconfirmedUplink( void )
         }
         else
         {// For Class B & C stop only if the frame was received in RX1 window
-            if( MacCtx.RxSlot == RX_SLOT_WIN_1 )
+            if( MacCtx.McpsIndication.RxSlot == RX_SLOT_WIN_1 )
             {
                 return true;
             }
@@ -3206,7 +3206,7 @@ static void AckTimeoutRetriesFinalize( void )
     if( MacCtx.McpsConfirm.AckReceived == false )
     {
         InitDefaultsParams_t params;
-        params.Type = INIT_TYPE_RESTORE_DEFAULT_CHANNELS;
+        params.Type = INIT_TYPE_ACTIVATE_DEFAULT_CHANNELS;
         params.NvmCtx = Contexts.RegionNvmCtx;
         RegionInitDefaults( MacCtx.NvmCtx->Region, &params );
 
@@ -3279,8 +3279,6 @@ LoRaMacStatus_t LoRaMacInitialization( LoRaMacPrimitives_t* primitives, LoRaMacC
 {
     GetPhyParams_t getPhy;
     PhyParam_t phyParam;
-    LoRaMacClassBCallback_t classBCallbacks;
-    LoRaMacClassBParams_t classBParams;
 
     if( ( primitives == NULL ) ||
         ( callbacks == NULL ) )
@@ -3403,6 +3401,11 @@ LoRaMacStatus_t LoRaMacInitialization( LoRaMacPrimitives_t* primitives, LoRaMacC
     MacCtx.NvmCtx->MacParams.JoinAcceptDelay2 = MacCtx.NvmCtx->MacParamsDefaults.JoinAcceptDelay2;
     MacCtx.NvmCtx->MacParams.ChannelsNbTrans = MacCtx.NvmCtx->MacParamsDefaults.ChannelsNbTrans;
 
+    InitDefaultsParams_t params;
+    params.Type = INIT_TYPE_DEFAULTS;
+    params.NvmCtx = NULL;
+    RegionInitDefaults( MacCtx.NvmCtx->Region, &params );
+
     ResetMacParameters( );
 
     MacCtx.NvmCtx->PublicNetwork = true;
@@ -3433,11 +3436,6 @@ LoRaMacStatus_t LoRaMacInitialization( LoRaMacPrimitives_t* primitives, LoRaMacC
     MacCtx.RadioEvents.RxTimeout = OnRadioRxTimeout;
     Radio.Init( &MacCtx.RadioEvents );
 
-    InitDefaultsParams_t params;
-    params.Type = INIT_TYPE_INIT;
-    params.NvmCtx = NULL;
-    RegionInitDefaults( MacCtx.NvmCtx->Region, &params );
-
     // Initialize the Secure Element driver
     if( SecureElementInit( EventSecureElementNvmCtxChanged ) != SECURE_ELEMENT_SUCCESS )
     {
@@ -3462,36 +3460,11 @@ LoRaMacStatus_t LoRaMacInitialization( LoRaMacPrimitives_t* primitives, LoRaMacC
         return LORAMAC_STATUS_FCNT_HANDLER_ERROR;
     }
 
-    // Set multicast downlink counter reference
-    LoRaMacFCntHandlerSetMulticastReference( MacCtx.NvmCtx->MulticastChannelList );
-
     // Random seed initialization
     srand1( Radio.Random( ) );
 
     Radio.SetPublicNetwork( MacCtx.NvmCtx->PublicNetwork );
     Radio.Sleep( );
-
-    // Initialize class b
-    // Apply callback
-    classBCallbacks.GetTemperatureLevel = NULL;
-    classBCallbacks.MacProcessNotify = NULL;
-    if( callbacks != NULL )
-    {
-        classBCallbacks.GetTemperatureLevel = callbacks->GetTemperatureLevel;
-        classBCallbacks.MacProcessNotify = callbacks->MacProcessNotify;
-    }
-
-    // Must all be static. Don't use local references.
-    classBParams.MlmeIndication = &MacCtx.MlmeIndication;
-    classBParams.McpsIndication = &MacCtx.McpsIndication;
-    classBParams.MlmeConfirm = &MacCtx.MlmeConfirm;
-    classBParams.LoRaMacFlags = &MacCtx.MacFlags;
-    classBParams.LoRaMacDevAddr = &MacCtx.NvmCtx->DevAddr;
-    classBParams.LoRaMacRegion = &MacCtx.NvmCtx->Region;
-    classBParams.LoRaMacParams = &MacCtx.NvmCtx->MacParams;
-    classBParams.MulticastChannels = &MacCtx.NvmCtx->MulticastChannelList[0];
-
-    LoRaMacClassBInit( &classBParams, &classBCallbacks, &EventClassBNvmCtxChanged );
 
     LoRaMacEnableRequests( LORAMAC_REQUEST_HANDLING_ON );
 

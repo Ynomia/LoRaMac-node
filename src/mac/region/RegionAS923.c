@@ -36,11 +36,67 @@
 // Definitions
 #define CHANNELS_MASK_SIZE 1
 
+#ifndef REGION_AS923_DEFAULT_CHANNEL_PLAN
+#define REGION_AS923_DEFAULT_CHANNEL_PLAN CHANNEL_PLAN_GROUP_AS923_1
+#endif
+
+#if( REGION_AS923_DEFAULT_CHANNEL_PLAN == CHANNEL_PLAN_GROUP_AS923_1 )
+
+// Channel plan CHANNEL_PLAN_GROUP_AS923_1
+
+#define REGION_AS923_FREQ_OFFSET          0
+
+#define AS923_MIN_RF_FREQUENCY            915000000
+#define AS923_MAX_RF_FREQUENCY            928000000
+#define AS923_LBT_RX_BANDWIDTH            200000
+
+#elif ( REGION_AS923_DEFAULT_CHANNEL_PLAN == CHANNEL_PLAN_GROUP_AS923_2 )
+
+// Channel plan CHANNEL_PLAN_GROUP_AS923_2
+// -1.8MHz
+#define REGION_AS923_FREQ_OFFSET          ( ( ~( 0xFFFFB9B0 ) + 1 ) * 100 )
+
+#define AS923_MIN_RF_FREQUENCY            915000000
+#define AS923_MAX_RF_FREQUENCY            928000000
+
+#elif ( REGION_AS923_DEFAULT_CHANNEL_PLAN == CHANNEL_PLAN_GROUP_AS923_3 )
+
+// Channel plan CHANNEL_PLAN_GROUP_AS923_3
+// -6.6MHz
+#define REGION_AS923_FREQ_OFFSET          ( ( ~( 0xFFFEFE30 ) + 1 ) * 100 )
+
+#define AS923_MIN_RF_FREQUENCY            915000000
+#define AS923_MAX_RF_FREQUENCY            928000000
+
+#elif ( REGION_AS923_DEFAULT_CHANNEL_PLAN == CHANNEL_PLAN_GROUP_AS923_1_JP )
+
+// Channel plan CHANNEL_PLAN_GROUP_AS923_1_JP
+
+#define REGION_AS923_FREQ_OFFSET          0
+
+/*!
+ * Restrict AS923 frequencies to channels 24 to 38
+ * Center frequencies 920.6 MHz to 923.4 MHz @ 200 kHz max bandwidth
+ */
+#define AS923_MIN_RF_FREQUENCY            920600000
+#define AS923_MAX_RF_FREQUENCY            923400000
+
 /*!
  * Specifies the reception bandwidth to be used while executing the LBT
  * Max channel bandwidth is 200 kHz
  */
 #define AS923_LBT_RX_BANDWIDTH            200000
+
+#undef AS923_TX_MAX_DATARATE
+#define AS923_TX_MAX_DATARATE             DR_5
+
+#undef AS923_RX_MAX_DATARATE
+#define AS923_RX_MAX_DATARATE             DR_5
+
+#undef AS923_DEFAULT_MAX_EIRP
+#define AS923_DEFAULT_MAX_EIRP            13.0f
+
+#endif
 
 /*!
  * Region specific context
@@ -114,10 +170,11 @@ static bool VerifyRfFreq( uint32_t freq )
 		return false;
 	}
 
-	if ( ( freq < 915000000 ) || ( freq > 928000000 ) ) {
-		return false;
-	}
-	return true;
+    if( ( freq < AS923_MIN_RF_FREQUENCY ) || ( freq > AS923_MAX_RF_FREQUENCY ) )
+    {
+        return false;
+    }
+    return true;
 }
 
 static uint8_t CountNbOfEnabledChannels( bool joined, uint8_t datarate, uint16_t *channelsMask, ChannelParams_t *channels, Band_t *bands, uint8_t *enabledChannels, uint8_t *delayTx )
@@ -345,40 +402,56 @@ void RegionAS923InitDefaults( InitDefaultsParams_t *params )
 			AS923_BAND0
 		};
 
-	switch ( params->Type ) {
-		case INIT_TYPE_INIT: {
-			// Initialize bands
-			memcpy1( (uint8_t *) NvmCtx.Bands, (uint8_t *) bands, sizeof( Band_t ) * AS923_MAX_NB_BANDS );
+    switch( params->Type )
+    {
+        case INIT_TYPE_DEFAULTS:
+        {
+            // Default bands
+            memcpy1( ( uint8_t* )NvmCtx.Bands, ( uint8_t* )bands, sizeof( Band_t ) * AS923_MAX_NB_BANDS );
 
-			// Channels
-			NvmCtx.Channels[0] = (ChannelParams_t) AS923_LC1;
-			NvmCtx.Channels[1] = (ChannelParams_t) AS923_LC2;
+            // Default channels
+            NvmCtx.Channels[0] = ( ChannelParams_t ) AS923_LC1;
+            NvmCtx.Channels[1] = ( ChannelParams_t ) AS923_LC2;
 
-			// Initialize the channels default mask
-			NvmCtx.ChannelsDefaultMask[0] = LC( 1 ) + LC( 2 );
-			// Update the channels mask
-			RegionCommonChanMaskCopy( NvmCtx.ChannelsMask, NvmCtx.ChannelsDefaultMask, 1 );
-			break;
-		}
-		case INIT_TYPE_RESTORE_CTX: {
-			if ( params->NvmCtx != 0 ) {
-				memcpy1( (uint8_t *) &NvmCtx, (uint8_t *) params->NvmCtx, sizeof( NvmCtx ) );
-			}
-			break;
-		}
-		case INIT_TYPE_RESTORE_DEFAULT_CHANNELS: {
-			// Restore channels default mask
-			NvmCtx.ChannelsMask[0] |= NvmCtx.ChannelsDefaultMask[0];
+            // Apply frequency offset
+            NvmCtx.Channels[0].Frequency -= REGION_AS923_FREQ_OFFSET;
+            NvmCtx.Channels[1].Frequency -= REGION_AS923_FREQ_OFFSET;
 
-			// Channels
-			NvmCtx.Channels[0] = (ChannelParams_t) AS923_LC1;
-			NvmCtx.Channels[1] = (ChannelParams_t) AS923_LC2;
-			break;
-		}
-		default: {
-			break;
-		}
-	}
+            // Default ChannelsMask
+            NvmCtx.ChannelsDefaultMask[0] = LC( 1 ) + LC( 2 );
+
+            // Update the channels mask
+            RegionCommonChanMaskCopy( NvmCtx.ChannelsMask, NvmCtx.ChannelsDefaultMask, CHANNELS_MASK_SIZE );
+            break;
+        }
+        case INIT_TYPE_RESET_TO_DEFAULT_CHANNELS:
+        {
+            // Reset Channels Rx1Frequency to default 0
+            NvmCtx.Channels[0].Rx1Frequency = 0;
+            NvmCtx.Channels[1].Rx1Frequency = 0;
+            // Update the channels mask
+            RegionCommonChanMaskCopy( NvmCtx.ChannelsMask, NvmCtx.ChannelsDefaultMask, CHANNELS_MASK_SIZE );
+            break;
+        }
+        case INIT_TYPE_ACTIVATE_DEFAULT_CHANNELS:
+        {
+            // Activate channels default mask
+            NvmCtx.ChannelsMask[0] |= NvmCtx.ChannelsDefaultMask[0];
+            break;
+        }
+        case INIT_TYPE_RESTORE_CTX:
+        {
+            if( params->NvmCtx != 0 )
+            {
+                memcpy1( (uint8_t*) &NvmCtx, (uint8_t*) params->NvmCtx, sizeof( NvmCtx ) );
+            }
+            break;
+        }
+        default:
+        {
+            break;
+        }
+    }
 }
 
 void *RegionAS923GetNvmCtx( GetNvmCtxParams_t *params )
@@ -548,15 +621,7 @@ bool RegionAS923RxConfig( RxConfigParams_t *rxConfig, int8_t *datarate )
 		Radio.SetRxConfig( modem, rxConfig->Bandwidth, phyDr, 1, 0, 8, rxConfig->WindowTimeout, false, 0, false, 0, 0, true, rxConfig->RxContinuous );
 	}
 
-	// Check for repeater support
-	if ( rxConfig->RepeaterSupport == true ) {
-		maxPayload = MaxPayloadOfDatarateRepeaterDwell0AS923[dr];
-	}
-	else {
-		maxPayload = MaxPayloadOfDatarateDwell0AS923[dr];
-	}
-
-	Radio.SetMaxPayloadLength( modem, maxPayload + LORA_MAC_FRMPAYLOAD_OVERHEAD );
+    Radio.SetMaxPayloadLength( modem, MaxPayloadOfDatarateDwell0AS923[dr] + LORAMAC_FRAME_PAYLOAD_OVERHEAD_SIZE );
 
 	*datarate = (uint8_t) dr;
 	return true;
@@ -836,6 +901,7 @@ LoRaMacStatus_t RegionAS923NextChannel( NextChanParams_t *nextChanParams, uint8_
 	}
 
 	if ( nbEnabledChannels > 0 ) {
+#if ( REGION_AS923_DEFAULT_CHANNEL_PLAN == CHANNEL_PLAN_GROUP_AS923_1_JP )
 		for ( uint8_t i = 0, j = randr( 0, nbEnabledChannels - 1 ); i < AS923_MAX_NB_CHANNELS; i++ ) {
 			channelNext = enabledChannels[j];
 			j			= ( j + 1 ) % nbEnabledChannels;
@@ -850,6 +916,10 @@ LoRaMacStatus_t RegionAS923NextChannel( NextChanParams_t *nextChanParams, uint8_
 			}
 		}
 		return LORAMAC_STATUS_NO_FREE_CHANNEL_FOUND;
+#else
+        // We found a valid channel
+        *channel = enabledChannels[randr( 0, nbEnabledChannels - 1 )];
+#endif
 	}
 	else {
 		if ( delayTx > 0 ) {

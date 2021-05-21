@@ -791,10 +791,6 @@ typedef enum ePhyAttribute
      */
     PHY_BEACON_CHANNEL_DR,
     /*!
-     * The frequency stepwidth between the beacon channels.
-     */
-    PHY_BEACON_CHANNEL_STEPWIDTH,
-    /*!
      * The number of channels for the beacon reception.
      */
     PHY_BEACON_NB_CHANNELS,
@@ -830,14 +826,21 @@ typedef enum ePhyAttribute
 typedef enum eInitType
 {
     /*!
-     * Initializes the region specific data to defaults, according to the
-     * LoRaWAN specification.
+     * Initializes the regional default settings for the band,
+     * channel and default channels mask. Some regions also initiate
+     * other default configurations. In general, this type is intended
+     * to be called once during the initialization.
      */
-    INIT_TYPE_INIT,
+    INIT_TYPE_DEFAULTS,
     /*!
      * Restores default channels defined by the LoRaWAN specification only.
      */
-    INIT_TYPE_RESTORE_DEFAULT_CHANNELS,
+    INIT_TYPE_RESET_TO_DEFAULT_CHANNELS,
+    /*!
+     * Activates the default channels. Leaves all other active channels
+     * active.
+     */
+    INIT_TYPE_ACTIVATE_DEFAULT_CHANNELS,
     /*!
      * Restores internal context from passed pointer.
      */
@@ -900,6 +903,10 @@ typedef union uPhyParam
      * Beacon format
      */
     BeaconFormat_t BeaconFormat;
+    /*!
+     * Duty Cycle Period
+     */
+    TimerTime_t DutyCycleTimePeriod;
 }PhyParam_t;
 
 /*!
@@ -931,6 +938,12 @@ typedef struct sGetPhyParams
      * PHY_MIN_RX_DR, PHY_MAX_PAYLOAD, PHY_MAX_PAYLOAD_REPEATER.
      */
     uint8_t DownlinkDwellTime;
+    /*!
+     * Specification of the downlink channel. Used in Class B only.
+     * The parameter is needed for the following queries:
+     * PHY_BEACON_CHANNEL_FREQ, PHY_PING_SLOT_CHANNEL_FREQ
+     */
+    uint8_t Channel;
 }GetPhyParams_t;
 
 /*!
@@ -1091,10 +1104,6 @@ typedef struct sRxConfigParams
      * Downlink dwell time.
      */
     uint8_t DownlinkDwellTime;
-    /*!
-     * Set to true, if a repeater is supported.
-     */
-    bool RepeaterSupport;
     /*!
      * Set to true, if RX should be continuous.
      */
@@ -1728,6 +1737,13 @@ uint8_t RegionApplyDrOffset( LoRaMacRegion_t region, uint8_t downlinkDwellTime, 
  * \param [out] outDr Datarate used to receive the beacon
  */
 void RegionRxBeaconSetup( LoRaMacRegion_t region, RxBeaconSetup_t* rxBeaconSetup, uint8_t* outDr );
+
+/*!
+ * \brief Gets the version of the regional parameters implementation.
+ *
+ * \retval Version of the regional parameters.
+ */
+Version_t RegionGetVersion( void );
 
 /*! \} defgroup REGION */
 
