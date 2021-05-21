@@ -2763,8 +2763,7 @@ static void RxWindowSetup( TimerEvent_t* rxTimer, RxConfigParams_t* rxConfig )
 
     if( RegionRxConfig( MacCtx.NvmCtx->Region, rxConfig, ( int8_t* )&MacCtx.McpsIndication.RxDatarate ) == true )
     {
-        LorawanRadioRx(MacCtx.NvmCtx->MacParams.MaxRxWindow );
-
+        Radio.Rx( MacCtx.NvmCtx->MacParams.MaxRxWindow );
         MacCtx.RxSlot = rxConfig->RxSlot;
     }
 }
@@ -2786,7 +2785,7 @@ static void OpenContinuousRxCWindow( void )
     // Thus, there is no need to set the radio in standby mode.
     if( RegionRxConfig( MacCtx.NvmCtx->Region, &MacCtx.RxWindowCConfig, ( int8_t* )&MacCtx.McpsIndication.RxDatarate ) == true )
     {
-        LorawanRadioRx( 0 ); // Continuous mode
+        Radio.Rx( 0 ); // Continuous mode
         MacCtx.RxSlot = MacCtx.RxWindowCConfig.RxSlot;
     }
 }
