@@ -28,14 +28,179 @@
  *
  * \author    Daniel Jaeckle ( STACKFORCE )
  */
-#include "RegionCommon.h"
+#include <math.h>
 #include "radio.h"
 #include "utilities.h"
-#include <math.h>
+#include "RegionCommon.h"
+#include "systime.h"
 
 #define BACKOFF_DC_1_HOUR 100
 #define BACKOFF_DC_10_HOURS 1000
 #define BACKOFF_DC_24_HOURS 10000
+
+#define BACKOFF_DUTY_CYCLE_1_HOUR_IN_S      3600
+#define BACKOFF_DUTY_CYCLE_10_HOURS_IN_S    ( BACKOFF_DUTY_CYCLE_1_HOUR_IN_S + ( BACKOFF_DUTY_CYCLE_1_HOUR_IN_S * 10 ) )
+#define BACKOFF_DUTY_CYCLE_24_HOURS_IN_S    ( BACKOFF_DUTY_CYCLE_10_HOURS_IN_S + ( BACKOFF_DUTY_CYCLE_1_HOUR_IN_S * 24 ) )
+#define BACKOFF_24_HOURS_IN_S               ( BACKOFF_DUTY_CYCLE_1_HOUR_IN_S * 24 )
+
+#ifndef DUTY_CYCLE_TIME_PERIOD
+/*!
+ * Default duty cycle observation time period
+ *
+ * \remark The ETSI observation time period is 1 hour (3600000 ms) but, the implemented algorithm may violate the
+ *         defined duty-cycle restrictions. In order to ensure that these restrictions never get violated we changed the
+ *         default duty cycle observation time period to 1/2 hour (1800000 ms).
+ */
+#define DUTY_CYCLE_TIME_PERIOD              1800000
+#endif
+
+/*!
+ * \brief Returns `N / D` rounded to the smallest integer value greater than or equal to `N / D`
+ *
+ * \warning when `D == 0`, the result is undefined
+ *
+ * \remark `N` and `D` can be signed or unsigned
+ *
+ * \param [IN] N the numerator, which can have any sign
+ * \param [IN] D the denominator, which can have any sign
+ * \retval N / D with any fractional part rounded to the smallest integer value greater than or equal to `N / D`
+ */
+#define DIV_CEIL( N, D )                                                       \
+    (                                                                          \
+        ( N > 0 ) ?                                                            \
+        ( ( ( N ) + ( D ) - 1 ) / ( D ) ) :                                    \
+        ( ( N ) / ( D ) )                                                      \
+    )
+
+static uint16_t GetDutyCycle( Band_t* band, bool joined, SysTime_t elapsedTimeSinceStartup )
+{
+    uint16_t dutyCycle = band->DCycle;
+
+    if( joined == false )
+    {
+        uint16_t joinDutyCycle = BACKOFF_DC_24_HOURS;
+
+        if( elapsedTimeSinceStartup.Seconds < BACKOFF_DUTY_CYCLE_1_HOUR_IN_S )
+        {
+            joinDutyCycle = BACKOFF_DC_1_HOUR;
+        }
+        else if( elapsedTimeSinceStartup.Seconds < BACKOFF_DUTY_CYCLE_10_HOURS_IN_S )
+        {
+            joinDutyCycle = BACKOFF_DC_10_HOURS;
+        }
+        else
+        {
+            joinDutyCycle = BACKOFF_DC_24_HOURS;
+        }
+        // Take the most restrictive duty cycle
+        dutyCycle = MAX( dutyCycle, joinDutyCycle );
+    }
+
+    // Prevent value of 0
+    if( dutyCycle == 0 )
+    {
+        dutyCycle = 1;
+    }
+
+    return dutyCycle;
+}
+
+static uint16_t SetMaxTimeCredits( Band_t* band, bool joined, SysTime_t elapsedTimeSinceStartup,
+                                   bool dutyCycleEnabled, bool lastTxIsJoinRequest )
+{
+    uint16_t dutyCycle = band->DCycle;
+    TimerTime_t maxCredits = DUTY_CYCLE_TIME_PERIOD;
+    TimerTime_t elapsedTime = SysTimeToMs( elapsedTimeSinceStartup );
+    SysTime_t timeDiff = { 0 };
+
+    // Get the band duty cycle. If not joined, the function either returns the join duty cycle
+    // or the band duty cycle, whichever is more restrictive.
+    dutyCycle = GetDutyCycle( band, joined, elapsedTimeSinceStartup );
+
+    if( joined == false )
+    {
+        if( dutyCycle == BACKOFF_DC_1_HOUR )
+        {
+            maxCredits = DUTY_CYCLE_TIME_PERIOD;
+            band->LastMaxCreditAssignTime = elapsedTime;
+        }
+        else if( dutyCycle == BACKOFF_DC_10_HOURS )
+        {
+            maxCredits = DUTY_CYCLE_TIME_PERIOD * 10;
+            band->LastMaxCreditAssignTime = elapsedTime;
+        }
+        else
+        {
+            maxCredits = DUTY_CYCLE_TIME_PERIOD * 24;
+        }
+
+        timeDiff = SysTimeSub( elapsedTimeSinceStartup, SysTimeFromMs( band->LastMaxCreditAssignTime ) );
+
+        // Verify if we have to assign the maximum credits in cases
+        // of the preconditions have changed.
+        if( ( ( dutyCycleEnabled == false ) && ( lastTxIsJoinRequest == false ) ) ||
+            ( band->MaxTimeCredits != maxCredits ) ||
+            ( timeDiff.Seconds >= BACKOFF_24_HOURS_IN_S ) )
+        {
+            band->TimeCredits = maxCredits;
+
+            if( elapsedTimeSinceStartup.Seconds >= BACKOFF_DUTY_CYCLE_24_HOURS_IN_S )
+            {
+                timeDiff.Seconds = ( elapsedTimeSinceStartup.Seconds - BACKOFF_DUTY_CYCLE_24_HOURS_IN_S ) / BACKOFF_24_HOURS_IN_S;
+                timeDiff.Seconds *= BACKOFF_24_HOURS_IN_S;
+                timeDiff.Seconds += BACKOFF_DUTY_CYCLE_24_HOURS_IN_S;
+                timeDiff.SubSeconds = 0;
+                band->LastMaxCreditAssignTime = SysTimeToMs( timeDiff );
+            }
+        }
+    }
+    else
+    {
+        if( dutyCycleEnabled == false )
+        {
+            // Assign max credits when the duty cycle is disabled.
+            band->TimeCredits = maxCredits;
+        }
+    }
+
+    // Assign the max credits if its the first time
+    if( band->LastBandUpdateTime == 0 )
+    {
+        band->TimeCredits = maxCredits;
+    }
+
+    // Setup the maximum allowed credits. We can assign them
+    // safely all the time.
+    band->MaxTimeCredits = maxCredits;
+
+    return dutyCycle;
+}
+
+static uint16_t UpdateTimeCredits( Band_t* band, bool joined, bool dutyCycleEnabled,
+                                   bool lastTxIsJoinRequest, SysTime_t elapsedTimeSinceStartup,
+                                   TimerTime_t currentTime )
+{
+    uint16_t dutyCycle = SetMaxTimeCredits( band, joined, elapsedTimeSinceStartup,
+                                            dutyCycleEnabled, lastTxIsJoinRequest );
+
+    if( joined == true )
+    {
+        // Apply a sliding window for the duty cycle with collection and speding
+        // credits.
+        band->TimeCredits += TimerGetElapsedTime( band->LastBandUpdateTime );
+    }
+
+    // Limit band credits to maximum
+    if( band->TimeCredits > band->MaxTimeCredits )
+    {
+        band->TimeCredits = band->MaxTimeCredits;
+    }
+
+    // Synchronize update time
+    band->LastBandUpdateTime = currentTime;
+
+    return dutyCycle;
+}
 
 static uint8_t CountChannels( uint16_t mask, uint8_t nbBits )
 {
@@ -342,7 +507,112 @@ void RegionCommonRxBeaconSetup( RegionCommonRxBeaconSetupParams_t *rxBeaconSetup
 	Radio.Rx( rxBeaconSetupParams->RxTime );
 }
 
-uint32_t RegionCommonGetBandwidth( uint32_t drIndex, const uint32_t *bandwidths )
+void RegionCommonCountNbOfEnabledChannels( RegionCommonCountNbOfEnabledChannelsParams_t* countNbOfEnabledChannelsParams,
+                                           uint8_t* enabledChannels, uint8_t* nbEnabledChannels, uint8_t* nbRestrictedChannels )
+{
+    uint8_t nbChannelCount = 0;
+    uint8_t nbRestrictedChannelsCount = 0;
+
+    for( uint8_t i = 0, k = 0; i < countNbOfEnabledChannelsParams->MaxNbChannels; i += 16, k++ )
+    {
+        for( uint8_t j = 0; j < 16; j++ )
+        {
+            if( ( countNbOfEnabledChannelsParams->ChannelsMask[k] & ( 1 << j ) ) != 0 )
+            {
+                if( countNbOfEnabledChannelsParams->Channels[i + j].Frequency == 0 )
+                { // Check if the channel is enabled
+                    continue;
+                }
+                if( ( countNbOfEnabledChannelsParams->Joined == false ) &&
+                    ( countNbOfEnabledChannelsParams->JoinChannels != NULL ) )
+                {
+                    if( ( countNbOfEnabledChannelsParams->JoinChannels[k] & ( 1 << j ) ) == 0 )
+                    {
+                        continue;
+                    }
+                }
+                if( RegionCommonValueInRange( countNbOfEnabledChannelsParams->Datarate,
+                                              countNbOfEnabledChannelsParams->Channels[i + j].DrRange.Fields.Min,
+                                              countNbOfEnabledChannelsParams->Channels[i + j].DrRange.Fields.Max ) == false )
+                { // Check if the current channel selection supports the given datarate
+                    continue;
+                }
+                if( countNbOfEnabledChannelsParams->Bands[countNbOfEnabledChannelsParams->Channels[i + j].Band].ReadyForTransmission == false )
+                { // Check if the band is available for transmission
+                    nbRestrictedChannelsCount++;
+                    continue;
+                }
+                enabledChannels[nbChannelCount++] = i + j;
+            }
+        }
+    }
+    *nbEnabledChannels = nbChannelCount;
+    *nbRestrictedChannels = nbRestrictedChannelsCount;
+}
+
+// LoRaMacStatus_t RegionCommonIdentifyChannels( RegionCommonIdentifyChannelsParam_t* identifyChannelsParam,
+//                                               TimerTime_t* aggregatedTimeOff, uint8_t* enabledChannels,
+//                                               uint8_t* nbEnabledChannels, uint8_t* nbRestrictedChannels,
+//                                               TimerTime_t* nextTxDelay )
+// {
+//     TimerTime_t elapsed = TimerGetElapsedTime( identifyChannelsParam->LastAggrTx );
+//     *nextTxDelay = identifyChannelsParam->AggrTimeOff - elapsed;
+//     *nbRestrictedChannels = 1;
+//     *nbEnabledChannels = 0;
+
+//     if( ( identifyChannelsParam->LastAggrTx == 0 ) ||
+//         ( identifyChannelsParam->AggrTimeOff <= elapsed ) )
+//     {
+//         // Reset Aggregated time off
+//         *aggregatedTimeOff = 0;
+
+//         // Update bands Time OFF
+//         *nextTxDelay = RegionCommonUpdateBandTimeOff( identifyChannelsParam->CountNbOfEnabledChannelsParam->Joined,
+//                                                       identifyChannelsParam->CountNbOfEnabledChannelsParam->Bands,
+//                                                       identifyChannelsParam->MaxBands,
+//                                                       identifyChannelsParam->DutyCycleEnabled,
+//                                                       identifyChannelsParam->LastTxIsJoinRequest,
+//                                                       identifyChannelsParam->ElapsedTimeSinceStartUp,
+//                                                       identifyChannelsParam->ExpectedTimeOnAir );
+
+//         RegionCommonCountNbOfEnabledChannels( identifyChannelsParam->CountNbOfEnabledChannelsParam, enabledChannels,
+//                                               nbEnabledChannels, nbRestrictedChannels );
+//     }
+
+//     if( *nbEnabledChannels > 0 )
+//     {
+//         *nextTxDelay = 0;
+//         return LORAMAC_STATUS_OK;
+//     }
+//     else if( *nbRestrictedChannels > 0 )
+//     {
+//         return LORAMAC_STATUS_DUTYCYCLE_RESTRICTED;
+//     }
+//     else
+//     {
+//         return LORAMAC_STATUS_NO_CHANNEL_FOUND;
+//     }
+// }
+
+int8_t RegionCommonGetNextLowerTxDr( int8_t dr, int8_t minDr )
+{
+    if( dr == minDr )
+    {
+        return minDr;
+    }
+    else
+    {
+        return( dr - 1 );
+    }
+}
+
+int8_t RegionCommonLimitTxPower( int8_t txPower, int8_t maxBandTxPower )
+{
+    // Limit tx power to the band max
+    return MAX( txPower, maxBandTxPower );
+}
+
+uint32_t RegionCommonGetBandwidth( uint32_t drIndex, const uint32_t* bandwidths )
 {
 	switch ( bandwidths[drIndex] ) {
 		default:

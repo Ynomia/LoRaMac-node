@@ -37,6 +37,11 @@
 #ifndef __REGIONCOMMON_H__
 #define __REGIONCOMMON_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include "LoRaMacTypes.h"
 #include "LoRaMacHeaderTypes.h"
 #include "region/Region.h"
@@ -267,6 +272,92 @@ typedef struct sRegionCommonRxBeaconSetupParams
     uint16_t SymbolTimeout;
 }RegionCommonRxBeaconSetupParams_t;
 
+typedef struct sRegionCommonCountNbOfEnabledChannelsParams
+{
+    /*!
+     * Set to true, if the device is joined.
+     */
+    bool Joined;
+    /*!
+     * The datarate to count the available channels.
+     */
+    uint8_t Datarate;
+    /*!
+     * A pointer to the channels mask to verify.
+     */
+    uint16_t* ChannelsMask;
+    /*!
+     * A pointer to the channels.
+     */
+    ChannelParams_t* Channels;
+    /*!
+     * A pointer to the bands.
+     */
+    Band_t* Bands;
+    /*!
+     * The number of available channels.
+     */
+    uint16_t MaxNbChannels;
+    /*!
+     * A pointer to the bitmask containing the
+     * join channels. Shall have the same dimension as the
+     * ChannelsMask with a number of MaxNbChannels channels.
+     */
+    uint16_t* JoinChannels;
+}RegionCommonCountNbOfEnabledChannelsParams_t;
+
+typedef struct sRegionCommonIdentifyChannelsParam
+{
+    /*!
+     * Aggregated time-off time.
+     */
+    TimerTime_t AggrTimeOff;
+    /*!
+     * Time of the last aggregated TX.
+     */
+    TimerTime_t LastAggrTx;
+    /*!
+     * Set to true, if the duty cycle is enabled, otherwise false.
+     */
+    bool DutyCycleEnabled;
+    /*!
+     * Maximum number of bands.
+     */
+    uint8_t MaxBands;
+    /*!
+     * Elapsed time since the start of the node.
+     */
+    SysTime_t ElapsedTimeSinceStartUp;
+    /*!
+     * Joined Set to true, if the last uplink was a join request
+     */
+    bool LastTxIsJoinRequest;
+    /*!
+     * Expected time-on-air
+     */
+    TimerTime_t ExpectedTimeOnAir;
+    /*!
+     * Pointer to a structure of RegionCommonCountNbOfEnabledChannelsParams_t.
+     */
+    RegionCommonCountNbOfEnabledChannelsParams_t* CountNbOfEnabledChannelsParam;
+}RegionCommonIdentifyChannelsParam_t;
+
+typedef struct sRegionCommonSetDutyCycleParams
+{
+    /*!
+     * Duty cycle period.
+     */
+    TimerTime_t DutyCycleTimePeriod;
+    /*!
+     * Number of bands available.
+     */
+    uint8_t MaxBands;
+    /*!
+     * A pointer to the bands.
+     */
+    Band_t* Bands;
+}RegionCommonSetDutyCycleParams_t;
+
 /*!
  * \brief Calculates the join duty cycle.
  *        This is a generic function and valid for all regions.
@@ -482,6 +573,70 @@ void RegionCommonCalcBackOff( RegionCommonCalcBackOffParams_t* calcBackOffParams
 void RegionCommonRxBeaconSetup( RegionCommonRxBeaconSetupParams_t* rxBeaconSetupParams );
 
 /*!
+ * \brief Counts the number of enabled channels.
+ *
+ * \param [IN] countNbOfEnabledChannelsParams A pointer to the input parameters.
+ *
+ * \param [OUT] enabledChannels A pointer to an array of size XX_MAX_NB_CHANNELS. The function
+ *              stores the available channels into this array.
+ *
+ * \param [OUT] nbEnabledChannels The number of available channels found.
+ *
+ * \param [OUT] nbRestrictedChannels It contains the number of channel
+ *                      which are available, but restricted due to duty cycle.
+ */
+void RegionCommonCountNbOfEnabledChannels( RegionCommonCountNbOfEnabledChannelsParams_t* countNbOfEnabledChannelsParams,
+                                           uint8_t* enabledChannels, uint8_t* nbEnabledChannels, uint8_t* nbRestrictedChannels );
+
+/*!
+ * \brief Identifies all channels which are available currently.
+ *
+ * \param [IN] identifyChannelsParam A pointer to the input parameters.
+ *
+ * \param [OUT] aggregatedTimeOff The new value of the aggregatedTimeOff. The function
+ *                                may resets it to 0.
+ *
+ * \param [OUT] enabledChannels A pointer to an array of size XX_MAX_NB_CHANNELS. The function
+ *              stores the available channels into this array.
+ *
+ * \param [OUT] nbEnabledChannels The number of available channels found.
+ *
+ * \param [OUT] nbRestrictedChannels It contains the number of channel
+ *                      which are available, but restricted due to duty cycle.
+ *
+ * \param [OUT] nextTxDelay Holds the time which has to be waited for the next possible
+ *                          uplink transmission.
+ *
+ *\retval Status of the operation.
+ */
+LoRaMacStatus_t RegionCommonIdentifyChannels( RegionCommonIdentifyChannelsParam_t* identifyChannelsParam,
+                                              TimerTime_t* aggregatedTimeOff, uint8_t* enabledChannels,
+                                              uint8_t* nbEnabledChannels, uint8_t* nbRestrictedChannels,
+                                              TimerTime_t* nextTxDelay );
+
+/*!
+ * \brief Selects the next lower datarate.
+ *
+ * \param [IN] dr Current datarate.
+ *
+ * \param [IN] minDr Minimum possible datarate.
+ *
+ * \retval The next lower datarate.
+ */
+int8_t RegionCommonGetNextLowerTxDr( int8_t dr, int8_t minDr );
+
+/*!
+ * \brief Limits the TX power.
+ *
+ * \param [IN] txPower Current TX power.
+ *
+ * \param [IN] maxBandTxPower Maximum possible TX power.
+ *
+ * \retval Limited TX power.
+ */
+int8_t RegionCommonLimitTxPower( int8_t txPower, int8_t maxBandTxPower );
+
+/*!
  * \brief Gets the bandwidth.
  *
  * \param [IN] drIndex Datarate index.
@@ -490,8 +645,12 @@ void RegionCommonRxBeaconSetup( RegionCommonRxBeaconSetupParams_t* rxBeaconSetup
  *
  * \retval Bandwidth.
  */
-uint32_t RegionCommonGetBandwidth( uint32_t drIndex, const uint32_t *bandwidths );
+uint32_t RegionCommonGetBandwidth( uint32_t drIndex, const uint32_t* bandwidths );
 
 /*! \} defgroup REGIONCOMMON */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __REGIONCOMMON_H__
