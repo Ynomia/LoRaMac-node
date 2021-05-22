@@ -37,6 +37,11 @@
 #ifndef __LORAMAC_CRYPTO_H__
 #define __LORAMAC_CRYPTO_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -67,89 +72,89 @@
 /*!
  * LoRaMac Cryto Status
  */
-typedef enum eLoRaMacCryptoStatus {
-	/*!
+typedef enum eLoRaMacCryptoStatus
+{
+    /*!
      * No error occurred
      */
-	LORAMAC_CRYPTO_SUCCESS = 0,
-	/*!
+    LORAMAC_CRYPTO_SUCCESS = 0,
+    /*!
      * MIC does not match
      */
-	LORAMAC_CRYPTO_FAIL_MIC,
-	/*!
+    LORAMAC_CRYPTO_FAIL_MIC,
+    /*!
      * Address does not match
      */
-	LORAMAC_CRYPTO_FAIL_ADDRESS,
-	/*!
+    LORAMAC_CRYPTO_FAIL_ADDRESS,
+    /*!
      * JoinNonce was not greater than previous one.
      */
-	LORAMAC_CRYPTO_FAIL_JOIN_NONCE,
-	/*!
+    LORAMAC_CRYPTO_FAIL_JOIN_NONCE,
+    /*!
      * RJcount0 reached 2^16-1
      */
-	LORAMAC_CRYPTO_FAIL_RJCOUNT0_OVERFLOW,
-	/*!
+    LORAMAC_CRYPTO_FAIL_RJCOUNT0_OVERFLOW,
+    /*!
      * FCNT_ID is not supported
      */
-	LORAMAC_CRYPTO_FAIL_FCNT,
-	LORAMAC_CRYPTO_FAIL_FCNT_ID,
-	/*!
+    LORAMAC_CRYPTO_FAIL_FCNT_ID,
+    /*!
      * FCntUp/Down check failed (new FCnt is smaller than previous one)
      */
-	LORAMAC_CRYPTO_FAIL_FCNT_SMALLER,
-	/*!
+    LORAMAC_CRYPTO_FAIL_FCNT_SMALLER,
+    /*!
      * FCntUp/Down check failed (duplicated)
      */
-	LORAMAC_CRYPTO_FAIL_FCNT_DUPLICATED,
-	/*!
+    LORAMAC_CRYPTO_FAIL_FCNT_DUPLICATED,
+    /*!
      * MAX_GAP_FCNT check failed
      */
-	LORAMAC_CRYPTO_FAIL_MAX_GAP_FCNT,
-	/*!
+    LORAMAC_CRYPTO_FAIL_MAX_GAP_FCNT,
+    /*!
      * Not allowed parameter value
      */
-	LORAMAC_CRYPTO_FAIL_PARAM,
-	/*!
+    LORAMAC_CRYPTO_FAIL_PARAM,
+    /*!
      * Null pointer exception
      */
-	LORAMAC_CRYPTO_ERROR_NPE,
-	/*!
+    LORAMAC_CRYPTO_ERROR_NPE,
+    /*!
      * Invalid key identifier exception
      */
-	LORAMAC_CRYPTO_ERROR_INVALID_KEY_ID,
-	/*!
+    LORAMAC_CRYPTO_ERROR_INVALID_KEY_ID,
+    /*!
      * Invalid address identifier exception
      */
-	LORAMAC_CRYPTO_ERROR_INVALID_ADDR_ID,
-	/*!
+    LORAMAC_CRYPTO_ERROR_INVALID_ADDR_ID,
+    /*!
      * Invalid LoRaWAN specification version
      */
-	LORAMAC_CRYPTO_ERROR_INVALID_VERSION,
-	/*!
+    LORAMAC_CRYPTO_ERROR_INVALID_VERSION,
+    /*!
      * Incompatible buffer size
      */
-	LORAMAC_CRYPTO_ERROR_BUF_SIZE,
-	/*!
+    LORAMAC_CRYPTO_ERROR_BUF_SIZE,
+    /*!
      * The secure element reports an error
      */
-	LORAMAC_CRYPTO_ERROR_SECURE_ELEMENT_FUNC,
-	/*!
+    LORAMAC_CRYPTO_ERROR_SECURE_ELEMENT_FUNC,
+    /*!
      * Error from parser reported
      */
-	LORAMAC_CRYPTO_ERROR_PARSER,
-	/*!
+    LORAMAC_CRYPTO_ERROR_PARSER,
+    /*!
      * Error from serializer reported
      */
-	LORAMAC_CRYPTO_ERROR_SERIALIZER,
-	/*!
+    LORAMAC_CRYPTO_ERROR_SERIALIZER,
+    /*!
      * RJcount1 reached 2^16-1 which should never happen
      */
-	LORAMAC_CRYPTO_ERROR_RJCOUNT1_OVERFLOW,
-	/*!
+    LORAMAC_CRYPTO_ERROR_RJCOUNT1_OVERFLOW,
+    /*!
      * Undefined Error occurred
      */
-	LORAMAC_CRYPTO_ERROR,
-} LoRaMacCryptoStatus_t;
+    LORAMAC_CRYPTO_ERROR,
+}LoRaMacCryptoStatus_t;
 
 /*!
  * Signature of callback function to be called by the LoRaMac Crypto module when the
@@ -295,18 +300,19 @@ LoRaMacCryptoStatus_t LoRaMacCryptoSecureMessage( uint32_t fCntUp, uint8_t txDr,
 LoRaMacCryptoStatus_t LoRaMacCryptoUnsecureMessage( AddressIdentifier_t addrID, uint32_t address, FCntIdentifier_t fCntID, uint32_t fCntDown, LoRaMacMessageData_t* macMsg );
 
 /*!
- * Derives the McRootKey from the GenAppKey or AppKey.
+ * Derives the McRootKey from the AppKey.
  *
  * 1.0.x
- * McRootKey = aes128_encrypt(GenAppKey , 0x00 | pad16)
+ * McRootKey = aes128_encrypt(AppKey, 0x00 | pad16)
  *
  * 1.1.x
- * McRootKey = aes128_encrypt(AppKey , 0x20 | pad16)
+ * McRootKey = aes128_encrypt(AppKey, 0x20 | pad16)
  *
- * \param[IN]     keyID           - Key identifier of the root key to use to perform the derivation ( GenAppKey or AppKey )
+ * \param[IN]     versionMinor    - LoRaWAN specification minor version to be used.
+ * \param[IN]     keyID           - Key identifier of the root key to use to perform the derivation ( AppKey )
  * \retval                        - Status of the operation
  */
-LoRaMacCryptoStatus_t LoRaMacCryptoDeriveMcRootKey( KeyIdentifier_t keyID );
+LoRaMacCryptoStatus_t LoRaMacCryptoDeriveMcRootKey( uint8_t versionMinor, KeyIdentifier_t keyID );
 
 /*!
  * Derives the McKEKey from the McRootKey.
@@ -331,5 +337,9 @@ LoRaMacCryptoStatus_t LoRaMacCryptoDeriveMcKEKey( KeyIdentifier_t keyID );
 LoRaMacCryptoStatus_t LoRaMacCryptoDeriveMcSessionKeyPair( AddressIdentifier_t addrID, uint32_t mcAddr );
 
 /*! \} addtogroup LORAMAC */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __LORAMAC_CRYPTO_H__
