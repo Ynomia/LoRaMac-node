@@ -127,17 +127,6 @@ typedef struct sRegionAS923NvmCtx
 static RegionAS923NvmCtx_t NvmCtx;
 
 // Static functions
-
-static int8_t LimitTxPower( int8_t txPower, int8_t maxBandTxPower, int8_t datarate, uint16_t *channelsMask )
-{
-	int8_t txPowerResult = txPower;
-
-	// Limit tx power to the band max
-	txPowerResult = MAX( txPower, maxBandTxPower );
-
-	return txPowerResult;
-}
-
 static bool VerifyRfFreq( uint32_t freq )
 {
 	// Check radio driver support
@@ -606,7 +595,7 @@ bool RegionAS923TxConfig( TxConfigParams_t *txConfig, int8_t *txPower, TimerTime
 {
 	RadioModems_t modem;
 	int8_t		  phyDr			 = DataratesAS923[txConfig->Datarate];
-	int8_t		  txPowerLimited = LimitTxPower( txConfig->TxPower, NvmCtx.Bands[NvmCtx.Channels[txConfig->Channel].Band].TxMaxPower, txConfig->Datarate, NvmCtx.ChannelsMask );
+	int8_t		  txPowerLimited = RegionCommonLimitTxPower( txConfig->TxPower, NvmCtx.Bands[NvmCtx.Channels[txConfig->Channel].Band].TxMaxPower );
 	uint32_t	  bandwidth		 = RegionCommonGetBandwidth( txConfig->Datarate, BandwidthsAS923 );
 	int8_t		  phyTxPower	 = 0;
 
@@ -974,9 +963,9 @@ bool RegionAS923ChannelsRemove( ChannelRemoveParams_t *channelRemove )
 
 void RegionAS923SetContinuousWave( ContinuousWaveParams_t *continuousWave )
 {
-	int8_t   txPowerLimited = LimitTxPower( continuousWave->TxPower, NvmCtx.Bands[NvmCtx.Channels[continuousWave->Channel].Band].TxMaxPower, continuousWave->Datarate, NvmCtx.ChannelsMask );
-	int8_t   phyTxPower		= 0;
-	uint32_t frequency		= NvmCtx.Channels[continuousWave->Channel].Frequency;
+    int8_t txPowerLimited = RegionCommonLimitTxPower( continuousWave->TxPower, NvmCtx.Bands[NvmCtx.Channels[continuousWave->Channel].Band].TxMaxPower );
+    int8_t phyTxPower = 0;
+    uint32_t frequency = NvmCtx.Channels[continuousWave->Channel].Frequency;
 
 	// Calculate physical TX power
 	phyTxPower = RegionCommonComputeTxPower( txPowerLimited, continuousWave->MaxEirp, continuousWave->AntennaGain );
