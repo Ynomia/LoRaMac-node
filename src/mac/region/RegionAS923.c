@@ -127,18 +127,6 @@ typedef struct sRegionAS923NvmCtx
 static RegionAS923NvmCtx_t NvmCtx;
 
 // Static functions
-static int8_t GetNextLowerTxDr( int8_t dr, int8_t minDr )
-{
-	uint8_t nextLowerDr = 0;
-
-	if ( dr == minDr ) {
-		nextLowerDr = minDr;
-	}
-	else {
-		nextLowerDr = dr - 1;
-	}
-	return nextLowerDr;
-}
 
 static uint32_t GetBandwidth( uint32_t drIndex )
 {
@@ -256,10 +244,10 @@ PhyParam_t RegionAS923GetPhyParam( GetPhyParams_t *getPhy )
 		}
 		case PHY_NEXT_LOWER_TX_DR: {
 			if ( getPhy->UplinkDwellTime == 0 ) {
-				phyParam.Value = GetNextLowerTxDr( getPhy->Datarate, AS923_TX_MIN_DATARATE );
+				phyParam.Value = RegionCommonGetNextLowerTxDr( getPhy->Datarate, AS923_TX_MIN_DATARATE );
 			}
 			else {
-				phyParam.Value = GetNextLowerTxDr( getPhy->Datarate, AS923_DWELL_LIMIT_DATARATE );
+				phyParam.Value = RegionCommonGetNextLowerTxDr( getPhy->Datarate, AS923_DWELL_LIMIT_DATARATE );
 			}
 			break;
 		}

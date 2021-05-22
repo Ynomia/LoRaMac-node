@@ -37,6 +37,11 @@
 #ifndef __REGIONCOMMON_H__
 #define __REGIONCOMMON_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include "LoRaMacTypes.h"
 #include "LoRaMacHeaderTypes.h"
 #include "region/Region.h"
@@ -482,6 +487,28 @@ void RegionCommonCalcBackOff( RegionCommonCalcBackOffParams_t* calcBackOffParams
 void RegionCommonRxBeaconSetup( RegionCommonRxBeaconSetupParams_t* rxBeaconSetupParams );
 
 /*!
+ * \brief Selects the next lower datarate.
+ *
+ * \param [IN] dr Current datarate.
+ *
+ * \param [IN] minDr Minimum possible datarate.
+ *
+ * \retval The next lower datarate.
+ */
+int8_t RegionCommonGetNextLowerTxDr( int8_t dr, int8_t minDr );
+
+/*!
+ * \brief Limits the TX power.
+ *
+ * \param [IN] txPower Current TX power.
+ *
+ * \param [IN] maxBandTxPower Maximum possible TX power.
+ *
+ * \retval Limited TX power.
+ */
+int8_t RegionCommonLimitTxPower( int8_t txPower, int8_t maxBandTxPower );
+
+/*!
  * \brief Gets the bandwidth.
  *
  * \param [IN] drIndex Datarate index.
@@ -493,5 +520,9 @@ void RegionCommonRxBeaconSetup( RegionCommonRxBeaconSetupParams_t* rxBeaconSetup
 uint32_t RegionCommonGetBandwidth( uint32_t drIndex, const uint32_t *bandwidths );
 
 /*! \} defgroup REGIONCOMMON */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __REGIONCOMMON_H__
