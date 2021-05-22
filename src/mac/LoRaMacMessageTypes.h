@@ -40,9 +40,6 @@
 #include <stdint.h>
 #include "LoRaMacHeaderTypes.h"
 
-/*! CFList field size */
-#define LORAMAC_C_FLIST_FIELD_SIZE 16
-
 /*!
  * LoRaMac type for Join-request message
  */

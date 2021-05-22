@@ -81,9 +81,6 @@
 /*! FHDR Device address field size */
 #define LORAMAC_FHDR_DEV_ADDR_FIELD_SIZE LORAMAC_DEV_ADDR_FIELD_SIZE
 
-/*! FHDR Device address field size */
-#define LORAMAC_FHDR_DEV_ADD_FIELD_SIZE         4
-
 /*! FHDR Frame control field size */
 #define LORAMAC_FHDR_F_CTRL_FIELD_SIZE          1
 
