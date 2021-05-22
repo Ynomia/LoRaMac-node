@@ -1,4 +1,3 @@
-// clang-format off
 /*!
  * \file      LoRaMac.c
  *
@@ -50,7 +49,7 @@
 
 #ifndef LORAMAC_VERSION
 /*!
- * LoRaWAN version definition.
+ * LORaWAN version definition.
  */
 #define LORAMAC_VERSION                             0x01000300
 #endif
@@ -552,9 +551,7 @@ static LoRaMacStatus_t ScheduleTx( bool allowDelayedTx );
 static LoRaMacStatus_t SecureFrame( uint8_t txDr, uint8_t txCh );
 
 /*
- * \brief Calculates the back-off time for the band of a channel.
- *
- * \param [IN] channel     The last Tx channel index
+ * \brief Calculates the aggregated back off time.
  */
 static void CalculateBackOff( void );
 
@@ -801,6 +798,7 @@ static void OnRadioTxDone( void )
     MacCtx.LastTxSysTime = SysTimeGet( );
 
     LoRaMacRadioEvents.Events.TxDone = 1;
+
     if( ( MacCtx.MacCallbacks != NULL ) && ( MacCtx.MacCallbacks->MacProcessNotify != NULL ) )
     {
         MacCtx.MacCallbacks->MacProcessNotify( );
@@ -880,6 +878,7 @@ static void ProcessRadioTxDone( void )
     TimerStart( &MacCtx.RxWindowTimer1 );
     TimerSetValue( &MacCtx.RxWindowTimer2, MacCtx.RxWindow2Delay );
     TimerStart( &MacCtx.RxWindowTimer2 );
+
     if( ( MacCtx.NvmCtx->DeviceClass == CLASS_C ) || ( MacCtx.NodeAckRequested == true ) )
     {
         getPhy.Attribute = PHY_ACK_TIMEOUT;
@@ -1073,7 +1072,6 @@ static void ProcessRadioRxDone( void )
             getPhy.UplinkDwellTime = MacCtx.NvmCtx->MacParams.DownlinkDwellTime;
             getPhy.Datarate = MacCtx.McpsIndication.RxDatarate;
             getPhy.Attribute = PHY_MAX_PAYLOAD;
-
             phyParam = RegionGetPhyParam( MacCtx.NvmCtx->Region, &getPhy );
             if( ( MAX( 0, ( int16_t )( ( int16_t ) size - ( int16_t ) LORAMAC_FRAME_PAYLOAD_OVERHEAD_SIZE ) ) > ( int16_t )phyParam.Value ) ||
                 ( size < LORAMAC_FRAME_PAYLOAD_MIN_SIZE ) )
@@ -1621,7 +1619,7 @@ static void LoRaMacHandleMlmeRequest( void )
     // Handle join request
     if( MacCtx.MacFlags.Bits.MlmeReq == 1 )
     {
-        if ( LoRaMacConfirmQueueIsCmdActive( MLME_JOIN ) == true ) 
+        if( LoRaMacConfirmQueueIsCmdActive( MLME_JOIN ) == true )
         {
             if( LoRaMacConfirmQueueGetStatus( MLME_JOIN ) == LORAMAC_EVENT_INFO_STATUS_OK )
             {// Node joined successfully
@@ -1674,6 +1672,7 @@ void LoRaMacProcess( void )
     {
         LoRaMacEnableRequests( LORAMAC_REQUEST_HANDLING_OFF );
         LoRaMacCheckForRxAbort( );
+
         // An error occurs during transmitting
         if( IsRequestPending( ) > 0 )
         {
@@ -1694,7 +1693,6 @@ void LoRaMacProcess( void )
     {
         OpenContinuousRxCWindow( );
     }
-
 }
 
 static void OnTxDelayedTimerEvent( void* context )
@@ -1747,6 +1745,7 @@ static void OnRxWindow2TimerEvent( void* context )
     MacCtx.RxWindow2Config.DownlinkDwellTime = MacCtx.NvmCtx->MacParams.DownlinkDwellTime;
     MacCtx.RxWindow2Config.RxContinuous = false;
     MacCtx.RxWindow2Config.RxSlot = RX_SLOT_WIN_2;
+
     RxWindowSetup( &MacCtx.RxWindowTimer2, &MacCtx.RxWindow2Config );
 }
 
@@ -2802,7 +2801,7 @@ LoRaMacStatus_t PrepareFrame( LoRaMacHeader_t* macHdr, LoRaMacFrameCtrl_t* fCtrl
             {
                 return LORAMAC_STATUS_FCNT_HANDLER_ERROR;
             }
-            MacCtx.TxMsg.Message.Data.FHDR.FCnt = ( uint16_t ) fCntUp;
+            MacCtx.TxMsg.Message.Data.FHDR.FCnt = ( uint16_t )fCntUp;
 
             // Reset confirm parameters
             MacCtx.McpsConfirm.NbRetries = 0;
@@ -3126,7 +3125,6 @@ static bool CheckRetransConfirmedUplink( void )
     }
     return false;
 }
-
 
 static bool StopRetransmission( void )
 {
@@ -3460,7 +3458,6 @@ LoRaMacStatus_t LoRaMacQueryTxPossible( uint8_t size, LoRaMacTxInfo_t* txInfo )
     int8_t datarate = MacCtx.NvmCtx->MacParamsDefaults.ChannelsDatarate;
     int8_t txPower = MacCtx.NvmCtx->MacParamsDefaults.ChannelsTxPower;
     size_t macCmdsSize = 0;
-
 
     if( txInfo == NULL )
     {

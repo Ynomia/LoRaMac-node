@@ -1,4 +1,3 @@
-// clang-format off
 /*
  / _____)             _              | |
 ( (____  _____ ____ _| |_ _____  ____| |__
@@ -318,11 +317,13 @@ void LoRaMacConfirmQueueHandleCb( MlmeConfirm_t* mlmeConfirm )
     uint8_t nbElements = ConfirmQueueCtx.ConfirmQueueNvmCtx->MlmeConfirmQueueCnt;
     bool readyToHandle = false;
     MlmeConfirmQueue_t mlmeConfirmToStore;
+
     for( uint8_t i = 0; i < nbElements; i++ )
     {
         mlmeConfirm->MlmeRequest = ConfirmQueueCtx.BufferStart->Request;
         mlmeConfirm->Status = ConfirmQueueCtx.BufferStart->Status;
         readyToHandle = ConfirmQueueCtx.BufferStart->ReadyToHandle;
+
         if( readyToHandle == true )
         {
             ConfirmQueueCtx.Primitives->MacMlmeConfirm( mlmeConfirm );
