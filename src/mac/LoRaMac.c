@@ -3688,8 +3688,8 @@ LoRaMacStatus_t LoRaMacMibGetRequestConfirm( MibRequestConfirm_t* mibGet )
         }
         case MIB_LORAWAN_VERSION:
         {
-            // mibGet->Param.LrWanVersion.LoRaWan = MacCtx.NvmCtx->Version;
-            // mibGet->Param.LrWanVersion.LoRaWanRegion = RegionGetVersion( );
+            mibGet->Param.LrWanVersion.LoRaWan = MacCtx.NvmCtx->Version;
+            mibGet->Param.LrWanVersion.LoRaWanRegion = RegionGetVersion( );
             break;
         }
         default:

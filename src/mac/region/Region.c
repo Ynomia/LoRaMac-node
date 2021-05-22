@@ -1075,3 +1075,13 @@ void RegionRxBeaconSetup( LoRaMacRegion_t region, RxBeaconSetup_t* rxBeaconSetup
         }
     }
 }
+
+Version_t RegionGetVersion( void )
+{
+    Version_t version;
+
+    version.Value = REGION_VERSION;
+
+    return version;
+}
+
