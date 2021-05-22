@@ -517,7 +517,7 @@ int8_t RegionCommonLimitTxPower( int8_t txPower, int8_t maxBandTxPower );
  *
  * \retval Bandwidth.
  */
-uint32_t RegionCommonGetBandwidth( uint32_t drIndex, const uint32_t *bandwidths );
+uint32_t RegionCommonGetBandwidth( uint32_t drIndex, const uint32_t* bandwidths );
 
 /*! \} defgroup REGIONCOMMON */
 

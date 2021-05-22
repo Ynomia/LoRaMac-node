@@ -128,19 +128,6 @@ static RegionAS923NvmCtx_t NvmCtx;
 
 // Static functions
 
-static uint32_t GetBandwidth( uint32_t drIndex )
-{
-	switch ( BandwidthsAS923[drIndex] ) {
-		default:
-		case 125000:
-			return 0;
-		case 250000:
-			return 1;
-		case 500000:
-			return 2;
-	}
-}
-
 static int8_t LimitTxPower( int8_t txPower, int8_t maxBandTxPower, int8_t datarate, uint16_t *channelsMask )
 {
 	int8_t txPowerResult = txPower;
@@ -561,7 +548,7 @@ void RegionAS923ComputeRxWindowParameters( int8_t datarate, uint8_t minRxSymbols
 
 	// Get the datarate, perform a boundary check
 	rxConfigParams->Datarate  = MIN( datarate, AS923_RX_MAX_DATARATE );
-	rxConfigParams->Bandwidth = GetBandwidth( rxConfigParams->Datarate );
+	rxConfigParams->Bandwidth = RegionCommonGetBandwidth( rxConfigParams->Datarate, BandwidthsAS923 );
 
 	if ( rxConfigParams->Datarate == DR_7 ) { // FSK
 		tSymbol = RegionCommonComputeSymbolTimeFsk( DataratesAS923[rxConfigParams->Datarate] );
@@ -620,7 +607,7 @@ bool RegionAS923TxConfig( TxConfigParams_t *txConfig, int8_t *txPower, TimerTime
 	RadioModems_t modem;
 	int8_t		  phyDr			 = DataratesAS923[txConfig->Datarate];
 	int8_t		  txPowerLimited = LimitTxPower( txConfig->TxPower, NvmCtx.Bands[NvmCtx.Channels[txConfig->Channel].Band].TxMaxPower, txConfig->Datarate, NvmCtx.ChannelsMask );
-	uint32_t	  bandwidth		 = GetBandwidth( txConfig->Datarate );
+	uint32_t	  bandwidth		 = RegionCommonGetBandwidth( txConfig->Datarate, BandwidthsAS923 );
 	int8_t		  phyTxPower	 = 0;
 
 	// Calculate physical TX power

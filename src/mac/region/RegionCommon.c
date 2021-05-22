@@ -360,15 +360,16 @@ int8_t RegionCommonLimitTxPower( int8_t txPower, int8_t maxBandTxPower )
     return MAX( txPower, maxBandTxPower );
 }
 
-uint32_t RegionCommonGetBandwidth( uint32_t drIndex, const uint32_t *bandwidths )
+uint32_t RegionCommonGetBandwidth( uint32_t drIndex, const uint32_t* bandwidths )
 {
-	switch ( bandwidths[drIndex] ) {
-		default:
-		case 125000:
-			return 0;
-		case 250000:
-			return 1;
-		case 500000:
-			return 2;
-	}
+    switch( bandwidths[drIndex] )
+    {
+        default:
+        case 125000:
+            return 0;
+        case 250000:
+            return 1;
+        case 500000:
+            return 2;
+    }
 }
