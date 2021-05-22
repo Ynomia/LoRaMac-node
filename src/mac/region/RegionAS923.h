@@ -37,7 +37,36 @@
 #ifndef __REGION_AS923_H__
 #define __REGION_AS923_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include "region/Region.h"
+
+/*!
+ * Channel plan group AS923-1
+ * AS923_FREQ_OFFSET = 0
+ */
+#define CHANNEL_PLAN_GROUP_AS923_1                  1
+
+/*!
+ * Channel plan group AS923-2
+ * AS923_FREQ_OFFSET = -1.8MHz
+ */
+#define CHANNEL_PLAN_GROUP_AS923_2                  2
+
+/*!
+ * Channel plan group AS923-3
+ * AS923_FREQ_OFFSET = -6.6MHz
+ */
+#define CHANNEL_PLAN_GROUP_AS923_3                  3
+
+/*!
+ * Channel plan group AS923-1 for Japan
+ * AS923_FREQ_OFFSET = 0
+ */
+#define CHANNEL_PLAN_GROUP_AS923_1_JP               4
 
 /*!
  * LoRaMac maximum number of channels
@@ -213,6 +242,11 @@
 #define AS923_BEACON_CHANNEL_FREQ                   923400000
 
 /*!
+ * Ping slot channel frequency
+ */
+#define AS923_PING_SLOT_CHANNEL_FREQ                923400000
+
+/*!
  * Payload size of a beacon frame
  */
 #define AS923_BEACON_SIZE                           17
@@ -295,13 +329,6 @@ static const uint32_t BandwidthsAS923[] = { 125000, 125000, 125000, 125000, 1250
  * The table is valid for the dwell time configuration of 0 for uplinks and downlinks.
  */
 static const uint8_t MaxPayloadOfDatarateDwell0AS923[] = { 51, 51, 51, 115, 242, 242, 242, 242 };
-
-/*!
- * Maximum payload with respect to the datarate index. Can operate with repeater.
- * The table is valid for the dwell time configuration of 0 for uplinks and downlinks. The table provides
- * repeater support.
- */
-static const uint8_t MaxPayloadOfDatarateRepeaterDwell0AS923[] = { 51, 51, 51, 115, 222, 222, 222, 222 };
 
 /*!
  * Maximum payload with respect to the datarate index. Can operate with and without repeater.
@@ -542,5 +569,9 @@ uint8_t RegionAS923ApplyDrOffset( uint8_t downlinkDwellTime, int8_t dr, int8_t d
  void RegionAS923RxBeaconSetup( RxBeaconSetup_t* rxBeaconSetup, uint8_t* outDr );
 
 /*! \} defgroup REGIONAS923 */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __REGION_AS923_H__
