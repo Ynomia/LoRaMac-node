@@ -378,7 +378,7 @@ void RegionAS923SetBandTxDone( SetBandTxDoneParams_t* txDone )
                                txDone->LastTxAirTime, txDone->Joined, txDone->ElapsedTimeSinceStartUp );
 }
 
-void RegionAS923InitDefaults( InitDefaultsParams_t *params )
+void RegionAS923InitDefaults( InitDefaultsParams_t* params )
 {
 	Band_t bands[AS923_MAX_NB_BANDS] =
 		{
@@ -591,7 +591,7 @@ void RegionAS923ComputeRxWindowParameters( int8_t datarate, uint8_t minRxSymbols
     RegionCommonComputeRxWindowParameters( tSymbolInUs, minRxSymbols, rxError, Radio.GetWakeupTime( ), &rxConfigParams->WindowTimeout, &rxConfigParams->WindowOffset );
 }
 
-bool RegionAS923RxConfig( RxConfigParams_t *rxConfig, int8_t *datarate )
+bool RegionAS923RxConfig( RxConfigParams_t* rxConfig, int8_t* datarate )
 {
     RadioModems_t modem;
     int8_t dr = rxConfig->Datarate;
@@ -637,7 +637,7 @@ bool RegionAS923RxConfig( RxConfigParams_t *rxConfig, int8_t *datarate )
 	return true;
 }
 
-bool RegionAS923TxConfig( TxConfigParams_t *txConfig, int8_t *txPower, TimerTime_t *txTimeOnAir )
+bool RegionAS923TxConfig( TxConfigParams_t* txConfig, int8_t* txPower, TimerTime_t* txTimeOnAir )
 {
 	RadioModems_t modem;
 	int8_t		  phyDr			 = DataratesAS923[txConfig->Datarate];
@@ -651,19 +651,22 @@ bool RegionAS923TxConfig( TxConfigParams_t *txConfig, int8_t *txPower, TimerTime
 	// Setup the radio frequency
 	Radio.SetChannel( NvmCtx.Channels[txConfig->Channel].Frequency );
 
-	if ( txConfig->Datarate == DR_7 ) { // High Speed FSK channel
-		modem = MODEM_FSK;
-		Radio.SetTxConfig( modem, phyTxPower, 25000, bandwidth, phyDr * 1000, 0, 5, false, true, 0, 0, false, 4000 );
-	}
-	else {
-		modem = MODEM_LORA;
-		Radio.SetTxConfig( modem, phyTxPower, 0, bandwidth, phyDr, 1, 8, false, true, 0, 0, false, 4000 );
-	}
+    if( txConfig->Datarate == DR_7 )
+    { // High Speed FSK channel
+        modem = MODEM_FSK;
+        Radio.SetTxConfig( modem, phyTxPower, 25000, bandwidth, phyDr * 1000, 0, 5, false, true, 0, 0, false, 4000 );
+    }
+    else
+    {
+        modem = MODEM_LORA;
+        Radio.SetTxConfig( modem, phyTxPower, 0, bandwidth, phyDr, 1, 8, false, true, 0, 0, false, 4000 );
+    }
 
-	// Setup maximum payload lenght of the radio driver
-	Radio.SetMaxPayloadLength( modem, txConfig->PktLen );
-	// Get the time-on-air of the next tx frame
-	*txTimeOnAir = GetTimeOnAir( txConfig->Datarate, txConfig->PktLen );
+    // Update time-on-air
+    *txTimeOnAir = GetTimeOnAir( txConfig->Datarate, txConfig->PktLen );
+
+    // Setup maximum payload lenght of the radio driver
+    Radio.SetMaxPayloadLength( modem, txConfig->PktLen );
 
 	*txPower = txPowerLimited;
 	return true;
