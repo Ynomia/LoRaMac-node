@@ -447,44 +447,7 @@ int8_t RegionCommonComputeTxPower( int8_t txPowerIndex, float maxEirp, float ant
 	return phyTxPower;
 }
 
-void RegionCommonCalcBackOff( RegionCommonCalcBackOffParams_t *calcBackOffParams )
-{
-	uint8_t  bandIdx	   = calcBackOffParams->Channels[calcBackOffParams->Channel].Band;
-	uint16_t dutyCycle	 = calcBackOffParams->Bands[bandIdx].DCycle;
-	uint16_t joinDutyCycle = 0;
-
-	// Reset time-off to initial value.
-	calcBackOffParams->Bands[bandIdx].TimeOff = 0;
-
-	if ( calcBackOffParams->Joined == false ) {
-		// Get the join duty cycle
-		joinDutyCycle = RegionCommonGetJoinDc( calcBackOffParams->ElapsedTime );
-		// Apply the most restricting duty cycle
-		dutyCycle = MAX( dutyCycle, joinDutyCycle );
-		// Reset the timeoff if the last frame was not a join request and when the duty cycle is not enabled
-		if ( ( calcBackOffParams->DutyCycleEnabled == false ) && ( calcBackOffParams->LastTxIsJoinRequest == false ) ) {
-			// This is the case when the duty cycle is off and the last uplink frame was not a join.
-			// This could happen in case of a rejoin, e.g. in compliance test mode.
-			// In this special case we have to set the time off to 0, since the join duty cycle shall only
-			// be applied after the first join request.
-			calcBackOffParams->Bands[bandIdx].TimeOff = 0;
-		}
-		else {
-			// Apply band time-off.
-			calcBackOffParams->Bands[bandIdx].TimeOff = calcBackOffParams->TxTimeOnAir * dutyCycle - calcBackOffParams->TxTimeOnAir;
-		}
-	}
-	else {
-		if ( calcBackOffParams->DutyCycleEnabled == true ) {
-			calcBackOffParams->Bands[bandIdx].TimeOff = calcBackOffParams->TxTimeOnAir * dutyCycle - calcBackOffParams->TxTimeOnAir;
-		}
-		else {
-			calcBackOffParams->Bands[bandIdx].TimeOff = 0;
-		}
-	}
-}
-
-void RegionCommonRxBeaconSetup( RegionCommonRxBeaconSetupParams_t *rxBeaconSetupParams )
+void RegionCommonRxBeaconSetup( RegionCommonRxBeaconSetupParams_t* rxBeaconSetupParams )
 {
 	bool	rxContinuous = true;
 	uint8_t datarate;

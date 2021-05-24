@@ -322,42 +322,6 @@ typedef struct sRegionCommonSetDutyCycleParams
     Band_t* Bands;
 }RegionCommonSetDutyCycleParams_t;
 
-typedef struct sRegionCommonCalcBackOffParams
-{
-    /*!
-     * A pointer to region specific channels.
-     */
-    ChannelParams_t* Channels;
-    /*!
-     * A pointer to region specific bands.
-     */
-    Band_t* Bands;
-    /*!
-     * Set to true, if the last uplink was a join request.
-     */
-    bool LastTxIsJoinRequest;
-    /*!
-     * Set to true, if the node is joined.
-     */
-    bool Joined;
-    /*!
-     * Set to true, if the duty cycle is enabled.
-     */
-    bool DutyCycleEnabled;
-    /*!
-     * The current channel.
-     */
-    uint8_t Channel;
-    /*!
-     * The elapsed time since initialization.
-     */
-    SysTime_t ElapsedTime;
-    /*!
-     * The time on air of the last Tx frame.
-     */
-    TimerTime_t TxTimeOnAir;
-}RegionCommonCalcBackOffParams_t;
-
 /*!
  * \brief Calculates the join duty cycle.
  *        This is a generic function and valid for all regions.
@@ -517,9 +481,7 @@ uint32_t RegionCommonComputeSymbolTimeLoRa( uint8_t phyDr, uint32_t bandwidthInH
  *
  * \param [IN] phyDr Physical datarate to use.
  *
- * \param [IN] bandwidth Bandwidth to use.
- *
- * \retval Returns the symbol time.
+ * \retval Returns the symbol time in microseconds.
  */
 uint32_t RegionCommonComputeSymbolTimeFsk( uint8_t phyDrInKbps );
 
@@ -557,13 +519,6 @@ void RegionCommonComputeRxWindowParameters( uint32_t tSymbolInUs, uint8_t minRxS
  * \retval Returns the physical TX power.
  */
 int8_t RegionCommonComputeTxPower( int8_t txPowerIndex, float maxEirp, float antennaGain );
-
-/*!
- * \brief Calculates the duty cycle for the current band.
- *
- * \param [IN] calcBackOffParams A pointer to the input parameters.
- */
-void RegionCommonCalcBackOff( RegionCommonCalcBackOffParams_t* calcBackOffParams );
 
 /*!
  * \brief Sets up the radio into RX beacon mode.

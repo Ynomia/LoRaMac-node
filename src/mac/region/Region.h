@@ -1273,37 +1273,6 @@ typedef enum eAlternateDrType
 }AlternateDrType_t;
 
 /*!
- * Parameter structure for the function RegionCalcBackOff.
- */
-typedef struct sCalcBackOffParams
-{
-    /*!
-     * Set to true, if the node has already joined a network, otherwise false.
-     */
-    bool Joined;
-    /*!
-     * Joined Set to true, if the last uplink was a join request
-     */
-    bool LastTxIsJoinRequest;
-    /*!
-     * Set to true, if the duty cycle is enabled, otherwise false.
-     */
-    bool DutyCycleEnabled;
-    /*!
-     * Current channel index.
-     */
-    uint8_t Channel;
-    /*!
-     * Elapsed time since the start of the node.
-     */
-    SysTime_t ElapsedTime;
-    /*!
-     * Time-on-air of the last transmission.
-     */
-    TimerTime_t TxTimeOnAir;
-}CalcBackOffParams_t;
-
-/*!
  * Parameter structure for the function RegionNextChannel.
  */
 typedef struct sNextChanParams
