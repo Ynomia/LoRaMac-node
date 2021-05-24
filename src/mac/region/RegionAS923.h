@@ -479,13 +479,6 @@ uint8_t RegionAS923DlChannelReq( DlChannelReqParams_t* dlChannelReq );
 int8_t RegionAS923AlternateDr( int8_t currentDr, AlternateDrType_t type );
 
 /*!
- * \brief Calculates the back-off time.
- *
- * \param [IN] calcBackOff Pointer to the function parameters.
- */
-void RegionAS923CalcBackOff( CalcBackOffParams_t* calcBackOff );
-
-/*!
  * \brief Searches and set the next random available channel
  *
  * \param [OUT] channel Next channel to use for TX.

@@ -888,22 +888,6 @@ int8_t RegionAS923AlternateDr( int8_t currentDr, AlternateDrType_t type )
 	return AS923_DWELL_LIMIT_DATARATE;
 }
 
-void RegionAS923CalcBackOff( CalcBackOffParams_t *calcBackOff )
-{
-	RegionCommonCalcBackOffParams_t calcBackOffParams;
-
-	calcBackOffParams.Channels			  = NvmCtx.Channels;
-	calcBackOffParams.Bands				  = NvmCtx.Bands;
-	calcBackOffParams.LastTxIsJoinRequest = calcBackOff->LastTxIsJoinRequest;
-	calcBackOffParams.Joined			  = calcBackOff->Joined;
-	calcBackOffParams.DutyCycleEnabled	= calcBackOff->DutyCycleEnabled;
-	calcBackOffParams.Channel			  = calcBackOff->Channel;
-	calcBackOffParams.ElapsedTime		  = calcBackOff->ElapsedTime;
-	calcBackOffParams.TxTimeOnAir		  = calcBackOff->TxTimeOnAir;
-
-	RegionCommonCalcBackOff( &calcBackOffParams );
-}
-
 LoRaMacStatus_t RegionAS923NextChannel( NextChanParams_t *nextChanParams, uint8_t *channel, TimerTime_t *time, TimerTime_t *aggregatedTimeOff )
 {
 	uint8_t		channelNext							   = 0;

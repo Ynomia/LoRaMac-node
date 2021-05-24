@@ -1666,15 +1666,6 @@ uint8_t RegionDlChannelReq( LoRaMacRegion_t region, DlChannelReqParams_t* dlChan
 int8_t RegionAlternateDr( LoRaMacRegion_t region, int8_t currentDr, AlternateDrType_t type );
 
 /*!
- * \brief Calculates the back-off time.
- *
- * \param [IN] region LoRaWAN region.
- *
- * \param [IN] calcBackOff Pointer to the function parameters.
- */
-void RegionCalcBackOff( LoRaMacRegion_t region, CalcBackOffParams_t* calcBackOff );
-
-/*!
  * \brief Searches and set the next random available channel
  *
  * \param [IN] region LoRaWAN region.
