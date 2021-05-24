@@ -35,6 +35,11 @@
 #ifndef __LORAMAC_TYPES_H__
 #define __LORAMAC_TYPES_H__
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 #include "timer.h"
@@ -167,11 +172,6 @@ typedef enum eKeyIdentifier
      * Application root key
      */
     APP_KEY = 0,
-    /*!
-     * Application root key
-     * Used to derive McRootKey for 1.0.x devices
-     */
-    GEN_APP_KEY,
     /*!
      * Network root key
      */
@@ -609,6 +609,30 @@ typedef struct sBand
      * Holds the time where the device is off
      */
     TimerTime_t TimeOff;
+    /*!
+     * The last time the band has been
+     * synchronized with the current time
+     */
+    TimerTime_t LastBandUpdateTime;
+    /*!
+     * The last time we have assigned the max
+     * credits for the 24h interval.
+     */
+    TimerTime_t LastMaxCreditAssignTime;
+    /*!
+     * Current time credits which are available. This
+     * is a value in ms
+     */
+    TimerTime_t TimeCredits;
+    /*!
+     * Maximum time credits which are available. This
+     * is a value in ms
+     */
+    TimerTime_t MaxTimeCredits;
+    /*!
+     * Set to true when the band is ready for use.
+     */
+    bool ReadyForTransmission;
 }Band_t;
 
 /*!
@@ -670,6 +694,10 @@ typedef enum eLoRaMacBatteryLevel
      */
     BAT_LEVEL_NO_MEASURE             = 0xFF,
 }LoRaMacBatteryLevel_t;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // __LORAMAC_TYPES_H__
 

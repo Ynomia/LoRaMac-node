@@ -72,17 +72,148 @@
         ( ( N ) / ( D ) )                                                      \
     )
 
+static uint16_t GetDutyCycle( Band_t* band, bool joined, SysTime_t elapsedTimeSinceStartup )
+{
+    uint16_t dutyCycle = band->DCycle;
+
+    if( joined == false )
+    {
+        uint16_t joinDutyCycle = BACKOFF_DC_24_HOURS;
+
+        if( elapsedTimeSinceStartup.Seconds < BACKOFF_DUTY_CYCLE_1_HOUR_IN_S )
+        {
+            joinDutyCycle = BACKOFF_DC_1_HOUR;
+        }
+        else if( elapsedTimeSinceStartup.Seconds < BACKOFF_DUTY_CYCLE_10_HOURS_IN_S )
+        {
+            joinDutyCycle = BACKOFF_DC_10_HOURS;
+        }
+        else
+        {
+            joinDutyCycle = BACKOFF_DC_24_HOURS;
+        }
+        // Take the most restrictive duty cycle
+        dutyCycle = MAX( dutyCycle, joinDutyCycle );
+    }
+
+    // Prevent value of 0
+    if( dutyCycle == 0 )
+    {
+        dutyCycle = 1;
+    }
+
+    return dutyCycle;
+}
+
+static uint16_t SetMaxTimeCredits( Band_t* band, bool joined, SysTime_t elapsedTimeSinceStartup,
+                                   bool dutyCycleEnabled, bool lastTxIsJoinRequest )
+{
+    uint16_t dutyCycle = band->DCycle;
+    TimerTime_t maxCredits = DUTY_CYCLE_TIME_PERIOD;
+    TimerTime_t elapsedTime = SysTimeToMs( elapsedTimeSinceStartup );
+    SysTime_t timeDiff = { 0 };
+
+    // Get the band duty cycle. If not joined, the function either returns the join duty cycle
+    // or the band duty cycle, whichever is more restrictive.
+    dutyCycle = GetDutyCycle( band, joined, elapsedTimeSinceStartup );
+
+    if( joined == false )
+    {
+        if( dutyCycle == BACKOFF_DC_1_HOUR )
+        {
+            maxCredits = DUTY_CYCLE_TIME_PERIOD;
+            band->LastMaxCreditAssignTime = elapsedTime;
+        }
+        else if( dutyCycle == BACKOFF_DC_10_HOURS )
+        {
+            maxCredits = DUTY_CYCLE_TIME_PERIOD * 10;
+            band->LastMaxCreditAssignTime = elapsedTime;
+        }
+        else
+        {
+            maxCredits = DUTY_CYCLE_TIME_PERIOD * 24;
+        }
+
+        timeDiff = SysTimeSub( elapsedTimeSinceStartup, SysTimeFromMs( band->LastMaxCreditAssignTime ) );
+
+        // Verify if we have to assign the maximum credits in cases
+        // of the preconditions have changed.
+        if( ( ( dutyCycleEnabled == false ) && ( lastTxIsJoinRequest == false ) ) ||
+            ( band->MaxTimeCredits != maxCredits ) ||
+            ( timeDiff.Seconds >= BACKOFF_24_HOURS_IN_S ) )
+        {
+            band->TimeCredits = maxCredits;
+
+            if( elapsedTimeSinceStartup.Seconds >= BACKOFF_DUTY_CYCLE_24_HOURS_IN_S )
+            {
+                timeDiff.Seconds = ( elapsedTimeSinceStartup.Seconds - BACKOFF_DUTY_CYCLE_24_HOURS_IN_S ) / BACKOFF_24_HOURS_IN_S;
+                timeDiff.Seconds *= BACKOFF_24_HOURS_IN_S;
+                timeDiff.Seconds += BACKOFF_DUTY_CYCLE_24_HOURS_IN_S;
+                timeDiff.SubSeconds = 0;
+                band->LastMaxCreditAssignTime = SysTimeToMs( timeDiff );
+            }
+        }
+    }
+    else
+    {
+        if( dutyCycleEnabled == false )
+        {
+            // Assign max credits when the duty cycle is disabled.
+            band->TimeCredits = maxCredits;
+        }
+    }
+
+    // Assign the max credits if its the first time
+    if( band->LastBandUpdateTime == 0 )
+    {
+        band->TimeCredits = maxCredits;
+    }
+
+    // Setup the maximum allowed credits. We can assign them
+    // safely all the time.
+    band->MaxTimeCredits = maxCredits;
+
+    return dutyCycle;
+}
+
+static uint16_t UpdateTimeCredits( Band_t* band, bool joined, bool dutyCycleEnabled,
+                                   bool lastTxIsJoinRequest, SysTime_t elapsedTimeSinceStartup,
+                                   TimerTime_t currentTime )
+{
+    uint16_t dutyCycle = SetMaxTimeCredits( band, joined, elapsedTimeSinceStartup,
+                                            dutyCycleEnabled, lastTxIsJoinRequest );
+
+    if( joined == true )
+    {
+        // Apply a sliding window for the duty cycle with collection and speding
+        // credits.
+        band->TimeCredits += TimerGetElapsedTime( band->LastBandUpdateTime );
+    }
+
+    // Limit band credits to maximum
+    if( band->TimeCredits > band->MaxTimeCredits )
+    {
+        band->TimeCredits = band->MaxTimeCredits;
+    }
+
+    // Synchronize update time
+    band->LastBandUpdateTime = currentTime;
+
+    return dutyCycle;
+}
 
 static uint8_t CountChannels( uint16_t mask, uint8_t nbBits )
 {
 	uint8_t nbActiveBits = 0;
 
-	for ( uint8_t j = 0; j < nbBits; j++ ) {
-		if ( ( mask & ( 1 << j ) ) == ( 1 << j ) ) {
-			nbActiveBits++;
-		}
-	}
-	return nbActiveBits;
+    for( uint8_t j = 0; j < nbBits; j++ )
+    {
+        if( ( mask & ( 1 << j ) ) == ( 1 << j ) )
+        {
+            nbActiveBits++;
+        }
+    }
+    return nbActiveBits;
 }
 
 uint16_t RegionCommonGetJoinDc( SysTime_t elapsedTime )
