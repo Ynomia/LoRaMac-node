@@ -243,19 +243,21 @@ bool RegionCommonChanVerifyDr( uint8_t nbChannels, uint16_t* channelsMask, int8_
 
 uint8_t RegionCommonValueInRange( int8_t value, int8_t min, int8_t max )
 {
-	if ( ( value >= min ) && ( value <= max ) ) {
-		return 1;
-	}
-	return 0;
+    if( ( value >= min ) && ( value <= max ) )
+    {
+        return 1;
+    }
+    return 0;
 }
 
-bool RegionCommonChanDisable( uint16_t *channelsMask, uint8_t id, uint8_t maxChannels )
+bool RegionCommonChanDisable( uint16_t* channelsMask, uint8_t id, uint8_t maxChannels )
 {
 	uint8_t index = id / 16;
 
-	if ( ( index > ( maxChannels / 16 ) ) || ( id >= maxChannels ) ) {
-		return false;
-	}
+    if( ( index > ( maxChannels / 16 ) ) || ( id >= maxChannels ) )
+    {
+        return false;
+    }
 
 	// Deactivate channel
 	channelsMask[index] &= ~( 1 << ( id % 16 ) );
@@ -263,28 +265,32 @@ bool RegionCommonChanDisable( uint16_t *channelsMask, uint8_t id, uint8_t maxCha
 	return true;
 }
 
-uint8_t RegionCommonCountChannels( uint16_t *channelsMask, uint8_t startIdx, uint8_t stopIdx )
+uint8_t RegionCommonCountChannels( uint16_t* channelsMask, uint8_t startIdx, uint8_t stopIdx )
 {
 	uint8_t nbChannels = 0;
 
-	if ( channelsMask == NULL ) {
-		return 0;
-	}
+    if( channelsMask == NULL )
+    {
+        return 0;
+    }
 
-	for ( uint8_t i = startIdx; i < stopIdx; i++ ) {
-		nbChannels += CountChannels( channelsMask[i], 16 );
-	}
+    for( uint8_t i = startIdx; i < stopIdx; i++ )
+    {
+        nbChannels += CountChannels( channelsMask[i], 16 );
+    }
 
 	return nbChannels;
 }
 
-void RegionCommonChanMaskCopy( uint16_t *channelsMaskDest, uint16_t *channelsMaskSrc, uint8_t len )
+void RegionCommonChanMaskCopy( uint16_t* channelsMaskDest, uint16_t* channelsMaskSrc, uint8_t len )
 {
-	if ( ( channelsMaskDest != NULL ) && ( channelsMaskSrc != NULL ) ) {
-		for ( uint8_t i = 0; i < len; i++ ) {
-			channelsMaskDest[i] = channelsMaskSrc[i];
-		}
-	}
+    if( ( channelsMaskDest != NULL ) && ( channelsMaskSrc != NULL ) )
+    {
+        for( uint8_t i = 0; i < len; i++ )
+        {
+            channelsMaskDest[i] = channelsMaskSrc[i];
+        }
+    }
 }
 
 void RegionCommonSetBandTxDone( bool joined, Band_t *band, TimerTime_t lastTxDone )
@@ -337,22 +343,23 @@ TimerTime_t RegionCommonUpdateBandTimeOff( bool joined, bool dutyCycle, Band_t *
 	return ( nextTxDelay == TIMERTIME_T_MAX ) ? 0 : nextTxDelay;
 }
 
-uint8_t RegionCommonParseLinkAdrReq( uint8_t *payload, RegionCommonLinkAdrParams_t *linkAdrParams )
+uint8_t RegionCommonParseLinkAdrReq( uint8_t* payload, RegionCommonLinkAdrParams_t* linkAdrParams )
 {
 	uint8_t retIndex = 0;
 
-	if ( payload[0] == SRV_MAC_LINK_ADR_REQ ) {
-		// Parse datarate and tx power
-		linkAdrParams->Datarate = payload[1];
-		linkAdrParams->TxPower  = linkAdrParams->Datarate & 0x0F;
-		linkAdrParams->Datarate = ( linkAdrParams->Datarate >> 4 ) & 0x0F;
-		// Parse ChMask
-		linkAdrParams->ChMask = (uint16_t) payload[2];
-		linkAdrParams->ChMask |= (uint16_t) payload[3] << 8;
-		// Parse ChMaskCtrl and nbRep
-		linkAdrParams->NbRep	  = payload[4];
-		linkAdrParams->ChMaskCtrl = ( linkAdrParams->NbRep >> 4 ) & 0x07;
-		linkAdrParams->NbRep &= 0x0F;
+    if( payload[0] == SRV_MAC_LINK_ADR_REQ )
+    {
+        // Parse datarate and tx power
+        linkAdrParams->Datarate = payload[1];
+        linkAdrParams->TxPower = linkAdrParams->Datarate & 0x0F;
+        linkAdrParams->Datarate = ( linkAdrParams->Datarate >> 4 ) & 0x0F;
+        // Parse ChMask
+        linkAdrParams->ChMask = ( uint16_t )payload[2];
+        linkAdrParams->ChMask |= ( uint16_t )payload[3] << 8;
+        // Parse ChMaskCtrl and nbRep
+        linkAdrParams->NbRep = payload[4];
+        linkAdrParams->ChMaskCtrl = ( linkAdrParams->NbRep >> 4 ) & 0x07;
+        linkAdrParams->NbRep &= 0x0F;
 
 		// LinkAdrReq has 4 bytes length + 1 byte CMD
 		retIndex = 5;
@@ -360,51 +367,59 @@ uint8_t RegionCommonParseLinkAdrReq( uint8_t *payload, RegionCommonLinkAdrParams
 	return retIndex;
 }
 
-uint8_t RegionCommonLinkAdrReqVerifyParams( RegionCommonLinkAdrReqVerifyParams_t *verifyParams, int8_t *dr, int8_t *txPow, uint8_t *nbRep )
+uint8_t RegionCommonLinkAdrReqVerifyParams( RegionCommonLinkAdrReqVerifyParams_t* verifyParams, int8_t* dr, int8_t* txPow, uint8_t* nbRep )
 {
 	uint8_t status		  = verifyParams->Status;
 	int8_t  datarate	  = verifyParams->Datarate;
 	int8_t  txPower		  = verifyParams->TxPower;
 	int8_t  nbRepetitions = verifyParams->NbRep;
 
-	// Handle the case when ADR is off.
-	if ( verifyParams->AdrEnabled == false ) {
-		// When ADR is off, we are allowed to change the channels mask
-		nbRepetitions = verifyParams->CurrentNbRep;
-		datarate	  = verifyParams->CurrentDatarate;
-		txPower		  = verifyParams->CurrentTxPower;
-	}
+    // Handle the case when ADR is off.
+    if( verifyParams->AdrEnabled == false )
+    {
+        // When ADR is off, we are allowed to change the channels mask
+        nbRepetitions = verifyParams->CurrentNbRep;
+        datarate =  verifyParams->CurrentDatarate;
+        txPower =  verifyParams->CurrentTxPower;
+    }
 
-	if ( status != 0 ) {
-		// Verify datarate. The variable phyParam. Value contains the minimum allowed datarate.
-		if ( RegionCommonChanVerifyDr( verifyParams->NbChannels, verifyParams->ChannelsMask, datarate,
-									   verifyParams->MinDatarate, verifyParams->MaxDatarate, verifyParams->Channels ) == false ) {
-			status &= 0xFD; // Datarate KO
-		}
+    if( status != 0 )
+    {
+        // Verify datarate. The variable phyParam. Value contains the minimum allowed datarate.
+        if( RegionCommonChanVerifyDr( verifyParams->NbChannels, verifyParams->ChannelsMask, datarate,
+                                      verifyParams->MinDatarate, verifyParams->MaxDatarate, verifyParams->Channels  ) == false )
+        {
+            status &= 0xFD; // Datarate KO
+        }
 
-		// Verify tx power
-		if ( RegionCommonValueInRange( txPower, verifyParams->MaxTxPower, verifyParams->MinTxPower ) == 0 ) {
-			// Verify if the maximum TX power is exceeded
-			if ( verifyParams->MaxTxPower > txPower ) { // Apply maximum TX power. Accept TX power.
-				txPower = verifyParams->MaxTxPower;
-			}
-			else {
-				status &= 0xFB; // TxPower KO
-			}
-		}
-	}
+        // Verify tx power
+        if( RegionCommonValueInRange( txPower, verifyParams->MaxTxPower, verifyParams->MinTxPower ) == 0 )
+        {
+            // Verify if the maximum TX power is exceeded
+            if( verifyParams->MaxTxPower > txPower )
+            { // Apply maximum TX power. Accept TX power.
+                txPower = verifyParams->MaxTxPower;
+            }
+            else
+            {
+                status &= 0xFB; // TxPower KO
+            }
+        }
+    }
 
-	// If the status is ok, verify the NbRep
-	if ( status == 0x07 ) {
-		if ( nbRepetitions == 0 ) { // Restore the default value according to the LoRaWAN specification
-			nbRepetitions = 1;
-		}
-	}
+    // If the status is ok, verify the NbRep
+    if( status == 0x07 )
+    {
+        if( nbRepetitions == 0 )
+        { // Restore the default value according to the LoRaWAN specification
+            nbRepetitions = 1;
+        }
+    }
 
-	// Apply changes
-	*dr	= datarate;
-	*txPow = txPower;
-	*nbRep = nbRepetitions;
+    // Apply changes
+    *dr = datarate;
+    *txPow = txPower;
+    *nbRep = nbRepetitions;
 
 	return status;
 }
@@ -431,7 +446,7 @@ int8_t RegionCommonComputeTxPower( int8_t txPowerIndex, float maxEirp, float ant
 {
 	int8_t phyTxPower = 0;
 
-	phyTxPower = (int8_t) floor( ( maxEirp - ( txPowerIndex * 2U ) ) - antennaGain );
+    phyTxPower = ( int8_t )floor( ( maxEirp - ( txPowerIndex * 2U ) ) - antennaGain );
 
 	return phyTxPower;
 }
@@ -448,10 +463,11 @@ void RegionCommonRxBeaconSetup( RegionCommonRxBeaconSetupParams_t* rxBeaconSetup
 	Radio.SetChannel( rxBeaconSetupParams->Frequency );
 	Radio.SetMaxPayloadLength( MODEM_LORA, rxBeaconSetupParams->BeaconSize );
 
-	// Check the RX continuous mode
-	if ( rxBeaconSetupParams->RxTime != 0 ) {
-		rxContinuous = false;
-	}
+    // Check the RX continuous mode
+    if( rxBeaconSetupParams->RxTime != 0 )
+    {
+        rxContinuous = false;
+    }
 
 	// Get region specific datarate
 	datarate = rxBeaconSetupParams->Datarates[rxBeaconSetupParams->BeaconDatarate];
