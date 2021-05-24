@@ -372,9 +372,10 @@ PhyParam_t RegionAS923GetPhyParam( GetPhyParams_t *getPhy )
 	return phyParam;
 }
 
-void RegionAS923SetBandTxDone( SetBandTxDoneParams_t *txDone )
+void RegionAS923SetBandTxDone( SetBandTxDoneParams_t* txDone )
 {
-	RegionCommonSetBandTxDone( txDone->Joined, &NvmCtx.Bands[NvmCtx.Channels[txDone->Channel].Band], txDone->LastTxDoneTime );
+    RegionCommonSetBandTxDone( &NvmCtx.Bands[NvmCtx.Channels[txDone->Channel].Band],
+                               txDone->LastTxAirTime, txDone->Joined, txDone->ElapsedTimeSinceStartUp );
 }
 
 void RegionAS923InitDefaults( InitDefaultsParams_t *params )

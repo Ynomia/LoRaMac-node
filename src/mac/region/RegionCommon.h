@@ -409,7 +409,7 @@ void RegionCommonChanMaskCopy( uint16_t* channelsMaskDest, uint16_t* channelsMas
  *
  * \param [IN] elapsedTimeSinceStartup Elapsed time since initialization.
  */
-void RegionCommonSetBandTxDone( bool joined, Band_t* band, TimerTime_t lastTxDone );
+void RegionCommonSetBandTxDone( Band_t* band, TimerTime_t lastTxAirTime, bool joined, SysTime_t elapsedTimeSinceStartup );
 
 /*!
  * \brief Updates the time-offs of the bands.

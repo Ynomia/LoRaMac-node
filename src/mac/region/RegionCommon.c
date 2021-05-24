@@ -293,15 +293,22 @@ void RegionCommonChanMaskCopy( uint16_t* channelsMaskDest, uint16_t* channelsMas
     }
 }
 
-void RegionCommonSetBandTxDone( bool joined, Band_t *band, TimerTime_t lastTxDone )
+void RegionCommonSetBandTxDone( Band_t* band, TimerTime_t lastTxAirTime, bool joined, SysTime_t elapsedTimeSinceStartup )
 {
-	if ( joined == true ) {
-		band->LastTxDoneTime = lastTxDone;
-	}
-	else {
-		band->LastTxDoneTime	 = lastTxDone;
-		band->LastJoinTxDoneTime = lastTxDone;
-	}
+    // Get the band duty cycle. If not joined, the function either returns the join duty cycle
+    // or the band duty cycle, whichever is more restrictive.
+    uint16_t dutyCycle = GetDutyCycle( band, joined, elapsedTimeSinceStartup );
+
+    // Reduce with transmission time
+    if( band->TimeCredits > ( lastTxAirTime * dutyCycle ) )
+    {
+        // Reduce time credits by the time of air
+        band->TimeCredits -= ( lastTxAirTime * dutyCycle );
+    }
+    else
+    {
+        band->TimeCredits = 0;
+    }
 }
 
 TimerTime_t RegionCommonUpdateBandTimeOff( bool joined, bool dutyCycle, Band_t *bands, uint8_t nbBands )
