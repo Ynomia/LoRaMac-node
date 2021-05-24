@@ -838,7 +838,8 @@ typedef enum eInitType
      */
     INIT_TYPE_DEFAULTS,
     /*!
-     * Restores default channels defined by the LoRaWAN specification only.
+     * Resets the channels mask to the default channels. Deactivates
+     * all other channels.
      */
     INIT_TYPE_RESET_TO_DEFAULT_CHANNELS,
     /*!
@@ -926,21 +927,21 @@ typedef struct sGetPhyParams
     /*!
      * Datarate.
      * The parameter is needed for the following queries:
-     * PHY_MAX_PAYLOAD, PHY_MAX_PAYLOAD_REPEATER, PHY_NEXT_LOWER_TX_DR.
+     * PHY_MAX_PAYLOAD, PHY_NEXT_LOWER_TX_DR, PHY_SF_FROM_DR, PHY_BW_FROM_DR.
      */
     int8_t Datarate;
     /*!
      * Uplink dwell time. This parameter must be set to query:
-     * PHY_MAX_PAYLOAD, PHY_MAX_PAYLOAD_REPEATER, PHY_MIN_TX_DR.
+     * PHY_MAX_PAYLOAD, PHY_MIN_TX_DR.
      * The parameter is needed for the following queries:
-     * PHY_MIN_TX_DR, PHY_MAX_PAYLOAD, PHY_MAX_PAYLOAD_REPEATER, PHY_NEXT_LOWER_TX_DR.
+     * PHY_MIN_TX_DR, PHY_MAX_PAYLOAD, PHY_NEXT_LOWER_TX_DR.
      */
     uint8_t UplinkDwellTime;
     /*!
      * Downlink dwell time. This parameter must be set to query:
-     * PHY_MAX_PAYLOAD, PHY_MAX_PAYLOAD_REPEATER, PHY_MIN_RX_DR.
+     * PHY_MAX_PAYLOAD, PHY_MIN_RX_DR.
      * The parameter is needed for the following queries:
-     * PHY_MIN_RX_DR, PHY_MAX_PAYLOAD, PHY_MAX_PAYLOAD_REPEATER.
+     * PHY_MIN_RX_DR, PHY_MAX_PAYLOAD.
      */
     uint8_t DownlinkDwellTime;
     /*!
