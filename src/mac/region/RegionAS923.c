@@ -192,158 +192,198 @@ static TimerTime_t GetTimeOnAir( int8_t datarate, uint16_t pktLen )
     return timeOnAir;
 }
 
-PhyParam_t RegionAS923GetPhyParam( GetPhyParams_t *getPhy )
+PhyParam_t RegionAS923GetPhyParam( GetPhyParams_t* getPhy )
 {
 	PhyParam_t phyParam = { 0 };
 
-	switch ( getPhy->Attribute ) {
-		case PHY_MIN_RX_DR: {
-			if ( getPhy->DownlinkDwellTime == 0 ) {
-				phyParam.Value = AS923_RX_MIN_DATARATE;
-			}
-			else {
-				phyParam.Value = AS923_DWELL_LIMIT_DATARATE;
-			}
-			break;
-		}
-		case PHY_MIN_TX_DR: {
-			if ( getPhy->UplinkDwellTime == 0 ) {
-				phyParam.Value = AS923_TX_MIN_DATARATE;
-			}
-			else {
-				phyParam.Value = AS923_DWELL_LIMIT_DATARATE;
-			}
-			break;
-		}
-		case PHY_DEF_TX_DR: {
-			phyParam.Value = AS923_DEFAULT_DATARATE;
-			break;
-		}
-		case PHY_NEXT_LOWER_TX_DR: {
-			if ( getPhy->UplinkDwellTime == 0 ) {
-				phyParam.Value = RegionCommonGetNextLowerTxDr( getPhy->Datarate, AS923_TX_MIN_DATARATE );
-			}
-			else {
-				phyParam.Value = RegionCommonGetNextLowerTxDr( getPhy->Datarate, AS923_DWELL_LIMIT_DATARATE );
-			}
-			break;
-		}
-		case PHY_MAX_TX_POWER: {
-			phyParam.Value = AS923_MAX_TX_POWER;
-			break;
-		}
-		case PHY_DEF_TX_POWER: {
-			phyParam.Value = AS923_DEFAULT_TX_POWER;
-			break;
-		}
-		case PHY_DEF_ADR_ACK_LIMIT: {
-			phyParam.Value = REGION_COMMON_DEFAULT_ADR_ACK_LIMIT;
-			break;
-		}
-		case PHY_DEF_ADR_ACK_DELAY: {
-			phyParam.Value = REGION_COMMON_DEFAULT_ADR_ACK_DELAY;
-			break;
-		}
-		case PHY_MAX_PAYLOAD: {
-			if ( getPhy->UplinkDwellTime == 0 ) {
-				phyParam.Value = MaxPayloadOfDatarateDwell0AS923[getPhy->Datarate];
-			}
-			else {
-				phyParam.Value = MaxPayloadOfDatarateDwell1UpAS923[getPhy->Datarate];
-			}
-			break;
-		}
-		case PHY_DUTY_CYCLE: {
-			phyParam.Value = AS923_DUTY_CYCLE_ENABLED;
-			break;
-		}
-		case PHY_MAX_RX_WINDOW: {
-			phyParam.Value = AS923_MAX_RX_WINDOW;
-			break;
-		}
-		case PHY_RECEIVE_DELAY1: {
-			phyParam.Value = REGION_COMMON_DEFAULT_RECEIVE_DELAY1;
-			break;
-		}
-		case PHY_RECEIVE_DELAY2: {
-			phyParam.Value = REGION_COMMON_DEFAULT_RECEIVE_DELAY2;
-			break;
-		}
-		case PHY_JOIN_ACCEPT_DELAY1: {
-			phyParam.Value = REGION_COMMON_DEFAULT_JOIN_ACCEPT_DELAY1;
-			break;
-		}
-		case PHY_JOIN_ACCEPT_DELAY2: {
-			phyParam.Value = REGION_COMMON_DEFAULT_JOIN_ACCEPT_DELAY2;
-			break;
-		}
-		case PHY_MAX_FCNT_GAP: {
-			phyParam.Value = REGION_COMMON_DEFAULT_MAX_FCNT_GAP;
-			break;
-		}
-		case PHY_ACK_TIMEOUT: {
-			phyParam.Value = ( REGION_COMMON_DEFAULT_ACK_TIMEOUT + randr( -REGION_COMMON_DEFAULT_ACK_TIMEOUT_RND, REGION_COMMON_DEFAULT_ACK_TIMEOUT_RND ) );
-			break;
-		}
-		case PHY_DEF_DR1_OFFSET: {
-			phyParam.Value = REGION_COMMON_DEFAULT_RX1_DR_OFFSET;
-			break;
-		}
-		case PHY_DEF_RX2_FREQUENCY: {
-			phyParam.Value = AS923_RX_WND_2_FREQ;
-			break;
-		}
-		case PHY_DEF_RX2_DR: {
-			phyParam.Value = AS923_RX_WND_2_DR;
-			break;
-		}
-		case PHY_CHANNELS_MASK: {
-			phyParam.ChannelsMask = NvmCtx.ChannelsMask;
-			break;
-		}
-		case PHY_CHANNELS_DEFAULT_MASK: {
-			phyParam.ChannelsMask = NvmCtx.ChannelsDefaultMask;
-			break;
-		}
-		case PHY_MAX_NB_CHANNELS: {
-			phyParam.Value = AS923_MAX_NB_CHANNELS;
-			break;
-		}
-		case PHY_CHANNELS: {
-			phyParam.Channels = NvmCtx.Channels;
-			break;
-		}
-		case PHY_DEF_UPLINK_DWELL_TIME: {
-			phyParam.Value = AS923_DEFAULT_UPLINK_DWELL_TIME;
-			break;
-		}
-		case PHY_DEF_DOWNLINK_DWELL_TIME: {
-			phyParam.Value = REGION_COMMON_DEFAULT_DOWNLINK_DWELL_TIME;
-			break;
-		}
-		case PHY_DEF_MAX_EIRP: {
-			phyParam.fValue = AS923_DEFAULT_MAX_EIRP;
-			break;
-		}
-		case PHY_DEF_ANTENNA_GAIN: {
-			phyParam.fValue = AS923_DEFAULT_ANTENNA_GAIN;
-			break;
-		}
-		case PHY_BEACON_CHANNEL_FREQ: {
-			phyParam.Value = AS923_BEACON_CHANNEL_FREQ;
-			break;
-		}
-		case PHY_BEACON_FORMAT: {
-			phyParam.BeaconFormat.BeaconSize = AS923_BEACON_SIZE;
-			phyParam.BeaconFormat.Rfu1Size   = AS923_RFU1_SIZE;
-			phyParam.BeaconFormat.Rfu2Size   = AS923_RFU2_SIZE;
-			break;
-		}
-		case PHY_BEACON_CHANNEL_DR: {
-			phyParam.Value = AS923_BEACON_CHANNEL_DR;
-			break;
-		}
-		case PHY_PING_SLOT_CHANNEL_FREQ:
+    switch( getPhy->Attribute )
+    {
+        case PHY_MIN_RX_DR:
+        {
+            if( getPhy->DownlinkDwellTime == 0 )
+            {
+                phyParam.Value = AS923_RX_MIN_DATARATE;
+            }
+            else
+            {
+                phyParam.Value = AS923_DWELL_LIMIT_DATARATE;
+            }
+            break;
+        }
+        case PHY_MIN_TX_DR:
+        {
+            if( getPhy->UplinkDwellTime == 0 )
+            {
+                phyParam.Value = AS923_TX_MIN_DATARATE;
+            }
+            else
+            {
+                phyParam.Value = AS923_DWELL_LIMIT_DATARATE;
+            }
+            break;
+        }
+        case PHY_DEF_TX_DR:
+        {
+            phyParam.Value = AS923_DEFAULT_DATARATE;
+            break;
+        }
+        case PHY_NEXT_LOWER_TX_DR:
+        {
+            if( getPhy->UplinkDwellTime == 0 )
+            {
+                phyParam.Value = RegionCommonGetNextLowerTxDr( getPhy->Datarate, AS923_TX_MIN_DATARATE );
+            }
+            else
+            {
+                phyParam.Value = RegionCommonGetNextLowerTxDr( getPhy->Datarate, AS923_DWELL_LIMIT_DATARATE );
+            }
+            break;
+        }
+        case PHY_MAX_TX_POWER:
+        {
+            phyParam.Value = AS923_MAX_TX_POWER;
+            break;
+        }
+        case PHY_DEF_TX_POWER:
+        {
+            phyParam.Value = AS923_DEFAULT_TX_POWER;
+            break;
+        }
+        case PHY_DEF_ADR_ACK_LIMIT:
+        {
+            phyParam.Value = REGION_COMMON_DEFAULT_ADR_ACK_LIMIT;
+            break;
+        }
+        case PHY_DEF_ADR_ACK_DELAY:
+        {
+            phyParam.Value = REGION_COMMON_DEFAULT_ADR_ACK_DELAY;
+            break;
+        }
+        case PHY_MAX_PAYLOAD:
+        {
+            if( getPhy->UplinkDwellTime == 0 )
+            {
+                phyParam.Value = MaxPayloadOfDatarateDwell0AS923[getPhy->Datarate];
+            }
+            else
+            {
+                phyParam.Value = MaxPayloadOfDatarateDwell1UpAS923[getPhy->Datarate];
+            }
+            break;
+        }
+        case PHY_DUTY_CYCLE:
+        {
+            phyParam.Value = AS923_DUTY_CYCLE_ENABLED;
+            break;
+        }
+        case PHY_MAX_RX_WINDOW:
+        {
+            phyParam.Value = AS923_MAX_RX_WINDOW;
+            break;
+        }
+        case PHY_RECEIVE_DELAY1:
+        {
+            phyParam.Value = REGION_COMMON_DEFAULT_RECEIVE_DELAY1;
+            break;
+        }
+        case PHY_RECEIVE_DELAY2:
+        {
+            phyParam.Value = REGION_COMMON_DEFAULT_RECEIVE_DELAY2;
+            break;
+        }
+        case PHY_JOIN_ACCEPT_DELAY1:
+        {
+            phyParam.Value = REGION_COMMON_DEFAULT_JOIN_ACCEPT_DELAY1;
+            break;
+        }
+        case PHY_JOIN_ACCEPT_DELAY2:
+        {
+            phyParam.Value = REGION_COMMON_DEFAULT_JOIN_ACCEPT_DELAY2;
+            break;
+        }
+        case PHY_MAX_FCNT_GAP:
+        {
+            phyParam.Value = REGION_COMMON_DEFAULT_MAX_FCNT_GAP;
+            break;
+        }
+        case PHY_ACK_TIMEOUT:
+        {
+            phyParam.Value = ( REGION_COMMON_DEFAULT_ACK_TIMEOUT + randr( -REGION_COMMON_DEFAULT_ACK_TIMEOUT_RND, REGION_COMMON_DEFAULT_ACK_TIMEOUT_RND ) );
+            break;
+        }
+        case PHY_DEF_DR1_OFFSET:
+        {
+            phyParam.Value = REGION_COMMON_DEFAULT_RX1_DR_OFFSET;
+            break;
+        }
+        case PHY_DEF_RX2_FREQUENCY:
+        {
+            phyParam.Value = AS923_RX_WND_2_FREQ - REGION_AS923_FREQ_OFFSET;
+            break;
+        }
+        case PHY_DEF_RX2_DR:
+        {
+            phyParam.Value = AS923_RX_WND_2_DR;
+            break;
+        }
+        case PHY_CHANNELS_MASK:
+        {
+            phyParam.ChannelsMask = NvmCtx.ChannelsMask;
+            break;
+        }
+        case PHY_CHANNELS_DEFAULT_MASK:
+        {
+            phyParam.ChannelsMask = NvmCtx.ChannelsDefaultMask;
+            break;
+        }
+        case PHY_MAX_NB_CHANNELS:
+        {
+            phyParam.Value = AS923_MAX_NB_CHANNELS;
+            break;
+        }
+        case PHY_CHANNELS:
+        {
+            phyParam.Channels = NvmCtx.Channels;
+            break;
+        }
+        case PHY_DEF_UPLINK_DWELL_TIME:
+        {
+            phyParam.Value = AS923_DEFAULT_UPLINK_DWELL_TIME;
+            break;
+        }
+        case PHY_DEF_DOWNLINK_DWELL_TIME:
+        {
+            phyParam.Value = REGION_COMMON_DEFAULT_DOWNLINK_DWELL_TIME;
+            break;
+        }
+        case PHY_DEF_MAX_EIRP:
+        {
+            phyParam.fValue = AS923_DEFAULT_MAX_EIRP;
+            break;
+        }
+        case PHY_DEF_ANTENNA_GAIN:
+        {
+            phyParam.fValue = AS923_DEFAULT_ANTENNA_GAIN;
+            break;
+        }
+        case PHY_BEACON_CHANNEL_FREQ:
+        {
+            phyParam.Value = AS923_BEACON_CHANNEL_FREQ - REGION_AS923_FREQ_OFFSET;
+            break;
+        }
+        case PHY_BEACON_FORMAT:
+        {
+            phyParam.BeaconFormat.BeaconSize = AS923_BEACON_SIZE;
+            phyParam.BeaconFormat.Rfu1Size = AS923_RFU1_SIZE;
+            phyParam.BeaconFormat.Rfu2Size = AS923_RFU2_SIZE;
+            break;
+        }
+        case PHY_BEACON_CHANNEL_DR:
+        {
+            phyParam.Value = AS923_BEACON_CHANNEL_DR;
+            break;
+        }
+        case PHY_PING_SLOT_CHANNEL_FREQ:
         {
             phyParam.Value = AS923_PING_SLOT_CHANNEL_FREQ;
             break;
@@ -959,7 +999,7 @@ LoRaMacStatus_t RegionAS923NextChannel( NextChanParams_t *nextChanParams, uint8_
 	}
 }
 
-LoRaMacStatus_t RegionAS923ChannelAdd( ChannelAddParams_t *channelAdd )
+LoRaMacStatus_t RegionAS923ChannelAdd( ChannelAddParams_t* channelAdd )
 {
     bool drInvalid = false;
     bool freqInvalid = false;
