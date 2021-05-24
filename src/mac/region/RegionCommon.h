@@ -521,7 +521,7 @@ uint32_t RegionCommonComputeSymbolTimeLoRa( uint8_t phyDr, uint32_t bandwidthInH
  *
  * \retval Returns the symbol time.
  */
-double RegionCommonComputeSymbolTimeFsk( uint8_t phyDr );
+uint32_t RegionCommonComputeSymbolTimeFsk( uint8_t phyDrInKbps );
 
 /*!
  * \brief Computes the RX window timeout and the RX window offset.

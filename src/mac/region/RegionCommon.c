@@ -294,9 +294,9 @@ uint32_t RegionCommonComputeSymbolTimeLoRa( uint8_t phyDr, uint32_t bandwidthInH
     return ( 1 << phyDr ) * 1000000 / bandwidthInHz;
 }
 
-double RegionCommonComputeSymbolTimeFsk( uint8_t phyDr )
+uint32_t RegionCommonComputeSymbolTimeFsk( uint8_t phyDrInKbps )
 {
-	return ( 8.0 / (double) phyDr ); // 1 symbol equals 1 byte
+    return 8000 / ( uint32_t )phyDrInKbps; // 1 symbol equals 1 byte
 }
 
 void RegionCommonComputeRxWindowParameters( uint32_t tSymbolInUs, uint8_t minRxSymbols, uint32_t rxErrorInMs, uint32_t wakeUpTimeInMs, uint32_t* windowTimeoutInSymbols, int32_t* windowOffsetInMs )
