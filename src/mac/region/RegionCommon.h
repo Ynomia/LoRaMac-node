@@ -431,7 +431,10 @@ void RegionCommonSetBandTxDone( Band_t* band, TimerTime_t lastTxAirTime, bool jo
  *
  * \retval Returns the time which must be waited to perform the next uplink.
  */
-TimerTime_t RegionCommonUpdateBandTimeOff( bool joined, bool dutyCycle, Band_t* bands, uint8_t nbBands );
+TimerTime_t RegionCommonUpdateBandTimeOff( bool joined, Band_t* bands,
+                                           uint8_t nbBands, bool dutyCycleEnabled,
+                                           bool lastTxIsJoinRequest, SysTime_t elapsedTimeSinceStartup,
+                                           TimerTime_t expectedTimeOnAir );
 
 /*!
  * \brief Parses the parameter of an LinkAdrRequest.

@@ -311,43 +311,101 @@ void RegionCommonSetBandTxDone( Band_t* band, TimerTime_t lastTxAirTime, bool jo
     }
 }
 
-TimerTime_t RegionCommonUpdateBandTimeOff( bool joined, bool dutyCycle, Band_t *bands, uint8_t nbBands )
+TimerTime_t RegionCommonUpdateBandTimeOff( bool joined, Band_t* bands,
+                                           uint8_t nbBands, bool dutyCycleEnabled,
+                                           bool lastTxIsJoinRequest, SysTime_t elapsedTimeSinceStartup,
+                                           TimerTime_t expectedTimeOnAir )
 {
-	TimerTime_t nextTxDelay = TIMERTIME_T_MAX;
+    TimerTime_t minTimeToWait = TIMERTIME_T_MAX;
+    TimerTime_t currentTime = TimerGetCurrentTime( );
+    TimerTime_t creditCosts = 0;
+    uint16_t dutyCycle = 1;
+    uint8_t validBands = 0;
 
-	// Update bands Time OFF
-	for ( uint8_t i = 0; i < nbBands; i++ ) {
-		if ( joined == false ) {
-			TimerTime_t elapsedJoin = TimerGetElapsedTime( bands[i].LastJoinTxDoneTime );
-			TimerTime_t elapsedTx   = TimerGetElapsedTime( bands[i].LastTxDoneTime );
-			TimerTime_t txDoneTime  = MAX( elapsedJoin,
-										   ( dutyCycle == true ) ? elapsedTx : 0 );
+    for( uint8_t i = 0; i < nbBands; i++ )
+    {
+        // Synchronization of bands and credits
+        dutyCycle = UpdateTimeCredits( &bands[i], joined, dutyCycleEnabled,
+                                       lastTxIsJoinRequest, elapsedTimeSinceStartup,
+                                       currentTime );
 
-			if ( bands[i].TimeOff <= txDoneTime ) {
-				bands[i].TimeOff = 0;
-			}
-			if ( bands[i].TimeOff != 0 ) {
-				nextTxDelay = MIN( bands[i].TimeOff - txDoneTime, nextTxDelay );
-			}
-		}
-		else {
-			if ( dutyCycle == true ) {
-				TimerTime_t elapsed = TimerGetElapsedTime( bands[i].LastTxDoneTime );
-				if ( bands[i].TimeOff <= elapsed ) {
-					bands[i].TimeOff = 0;
-				}
-				if ( bands[i].TimeOff != 0 ) {
-					nextTxDelay = MIN( bands[i].TimeOff - elapsed, nextTxDelay );
-				}
-			}
-			else {
-				nextTxDelay		 = 0;
-				bands[i].TimeOff = 0;
-			}
-		}
-	}
+        // Calculate the credit costs for the next transmission
+        // with the duty cycle and the expected time on air
+        creditCosts = expectedTimeOnAir * dutyCycle;
 
-	return ( nextTxDelay == TIMERTIME_T_MAX ) ? 0 : nextTxDelay;
+        // Check if the band is ready for transmission. Its ready,
+        // when the duty cycle is off, or the TimeCredits of the band
+        // is higher than the credit costs for the transmission.
+        if( ( bands[i].TimeCredits > creditCosts ) ||
+            ( dutyCycleEnabled == false ) )
+        {
+            bands[i].ReadyForTransmission = true;
+            // This band is a potential candidate for an
+            // upcoming transmission, so increase the counter.
+            validBands++;
+        }
+        else
+        {
+            // In this case, the band has not enough credits
+            // for the next transmission.
+            bands[i].ReadyForTransmission = false;
+
+            // Differentiate the calculation if the device is joined or not.
+            if( joined == true )
+            {
+                if( bands[i].MaxTimeCredits > creditCosts )
+                {
+                    // The band can only be taken into account, if the maximum credits
+                    // of the band are higher than the credit costs.
+                    // We calculate the minTimeToWait among the bands which are not
+                    // ready for transmission and which are potentially available
+                    // for a transmission in the future.
+                    minTimeToWait = MIN( minTimeToWait, ( creditCosts - bands[i].TimeCredits ) );
+                    // This band is a potential candidate for an
+                    // upcoming transmission (even if its time credits are not enough
+                    // at the moment), so increase the counter.
+                    validBands++;
+                }
+            }
+            else
+            {
+                SysTime_t backoffTimeRange = {
+                    .Seconds    = 0,
+                    .SubSeconds = 0,
+                };
+                // Get the backoff time range based on the duty cycle definition
+                if( dutyCycle == BACKOFF_DC_1_HOUR )
+                {
+                    backoffTimeRange.Seconds = BACKOFF_DUTY_CYCLE_1_HOUR_IN_S;
+                }
+                else if( dutyCycle == BACKOFF_DC_10_HOURS )
+                {
+                    backoffTimeRange.Seconds = BACKOFF_DUTY_CYCLE_10_HOURS_IN_S;
+                }
+                else
+                {
+                    backoffTimeRange.Seconds = BACKOFF_DUTY_CYCLE_24_HOURS_IN_S;
+                }
+                // Calculate the time to wait.
+                if( elapsedTimeSinceStartup.Seconds > BACKOFF_DUTY_CYCLE_24_HOURS_IN_S )
+                {
+                    backoffTimeRange.Seconds += BACKOFF_24_HOURS_IN_S * ( ( ( elapsedTimeSinceStartup.Seconds - BACKOFF_DUTY_CYCLE_24_HOURS_IN_S ) / BACKOFF_24_HOURS_IN_S ) + 1 );
+                }
+                // Calculate the time difference between now and the next range
+                backoffTimeRange  = SysTimeSub( backoffTimeRange, elapsedTimeSinceStartup );
+                minTimeToWait = SysTimeToMs( backoffTimeRange );
+            }
+        }
+    }
+
+
+    if( validBands == 0 )
+    {
+        // There is no valid band available to handle a transmission
+        // in the given DUTY_CYCLE_TIME_PERIOD.
+        return TIMERTIME_T_MAX;
+    }
+    return minTimeToWait;
 }
 
 uint8_t RegionCommonParseLinkAdrReq( uint8_t* payload, RegionCommonLinkAdrParams_t* linkAdrParams )
@@ -486,6 +544,92 @@ void RegionCommonRxBeaconSetup( RegionCommonRxBeaconSetupParams_t* rxBeaconSetup
 	Radio.Rx( rxBeaconSetupParams->RxTime );
 }
 
+void RegionCommonCountNbOfEnabledChannels( RegionCommonCountNbOfEnabledChannelsParams_t* countNbOfEnabledChannelsParams,
+                                           uint8_t* enabledChannels, uint8_t* nbEnabledChannels, uint8_t* nbRestrictedChannels )
+{
+    uint8_t nbChannelCount = 0;
+    uint8_t nbRestrictedChannelsCount = 0;
+
+    for( uint8_t i = 0, k = 0; i < countNbOfEnabledChannelsParams->MaxNbChannels; i += 16, k++ )
+    {
+        for( uint8_t j = 0; j < 16; j++ )
+        {
+            if( ( countNbOfEnabledChannelsParams->ChannelsMask[k] & ( 1 << j ) ) != 0 )
+            {
+                if( countNbOfEnabledChannelsParams->Channels[i + j].Frequency == 0 )
+                { // Check if the channel is enabled
+                    continue;
+                }
+                if( ( countNbOfEnabledChannelsParams->Joined == false ) &&
+                    ( countNbOfEnabledChannelsParams->JoinChannels != NULL ) )
+                {
+                    if( ( countNbOfEnabledChannelsParams->JoinChannels[k] & ( 1 << j ) ) == 0 )
+                    {
+                        continue;
+                    }
+                }
+                if( RegionCommonValueInRange( countNbOfEnabledChannelsParams->Datarate,
+                                              countNbOfEnabledChannelsParams->Channels[i + j].DrRange.Fields.Min,
+                                              countNbOfEnabledChannelsParams->Channels[i + j].DrRange.Fields.Max ) == false )
+                { // Check if the current channel selection supports the given datarate
+                    continue;
+                }
+                if( countNbOfEnabledChannelsParams->Bands[countNbOfEnabledChannelsParams->Channels[i + j].Band].ReadyForTransmission == false )
+                { // Check if the band is available for transmission
+                    nbRestrictedChannelsCount++;
+                    continue;
+                }
+                enabledChannels[nbChannelCount++] = i + j;
+            }
+        }
+    }
+    *nbEnabledChannels = nbChannelCount;
+    *nbRestrictedChannels = nbRestrictedChannelsCount;
+}
+
+LoRaMacStatus_t RegionCommonIdentifyChannels( RegionCommonIdentifyChannelsParam_t* identifyChannelsParam,
+                                              TimerTime_t* aggregatedTimeOff, uint8_t* enabledChannels,
+                                              uint8_t* nbEnabledChannels, uint8_t* nbRestrictedChannels,
+                                              TimerTime_t* nextTxDelay )
+{
+    TimerTime_t elapsed = TimerGetElapsedTime( identifyChannelsParam->LastAggrTx );
+    *nextTxDelay = identifyChannelsParam->AggrTimeOff - elapsed;
+    *nbRestrictedChannels = 1;
+    *nbEnabledChannels = 0;
+
+    if( ( identifyChannelsParam->LastAggrTx == 0 ) ||
+        ( identifyChannelsParam->AggrTimeOff <= elapsed ) )
+    {
+        // Reset Aggregated time off
+        *aggregatedTimeOff = 0;
+
+        // Update bands Time OFF
+        *nextTxDelay = RegionCommonUpdateBandTimeOff( identifyChannelsParam->CountNbOfEnabledChannelsParam->Joined,
+                                                      identifyChannelsParam->CountNbOfEnabledChannelsParam->Bands,
+                                                      identifyChannelsParam->MaxBands,
+                                                      identifyChannelsParam->DutyCycleEnabled,
+                                                      identifyChannelsParam->LastTxIsJoinRequest,
+                                                      identifyChannelsParam->ElapsedTimeSinceStartUp,
+                                                      identifyChannelsParam->ExpectedTimeOnAir );
+
+        RegionCommonCountNbOfEnabledChannels( identifyChannelsParam->CountNbOfEnabledChannelsParam, enabledChannels,
+                                              nbEnabledChannels, nbRestrictedChannels );
+    }
+
+    if( *nbEnabledChannels > 0 )
+    {
+        *nextTxDelay = 0;
+        return LORAMAC_STATUS_OK;
+    }
+    else if( *nbRestrictedChannels > 0 )
+    {
+        return LORAMAC_STATUS_DUTYCYCLE_RESTRICTED;
+    }
+    else
+    {
+        return LORAMAC_STATUS_NO_CHANNEL_FOUND;
+    }
+}
 int8_t RegionCommonGetNextLowerTxDr( int8_t dr, int8_t minDr )
 {
     if( dr == minDr )

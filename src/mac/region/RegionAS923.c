@@ -36,40 +36,6 @@
 // Definitions
 #define CHANNELS_MASK_SIZE 1
 
-#ifndef REGION_AS923_DEFAULT_CHANNEL_PLAN
-#define REGION_AS923_DEFAULT_CHANNEL_PLAN CHANNEL_PLAN_GROUP_AS923_1
-#endif
-
-#if( REGION_AS923_DEFAULT_CHANNEL_PLAN == CHANNEL_PLAN_GROUP_AS923_1 )
-
-// Channel plan CHANNEL_PLAN_GROUP_AS923_1
-
-#define REGION_AS923_FREQ_OFFSET          0
-
-#define AS923_MIN_RF_FREQUENCY            915000000
-#define AS923_MAX_RF_FREQUENCY            928000000
-#define AS923_LBT_RX_BANDWIDTH            200000
-
-#elif ( REGION_AS923_DEFAULT_CHANNEL_PLAN == CHANNEL_PLAN_GROUP_AS923_2 )
-
-// Channel plan CHANNEL_PLAN_GROUP_AS923_2
-// -1.8MHz
-#define REGION_AS923_FREQ_OFFSET          ( ( ~( 0xFFFFB9B0 ) + 1 ) * 100 )
-
-#define AS923_MIN_RF_FREQUENCY            915000000
-#define AS923_MAX_RF_FREQUENCY            928000000
-
-#elif ( REGION_AS923_DEFAULT_CHANNEL_PLAN == CHANNEL_PLAN_GROUP_AS923_3 )
-
-// Channel plan CHANNEL_PLAN_GROUP_AS923_3
-// -6.6MHz
-#define REGION_AS923_FREQ_OFFSET          ( ( ~( 0xFFFEFE30 ) + 1 ) * 100 )
-
-#define AS923_MIN_RF_FREQUENCY            915000000
-#define AS923_MAX_RF_FREQUENCY            928000000
-
-#elif ( REGION_AS923_DEFAULT_CHANNEL_PLAN == CHANNEL_PLAN_GROUP_AS923_1_JP )
-
 // Channel plan CHANNEL_PLAN_GROUP_AS923_1_JP
 
 #define REGION_AS923_FREQ_OFFSET          0
@@ -95,8 +61,6 @@
 
 #undef AS923_DEFAULT_MAX_EIRP
 #define AS923_DEFAULT_MAX_EIRP            13.0f
-
-#endif
 
 /*!
  * Region specific context
@@ -140,39 +104,6 @@ static bool VerifyRfFreq( uint32_t freq )
         return false;
     }
     return true;
-}
-
-static uint8_t CountNbOfEnabledChannels( bool joined, uint8_t datarate, uint16_t *channelsMask, ChannelParams_t *channels, Band_t *bands, uint8_t *enabledChannels, uint8_t *delayTx )
-{
-	uint8_t nbEnabledChannels = 0;
-	uint8_t delayTransmission = 0;
-
-	for ( uint8_t i = 0, k = 0; i < AS923_MAX_NB_CHANNELS; i += 16, k++ ) {
-		for ( uint8_t j = 0; j < 16; j++ ) {
-			if ( ( channelsMask[k] & ( 1 << j ) ) != 0 ) {
-				if ( channels[i + j].Frequency == 0 ) { // Check if the channel is enabled
-					continue;
-				}
-				if ( joined == false ) {
-					if ( ( AS923_JOIN_CHANNELS & ( 1 << j ) ) == 0 ) {
-						continue;
-					}
-				}
-				if ( RegionCommonValueInRange( datarate, channels[i + j].DrRange.Fields.Min,
-											   channels[i + j].DrRange.Fields.Max ) == false ) { // Check if the current channel selection supports the given datarate
-					continue;
-				}
-				if ( bands[channels[i + j].Band].TimeOff > 0 ) { // Check if the band is available for transmission
-					delayTransmission++;
-					continue;
-				}
-				enabledChannels[nbEnabledChannels++] = i + j;
-			}
-		}
-	}
-
-	*delayTx = delayTransmission;
-	return nbEnabledChannels;
 }
 
 static TimerTime_t GetTimeOnAir( int8_t datarate, uint16_t pktLen )
@@ -932,38 +863,46 @@ int8_t RegionAS923AlternateDr( int8_t currentDr, AlternateDrType_t type )
 	return AS923_DWELL_LIMIT_DATARATE;
 }
 
-LoRaMacStatus_t RegionAS923NextChannel( NextChanParams_t *nextChanParams, uint8_t *channel, TimerTime_t *time, TimerTime_t *aggregatedTimeOff )
+LoRaMacStatus_t RegionAS923NextChannel( NextChanParams_t* nextChanParams, uint8_t* channel, TimerTime_t* time, TimerTime_t* aggregatedTimeOff )
 {
-	uint8_t		channelNext							   = 0;
-	uint8_t		nbEnabledChannels					   = 0;
-	uint8_t		delayTx								   = 0;
-	uint8_t		enabledChannels[AS923_MAX_NB_CHANNELS] = { 0 };
-	TimerTime_t nextTxDelay							   = 0;
+    uint8_t nbEnabledChannels = 0;
+    uint8_t nbRestrictedChannels = 0;
+    uint8_t enabledChannels[AS923_MAX_NB_CHANNELS] = { 0 };
+    RegionCommonIdentifyChannelsParam_t identifyChannelsParam;
+    RegionCommonCountNbOfEnabledChannelsParams_t countChannelsParams;
+    LoRaMacStatus_t status = LORAMAC_STATUS_NO_CHANNEL_FOUND;
+    uint16_t joinChannels = AS923_JOIN_CHANNELS;
 
-	if ( RegionCommonCountChannels( NvmCtx.ChannelsMask, 0, 1 ) == 0 ) { // Reactivate default channels
-		NvmCtx.ChannelsMask[0] |= LC( 1 ) + LC( 2 );
-	}
+    if( RegionCommonCountChannels( NvmCtx.ChannelsMask, 0, 1 ) == 0 )
+    { // Reactivate default channels
+        NvmCtx.ChannelsMask[0] |= LC( 1 ) + LC( 2 );
+    }
 
-	TimerTime_t elapsed = TimerGetElapsedTime( nextChanParams->LastAggrTx );
-	if ( ( nextChanParams->LastAggrTx == 0 ) || ( nextChanParams->AggrTimeOff <= elapsed ) ) {
-		// Reset Aggregated time off
-		*aggregatedTimeOff = 0;
+    // Search how many channels are enabled
+    countChannelsParams.Joined = nextChanParams->Joined;
+    countChannelsParams.Datarate = nextChanParams->Datarate;
+    countChannelsParams.ChannelsMask = NvmCtx.ChannelsMask;
+    countChannelsParams.Channels = NvmCtx.Channels;
+    countChannelsParams.Bands = NvmCtx.Bands;
+    countChannelsParams.MaxNbChannels = AS923_MAX_NB_CHANNELS;
+    countChannelsParams.JoinChannels = &joinChannels;
 
-		// Update bands Time OFF
-		nextTxDelay = RegionCommonUpdateBandTimeOff( nextChanParams->Joined, nextChanParams->DutyCycleEnabled, NvmCtx.Bands, AS923_MAX_NB_BANDS );
+    identifyChannelsParam.AggrTimeOff = nextChanParams->AggrTimeOff;
+    identifyChannelsParam.LastAggrTx = nextChanParams->LastAggrTx;
+    identifyChannelsParam.DutyCycleEnabled = nextChanParams->DutyCycleEnabled;
+    identifyChannelsParam.MaxBands = AS923_MAX_NB_BANDS;
 
-		// Search how many channels are enabled
-		nbEnabledChannels = CountNbOfEnabledChannels( nextChanParams->Joined, nextChanParams->Datarate,
-													  NvmCtx.ChannelsMask, NvmCtx.Channels,
-													  NvmCtx.Bands, enabledChannels, &delayTx );
-	}
-	else {
-		delayTx++;
-		nextTxDelay = nextChanParams->AggrTimeOff - elapsed;
-	}
+    identifyChannelsParam.ElapsedTimeSinceStartUp = nextChanParams->ElapsedTimeSinceStartUp;
+    identifyChannelsParam.LastTxIsJoinRequest = nextChanParams->LastTxIsJoinRequest;
+    identifyChannelsParam.ExpectedTimeOnAir = GetTimeOnAir( nextChanParams->Datarate, nextChanParams->PktLen );
 
-	if ( nbEnabledChannels > 0 ) {
-#if ( REGION_AS923_DEFAULT_CHANNEL_PLAN == CHANNEL_PLAN_GROUP_AS923_1_JP )
+    identifyChannelsParam.CountNbOfEnabledChannelsParam = &countChannelsParams;
+
+    status = RegionCommonIdentifyChannels( &identifyChannelsParam, aggregatedTimeOff, enabledChannels,
+                                           &nbEnabledChannels, &nbRestrictedChannels, time );
+
+    if( status == LORAMAC_STATUS_OK )
+    {
         // Executes the LBT algorithm when operating in Japan
         uint8_t channelNext = 0;
 
@@ -981,22 +920,16 @@ LoRaMacStatus_t RegionAS923NextChannel( NextChanParams_t *nextChanParams, uint8_
                 return LORAMAC_STATUS_OK;
             }
         }
-#else
-        // We found a valid channel
-        *channel = enabledChannels[randr( 0, nbEnabledChannels - 1 )];
-#endif
-	}
-	else {
-		if ( delayTx > 0 ) {
-			// Delay transmission due to AggregatedTimeOff or to a band time off
-			*time = nextTxDelay;
-			return LORAMAC_STATUS_DUTYCYCLE_RESTRICTED;
-		}
-		// Datarate not supported by any channel, restore defaults
-		NvmCtx.ChannelsMask[0] |= LC( 1 ) + LC( 2 );
-		*time = 0;
-		return LORAMAC_STATUS_NO_CHANNEL_FOUND;
-	}
+        // Even if one or more channels are available according to the channel plan, no free channel
+        // was found during the LBT procedure.
+        status = LORAMAC_STATUS_NO_FREE_CHANNEL_FOUND;
+    }
+    else if( status == LORAMAC_STATUS_NO_CHANNEL_FOUND )
+    {
+        // Datarate not supported by any channel, restore defaults
+        NvmCtx.ChannelsMask[0] |= LC( 1 ) + LC( 2 );
+    }
+    return status;
 }
 
 LoRaMacStatus_t RegionAS923ChannelAdd( ChannelAddParams_t* channelAdd )
