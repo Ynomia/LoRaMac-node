@@ -216,40 +216,29 @@ static uint8_t CountChannels( uint16_t mask, uint8_t nbBits )
     return nbActiveBits;
 }
 
-uint16_t RegionCommonGetJoinDc( SysTime_t elapsedTime )
+bool RegionCommonChanVerifyDr( uint8_t nbChannels, uint16_t* channelsMask, int8_t dr, int8_t minDr, int8_t maxDr, ChannelParams_t* channels )
 {
-	uint16_t dutyCycle = 0;
+    if( RegionCommonValueInRange( dr, minDr, maxDr ) == 0 )
+    {
+        return false;
+    }
 
-	if ( elapsedTime.Seconds < 3600 ) {
-		dutyCycle = BACKOFF_DC_1_HOUR;
-	}
-	else if ( elapsedTime.Seconds < ( 3600 + 36000 ) ) {
-		dutyCycle = BACKOFF_DC_10_HOURS;
-	}
-	else {
-		dutyCycle = BACKOFF_DC_24_HOURS;
-	}
-	return dutyCycle;
-}
-
-bool RegionCommonChanVerifyDr( uint8_t nbChannels, uint16_t *channelsMask, int8_t dr, int8_t minDr, int8_t maxDr, ChannelParams_t *channels )
-{
-	if ( RegionCommonValueInRange( dr, minDr, maxDr ) == 0 ) {
-		return false;
-	}
-
-	for ( uint8_t i = 0, k = 0; i < nbChannels; i += 16, k++ ) {
-		for ( uint8_t j = 0; j < 16; j++ ) {
-			if ( ( ( channelsMask[k] & ( 1 << j ) ) != 0 ) ) { // Check datarate validity for enabled channels
-				if ( RegionCommonValueInRange( dr, ( channels[i + j].DrRange.Fields.Min & 0x0F ),
-											   ( channels[i + j].DrRange.Fields.Max & 0x0F ) ) == 1 ) {
-					// At least 1 channel has been found we can return OK.
-					return true;
-				}
-			}
-		}
-	}
-	return false;
+    for( uint8_t i = 0, k = 0; i < nbChannels; i += 16, k++ )
+    {
+        for( uint8_t j = 0; j < 16; j++ )
+        {
+            if( ( ( channelsMask[k] & ( 1 << j ) ) != 0 ) )
+            {// Check datarate validity for enabled channels
+                if( RegionCommonValueInRange( dr, ( channels[i + j].DrRange.Fields.Min & 0x0F ),
+                                                  ( channels[i + j].DrRange.Fields.Max & 0x0F ) ) == 1 )
+                {
+                    // At least 1 channel has been found we can return OK.
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
 }
 
 uint8_t RegionCommonValueInRange( int8_t value, int8_t min, int8_t max )

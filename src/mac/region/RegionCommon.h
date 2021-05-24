@@ -323,16 +323,6 @@ typedef struct sRegionCommonSetDutyCycleParams
 }RegionCommonSetDutyCycleParams_t;
 
 /*!
- * \brief Calculates the join duty cycle.
- *        This is a generic function and valid for all regions.
- *
- * \param [IN] elapsedTime Elapsed time since the start of the device.
- *
- * \retval Duty cycle restriction.
- */
-uint16_t RegionCommonGetJoinDc( SysTime_t elapsedTime );
-
-/*!
  * \brief Verifies, if a value is in a given range.
  *        This is a generic function and valid for all regions.
  *
@@ -411,11 +401,13 @@ void RegionCommonChanMaskCopy( uint16_t* channelsMaskDest, uint16_t* channelsMas
  * \brief Sets the last tx done property.
  *        This is a generic function and valid for all regions.
  *
- * \param [IN] joined Set to true, if the node has joined the network
- *
  * \param [IN] band The band to be updated.
  *
- * \param [IN] lastTxDone The time of the last TX done.
+ * \param [IN] lastTxAirTime The time on air of the last TX frame.
+ *
+ * \param [IN] joined Set to true if the device has joined.
+ *
+ * \param [IN] elapsedTimeSinceStartup Elapsed time since initialization.
  */
 void RegionCommonSetBandTxDone( bool joined, Band_t* band, TimerTime_t lastTxDone );
 
@@ -425,11 +417,17 @@ void RegionCommonSetBandTxDone( bool joined, Band_t* band, TimerTime_t lastTxDon
  *
  * \param [IN] joined Set to true, if the node has joined the network
  *
- * \param [IN] dutyCycle Set to true, if the duty cycle is enabled.
- *
  * \param [IN] bands A pointer to the bands.
  *
  * \param [IN] nbBands The number of bands available.
+ *
+ * \param [IN] dutyCycleEnabled Set to true, if the duty cycle is enabled.
+ *
+ * \param [IN] lastTxIsJoinRequest Set to true, if the last TX is a join request.
+ *
+ * \param [IN] elapsedTimeSinceStartup Elapsed time since start up.
+ *
+ * \param [IN] expectedTimeOnAir Expected time on air for the next transmission.
  *
  * \retval Returns the time which must be waited to perform the next uplink.
  */
@@ -519,13 +517,6 @@ void RegionCommonComputeRxWindowParameters( uint32_t tSymbolInUs, uint8_t minRxS
  * \retval Returns the physical TX power.
  */
 int8_t RegionCommonComputeTxPower( int8_t txPowerIndex, float maxEirp, float antennaGain );
-
-/*!
- * \brief Sets up the radio into RX beacon mode.
- *
- * \param [IN] rxBeaconSetupParams A pointer to the input parameters.
- */
-void RegionCommonRxBeaconSetup( RegionCommonRxBeaconSetupParams_t* rxBeaconSetupParams );
 
 /*!
  * \brief Sets up the radio into RX beacon mode.
