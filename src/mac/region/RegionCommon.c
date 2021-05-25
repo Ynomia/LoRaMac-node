@@ -337,7 +337,7 @@ TimerTime_t RegionCommonUpdateBandTimeOff( bool joined, Band_t* bands,
         // when the duty cycle is off, or the TimeCredits of the band
         // is higher than the credit costs for the transmission.
         if( ( bands[i].TimeCredits > creditCosts ) ||
-            ( dutyCycleEnabled == false ) )
+            ( ( dutyCycleEnabled == false ) && ( joined == true ) ) )
         {
             bands[i].ReadyForTransmission = true;
             // This band is a potential candidate for an
@@ -350,24 +350,22 @@ TimerTime_t RegionCommonUpdateBandTimeOff( bool joined, Band_t* bands,
             // for the next transmission.
             bands[i].ReadyForTransmission = false;
 
-            // Differentiate the calculation if the device is joined or not.
-            if( joined == true )
+            if( bands[i].MaxTimeCredits > creditCosts )
             {
-                if( bands[i].MaxTimeCredits > creditCosts )
-                {
-                    // The band can only be taken into account, if the maximum credits
-                    // of the band are higher than the credit costs.
-                    // We calculate the minTimeToWait among the bands which are not
-                    // ready for transmission and which are potentially available
-                    // for a transmission in the future.
-                    minTimeToWait = MIN( minTimeToWait, ( creditCosts - bands[i].TimeCredits ) );
-                    // This band is a potential candidate for an
-                    // upcoming transmission (even if its time credits are not enough
-                    // at the moment), so increase the counter.
-                    validBands++;
-                }
+                // The band can only be taken into account, if the maximum credits
+                // of the band are higher than the credit costs.
+                // We calculate the minTimeToWait among the bands which are not
+                // ready for transmission and which are potentially available
+                // for a transmission in the future.
+                minTimeToWait = MIN( minTimeToWait, ( creditCosts - bands[i].TimeCredits ) );
+                // This band is a potential candidate for an
+                // upcoming transmission (even if its time credits are not enough
+                // at the moment), so increase the counter.
+                validBands++;
             }
-            else
+
+            // Apply a special calculation if the device is not joined.
+            if( joined == false )
             {
                 SysTime_t backoffTimeRange = {
                     .Seconds    = 0,
@@ -630,15 +628,24 @@ LoRaMacStatus_t RegionCommonIdentifyChannels( RegionCommonIdentifyChannelsParam_
         return LORAMAC_STATUS_NO_CHANNEL_FOUND;
     }
 }
-int8_t RegionCommonGetNextLowerTxDr( int8_t dr, int8_t minDr )
+
+int8_t RegionCommonGetNextLowerTxDr( RegionCommonGetNextLowerTxDrParams_t *params )
 {
-    if( dr == minDr )
+    int8_t drLocal = params->CurrentDr;
+
+    if( params->CurrentDr == params->MinDr )
     {
-        return minDr;
+        return params->MinDr;
     }
     else
     {
-        return( dr - 1 );
+        do
+        {
+            drLocal = ( drLocal - 1 );
+        } while( ( drLocal != params->MinDr ) &&
+                 ( RegionCommonChanVerifyDr( params->NbChannels, params->ChannelsMask, drLocal, params->MinDr, params->MaxDr, params->Channels  ) == false ) );
+
+        return drLocal;
     }
 }
 

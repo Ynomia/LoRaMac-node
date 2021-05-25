@@ -160,14 +160,16 @@ PhyParam_t RegionAS923GetPhyParam( GetPhyParams_t* getPhy )
         }
         case PHY_NEXT_LOWER_TX_DR:
         {
-            if( getPhy->UplinkDwellTime == 0 )
+            RegionCommonGetNextLowerTxDrParams_t nextLowerTxDrParams =
             {
-                phyParam.Value = RegionCommonGetNextLowerTxDr( getPhy->Datarate, AS923_TX_MIN_DATARATE );
-            }
-            else
-            {
-                phyParam.Value = RegionCommonGetNextLowerTxDr( getPhy->Datarate, AS923_DWELL_LIMIT_DATARATE );
-            }
+                .CurrentDr = getPhy->Datarate,
+                .MaxDr = ( int8_t )AS923_TX_MAX_DATARATE,
+                .MinDr = ( int8_t )( ( getPhy->UplinkDwellTime == 0 ) ? AS923_TX_MIN_DATARATE : AS923_DWELL_LIMIT_DATARATE ),
+                .NbChannels = AS923_MAX_NB_CHANNELS,
+                .ChannelsMask = NvmCtx.ChannelsMask,
+                .Channels = NvmCtx.Channels,
+            };
+            phyParam.Value = RegionCommonGetNextLowerTxDr( &nextLowerTxDrParams );
             break;
         }
         case PHY_MAX_TX_POWER:
@@ -773,7 +775,7 @@ uint8_t RegionAS923RxParamSetupReq( RxParamSetupReqParams_t* rxParamSetupReq )
 	return status;
 }
 
-uint8_t RegionAS923NewChannelReq( NewChannelReqParams_t* newChannelReq )
+int8_t RegionAS923NewChannelReq( NewChannelReqParams_t* newChannelReq )
 {
 	uint8_t				  status = 0x03;
 	ChannelAddParams_t	channelAdd;
@@ -832,7 +834,7 @@ int8_t RegionAS923TxParamSetupReq( TxParamSetupReqParams_t* txParamSetupReq )
 	return 0;
 }
 
-uint8_t RegionAS923DlChannelReq( DlChannelReqParams_t* dlChannelReq )
+int8_t RegionAS923DlChannelReq( DlChannelReqParams_t* dlChannelReq )
 {
 	uint8_t status = 0x03;
 

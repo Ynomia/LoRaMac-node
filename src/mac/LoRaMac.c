@@ -44,6 +44,7 @@
 #include "LoRaMacCommands.h"
 #include "LoRaMacAdr.h"
 #include "LoRaMacSerializer.h"
+#include "radio.h"
 
 #include "LoRaMac.h"
 
