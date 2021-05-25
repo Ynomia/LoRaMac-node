@@ -85,7 +85,7 @@ bool RadioIsChannelFree( uint32_t freq, uint32_t rxBandwidth, int16_t rssiThresh
  *
  * \retval randomValue    16 bits random value
  */
-uint16_t RadioRandom( void );
+uint32_t RadioRandom( void );
 
 /*!
  * \brief Sets the reception parameters
@@ -342,35 +342,36 @@ void RadioSetRxDutyCycle( uint32_t rxTime, uint32_t sleepTime );
 /*!
  * Radio driver structure initialization
  */
-const struct Radio_s Radio = {
-	RadioInit,
-	RadioGetStatus,
-	RadioSetModem,
-	RadioSetChannel,
-	RadioIsChannelFree,
-	RadioRandom,
-	RadioSetRxConfig,
-	RadioSetTxConfig,
-	RadioCheckRfFrequency,
-	RadioTimeOnAir,
-	RadioSend,
-	RadioSleep,
-	RadioStandby,
-	RadioRx,
-	RadioStartCad,
-	RadioSetTxContinuousWave,
-	RadioRssi,
-	RadioWrite,
-	RadioRead,
-	RadioWriteBuffer,
-	RadioReadBuffer,
-	RadioSetMaxPayloadLength,
-	RadioSetPublicNetwork,
-	RadioGetWakeupTime,
-	RadioIrqProcess,
-	// Available on SX126x only
-	RadioRxBoosted,
-	RadioSetRxDutyCycle
+const struct Radio_s Radio =
+{
+    RadioInit,
+    RadioGetStatus,
+    RadioSetModem,
+    RadioSetChannel,
+    RadioIsChannelFree,
+    RadioRandom,
+    RadioSetRxConfig,
+    RadioSetTxConfig,
+    RadioCheckRfFrequency,
+    RadioTimeOnAir,
+    RadioSend,
+    RadioSleep,
+    RadioStandby,
+    RadioRx,
+    RadioStartCad,
+    RadioSetTxContinuousWave,
+    RadioRssi,
+    RadioWrite,
+    RadioRead,
+    RadioWriteBuffer,
+    RadioReadBuffer,
+    RadioSetMaxPayloadLength,
+    RadioSetPublicNetwork,
+    RadioGetWakeupTime,
+    RadioIrqProcess,
+    // Available on SX126x only
+    RadioRxBoosted,
+    RadioSetRxDutyCycle
 };
 
 /*
@@ -389,29 +390,30 @@ typedef struct
 /*!
  * Precomputed FSK bandwidth registers values
  */
-const FskBandwidth_t FskBandwidths[] = {
-	{ 4800, 0x1F },
-	{ 5800, 0x17 },
-	{ 7300, 0x0F },
-	{ 9700, 0x1E },
-	{ 11700, 0x16 },
-	{ 14600, 0x0E },
-	{ 19500, 0x1D },
-	{ 23400, 0x15 },
-	{ 29300, 0x0D },
-	{ 39000, 0x1C },
-	{ 46900, 0x14 },
-	{ 58600, 0x0C },
-	{ 78200, 0x1B },
-	{ 93800, 0x13 },
-	{ 117300, 0x0B },
-	{ 156200, 0x1A },
-	{ 187200, 0x12 },
-	{ 234300, 0x0A },
-	{ 312000, 0x19 },
-	{ 373600, 0x11 },
-	{ 467000, 0x09 },
-	{ 500000, 0x00 }, // Invalid Bandwidth
+const FskBandwidth_t FskBandwidths[] =
+{
+    { 4800  , 0x1F },
+    { 5800  , 0x17 },
+    { 7300  , 0x0F },
+    { 9700  , 0x1E },
+    { 11700 , 0x16 },
+    { 14600 , 0x0E },
+    { 19500 , 0x1D },
+    { 23400 , 0x15 },
+    { 29300 , 0x0D },
+    { 39000 , 0x1C },
+    { 46900 , 0x14 },
+    { 58600 , 0x0C },
+    { 78200 , 0x1B },
+    { 93800 , 0x13 },
+    { 117300, 0x0B },
+    { 156200, 0x1A },
+    { 187200, 0x12 },
+    { 234300, 0x0A },
+    { 312000, 0x19 },
+    { 373600, 0x11 },
+    { 467000, 0x09 },
+    { 500000, 0x00 }, // Invalid Bandwidth
 };
 
 const RadioLoRaBandwidths_t Bandwidths[] = { LORA_BW_125, LORA_BW_250, LORA_BW_500 };
@@ -435,17 +437,17 @@ bool IrqFired = false;
 /*!
  * \brief DIO 0 IRQ callback
  */
-void RadioOnDioIrq( void *context );
+void RadioOnDioIrq( void* context );
 
 /*!
  * \brief Tx timeout timer callback
  */
-void RadioOnTxTimeoutIrq( void *context );
+void RadioOnTxTimeoutIrq( void* context );
 
 /*!
  * \brief Rx timeout timer callback
  */
-void RadioOnRxTimeoutIrq( void *context );
+void RadioOnRxTimeoutIrq( void* context );
 
 /*
  * Private global variables
@@ -465,7 +467,7 @@ static RadioPublicNetwork_t RadioPublicNetwork = { false };
 /*!
  * Radio callbacks variable
  */
-static RadioEvents_t *RadioEvents;
+static RadioEvents_t* RadioEvents;
 
 /*
  * Public global variables
@@ -494,18 +496,20 @@ static uint8_t RadioGetFskBandwidthRegValue( uint32_t bandwidth )
 {
 	uint8_t i;
 
-	if ( bandwidth == 0 ) {
-		return ( 0x1F );
-	}
+    if( bandwidth == 0 )
+    {
+        return( 0x1F );
+    }
 
-	for ( i = 0; i < ( sizeof( FskBandwidths ) / sizeof( FskBandwidth_t ) ) - 1; i++ ) {
-		if ( ( bandwidth >= FskBandwidths[i].bandwidth ) && ( bandwidth < FskBandwidths[i + 1].bandwidth ) ) {
-			return FskBandwidths[i + 1].RegValue;
-		}
-	}
-	// ERROR: Value not found
-	while ( 1 )
-		;
+    for( i = 0; i < ( sizeof( FskBandwidths ) / sizeof( FskBandwidth_t ) ) - 1; i++ )
+    {
+        if( ( bandwidth >= FskBandwidths[i].bandwidth ) && ( bandwidth < FskBandwidths[i + 1].bandwidth ) )
+        {
+            return FskBandwidths[i+1].RegValue;
+        }
+    }
+    // ERROR: Value not found
+    while( 1 );
 }
 
 void RadioInit( RadioEvents_t *events )
@@ -531,37 +535,40 @@ void RadioInit( RadioEvents_t *events )
 
 RadioState_t RadioGetStatus( void )
 {
-	switch ( SX126xGetOperatingMode() ) {
-		case MODE_TX:
-			return RF_TX_RUNNING;
-		case MODE_RX:
-			return RF_RX_RUNNING;
-		case MODE_CAD:
-			return RF_CAD;
-		default:
-			return RF_IDLE;
-	}
+    switch( SX126xGetOperatingMode( ) )
+    {
+        case MODE_TX:
+            return RF_TX_RUNNING;
+        case MODE_RX:
+            return RF_RX_RUNNING;
+        case MODE_CAD:
+            return RF_CAD;
+        default:
+            return RF_IDLE;
+    }
 }
 
 void RadioSetModem( RadioModems_t modem )
 {
-	switch ( modem ) {
-		default:
-		case MODEM_FSK:
-			SX126xSetPacketType( PACKET_TYPE_GFSK );
-			// When switching to GFSK mode the LoRa SyncWord register value is reset
-			// Thus, we also reset the RadioPublicNetwork variable
-			RadioPublicNetwork.Current = false;
-			break;
-		case MODEM_LORA:
-			SX126xSetPacketType( PACKET_TYPE_LORA );
-			// Public/Private network register is reset when switching modems
-			if ( RadioPublicNetwork.Current != RadioPublicNetwork.Previous ) {
-				RadioPublicNetwork.Current = RadioPublicNetwork.Previous;
-				RadioSetPublicNetwork( RadioPublicNetwork.Current );
-			}
-			break;
-	}
+    switch( modem )
+    {
+    default:
+    case MODEM_FSK:
+        SX126xSetPacketType( PACKET_TYPE_GFSK );
+        // When switching to GFSK mode the LoRa SyncWord register value is reset
+        // Thus, we also reset the RadioPublicNetwork variable
+        RadioPublicNetwork.Current = false;
+        break;
+    case MODEM_LORA:
+        SX126xSetPacketType( PACKET_TYPE_LORA );
+        // Public/Private network register is reset when switching modems
+        if( RadioPublicNetwork.Current != RadioPublicNetwork.Previous )
+        {
+            RadioPublicNetwork.Current = RadioPublicNetwork.Previous;
+            RadioSetPublicNetwork( RadioPublicNetwork.Current );
+        }
+        break;
+    }
 }
 
 void RadioSetChannel( uint32_t freq )
@@ -588,22 +595,24 @@ bool RadioIsChannelFree( uint32_t freq, uint32_t rxBandwidth, int16_t rssiThresh
 
 	carrierSenseTime = TimerGetCurrentTime();
 
-	// Perform carrier sense for maxCarrierSenseTime
-	while ( TimerGetElapsedTime( carrierSenseTime ) < maxCarrierSenseTime ) {
-		rssi = RadioRssi( MODEM_FSK );
+    // Perform carrier sense for maxCarrierSenseTime
+    while( TimerGetElapsedTime( carrierSenseTime ) < maxCarrierSenseTime )
+    {
+        rssi = RadioRssi( MODEM_FSK );
 
-		if ( rssi > rssiThresh ) {
-			status = false;
-			break;
-		}
-	}
-	RadioSleep();
-	return status;
+        if( rssi > rssiThresh )
+        {
+            status = false;
+            break;
+        }
+    }
+    RadioSleep( );
+    return status;
 }
 
-uint16_t RadioRandom( void )
+uint32_t RadioRandom( void )
 {
-	uint16_t rnd = 0;
+    uint32_t rnd = 0;
 
 	/*
      * Radio setup for random number generation

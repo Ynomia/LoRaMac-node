@@ -27,34 +27,30 @@
 extern "C" {
 #endif
 
-#include <stdbool.h>
 #include <stdint.h>
-
-#define RADIO_IMMEDIATE_TIMEOUT 0xFFFFFFFF
+#include <stdbool.h>
 
 void vWaitforInterrupt( void );
 
 /*!
-* \brief Lorawan specifi radio callback that gets around the busy bug
-*/
-void LorawanRadioRx( uint32_t timeout );
-/*!
  * Radio driver supported modems
  */
-typedef enum {
-	MODEM_FSK = 0,
-	MODEM_LORA,
-} RadioModems_t;
+typedef enum
+{
+    MODEM_FSK = 0,
+    MODEM_LORA,
+}RadioModems_t;
 
 /*!
  * Radio driver internal state machine states definition
  */
-typedef enum {
-	RF_IDLE = 0,   //!< The radio is idle
-	RF_RX_RUNNING, //!< The radio is in reception state
-	RF_TX_RUNNING, //!< The radio is in transmission state
-	RF_CAD,		   //!< The radio is doing channel activity detection
-} RadioState_t;
+typedef enum
+{
+    RF_IDLE = 0,   //!< The radio is idle
+    RF_RX_RUNNING, //!< The radio is in reception state
+    RF_TX_RUNNING, //!< The radio is in transmission state
+    RF_CAD,        //!< The radio is doing channel activity detection
+}RadioState_t;
 
 /*!
  * \brief Radio driver callback functions
@@ -165,8 +161,8 @@ struct Radio_s
      *
      * \retval randomValue    16 bits random value
      */
-	uint16_t ( *Random )( void );
-	/*!
+    uint32_t ( *Random )( void );
+    /*!
      * \brief Sets the reception parameters
      *
      * \param [IN] modem        Radio modem to be used [0: FSK, 1: LoRa]

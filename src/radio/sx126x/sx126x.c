@@ -223,11 +223,11 @@ void SX126xSetWhiteningSeed( uint16_t seed )
 	}
 }
 
-uint16_t SX126xGetRandom( void )
+uint32_t SX126xGetRandom( void )
 {
-	uint16_t number		 = 0;
-	uint8_t	 regAnaLna	 = 0;
-	uint8_t	 regAnaMixer = 0;
+    uint32_t number = 0;
+    uint8_t regAnaLna = 0;
+    uint8_t regAnaMixer = 0;
 
 	regAnaLna = SX126xReadRegister( REG_ANA_LNA );
 	SX126xWriteRegister( REG_ANA_LNA, regAnaLna & ~( 1 << 0 ) );
@@ -238,14 +238,14 @@ uint16_t SX126xGetRandom( void )
 	// Set radio in continuous reception
 	SX126xSetRx( 0xFFFFFF ); // Rx Continuous
 
-	SX126xReadRegisters( RANDOM_NUMBER_GENERATORBASEADDR, (uint8_t *) &number, 2 );
+    SX126xReadRegisters( RANDOM_NUMBER_GENERATORBASEADDR, ( uint8_t* )&number, 4 );
 
 	SX126xSetStandby( STDBY_RC );
 
 	SX126xWriteRegister( REG_ANA_LNA, regAnaLna );
 	SX126xWriteRegister( REG_ANA_MIXER, regAnaMixer );
 
-	return number != 0 ? number : randr( 1, 0xEFFF );
+	return number != 0 ? number : randr( 1, 0xEFFFFFFF );
 }
 
 void SX126xSetSleep( SleepParams_t sleepConfig )
@@ -355,22 +355,26 @@ void SX126xSetStopRxTimerOnPreambleDetect( bool enable )
 
 void SX126xSetLoRaSymbNumTimeout( uint8_t symbNum )
 {
-	uint8_t mant = ( ( ( symbNum > SX126X_MAX_LORA_SYMB_NUM_TIMEOUT ) ? SX126X_MAX_LORA_SYMB_NUM_TIMEOUT : symbNum ) + 1 ) >> 1;
-	uint8_t exp	 = 0;
-	uint8_t reg	 = 0;
+    uint8_t mant = ( ( ( symbNum > SX126X_MAX_LORA_SYMB_NUM_TIMEOUT ) ?
+                       SX126X_MAX_LORA_SYMB_NUM_TIMEOUT : 
+                       symbNum ) + 1 ) >> 1;
+    uint8_t exp  = 0;
+    uint8_t reg  = 0;
 
-	while ( mant > 31 ) {
-		mant = ( mant + 3 ) >> 2;
-		exp++;
-	}
+    while( mant > 31 )
+    {
+        mant = ( mant + 3 ) >> 2;
+        exp++;
+    }
 
 	reg = mant << ( 2 * exp + 1 );
 	SX126xWriteCommand( RADIO_SET_LORASYMBTIMEOUT, &reg, 1 );
 
-	if ( symbNum != 0 ) {
-		reg = exp + ( mant << 3 );
-		SX126xWriteRegister( REG_LR_SYNCH_TIMEOUT, reg );
-	}
+    if( symbNum != 0 )
+    {
+        reg = exp + ( mant << 3 );
+        SX126xWriteRegister( REG_LR_SYNCH_TIMEOUT, reg );
+    }
 }
 
 void SX126xSetRegulatorMode( RadioRegulatorMode_t mode )
@@ -483,10 +487,11 @@ void SX126xSetRfFrequency( uint32_t frequency )
 {
 	uint8_t buf[4];
 
-	if ( ImageCalibrated == false ) {
-		SX126xCalibrateImage( frequency );
-		ImageCalibrated = true;
-	}
+    if( ImageCalibrated == false )
+    {
+        SX126xCalibrateImage( frequency );
+        ImageCalibrated = true;
+    }
 
 	uint32_t freqInPllSteps = SX126xConvertFreqInHzToPllStep( frequency );
 	eLog ( LOG_LORAWAN, LOG_DEBUG, "%d, %d\r\n", frequency, freqInPllSteps);
@@ -571,13 +576,13 @@ void SX126xSetModulationParams( ModulationParams_t *modulationParams )
     {
     case PACKET_TYPE_GFSK:
         n = 8;
-        tempVal = ( uint32_t )( 32 * ( ( double )XTAL_FREQ / ( double )modulationParams->Params.Gfsk.BitRate ) );
+        tempVal = ( uint32_t )( 32 * SX126X_XTAL_FREQ / modulationParams->Params.Gfsk.BitRate );
         buf[0] = ( tempVal >> 16 ) & 0xFF;
         buf[1] = ( tempVal >> 8 ) & 0xFF;
         buf[2] = tempVal & 0xFF;
         buf[3] = modulationParams->Params.Gfsk.ModulationShaping;
         buf[4] = modulationParams->Params.Gfsk.Bandwidth;
-        tempVal = ( uint32_t )( ( double )modulationParams->Params.Gfsk.Fdev / ( double )FREQ_STEP );
+        tempVal = SX126xConvertFreqInHzToPllStep( modulationParams->Params.Gfsk.Fdev );
         buf[5] = ( tempVal >> 16 ) & 0xFF;
         buf[6] = ( tempVal >> 8 ) & 0xFF;
         buf[7] = ( tempVal& 0xFF );

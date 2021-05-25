@@ -699,17 +699,6 @@ typedef void ( DioIrqHandler )( void* context );
  */
 
 /*!
- * \brief Provides the frequency of the chip running on the radio and the frequency step
- *
- * \remark These defines are used for computing the frequency divider to set the RF frequency
- */
-#define XTAL_FREQ                                   ( double )32000000
-#define FREQ_DIV                                    ( double )pow( 2.0, 25.0 )
-#define FREQ_STEP                                   ( double )( XTAL_FREQ / FREQ_DIV )
-
-#define RX_BUFFER_SIZE                              256
-
-/*!
  * \brief The radio callbacks structure
  * Holds function pointers to be called on radio interrupts
  */
@@ -818,7 +807,7 @@ void SX126xSetWhiteningSeed( uint16_t seed );
  *
  * \retval randomValue    16 bits random value
  */
-uint16_t SX126xGetRandom( void );
+uint32_t SX126xGetRandom( void );
 
 /*!
  * \brief Sets the radio in sleep mode
