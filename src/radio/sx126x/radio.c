@@ -875,38 +875,39 @@ static uint32_t RadioGetLoRaBandwidthInHz( RadioLoRaBandwidths_t bw )
 {
 	uint32_t bandwidthInHz = 0;
 
-	switch ( bw ) {
-		case LORA_BW_007:
-			bandwidthInHz = 7812UL;
-			break;
-		case LORA_BW_010:
-			bandwidthInHz = 10417UL;
-			break;
-		case LORA_BW_015:
-			bandwidthInHz = 15625UL;
-			break;
-		case LORA_BW_020:
-			bandwidthInHz = 20833UL;
-			break;
-		case LORA_BW_031:
-			bandwidthInHz = 31250UL;
-			break;
-		case LORA_BW_041:
-			bandwidthInHz = 41667UL;
-			break;
-		case LORA_BW_062:
-			bandwidthInHz = 62500UL;
-			break;
-		case LORA_BW_125:
-			bandwidthInHz = 125000UL;
-			break;
-		case LORA_BW_250:
-			bandwidthInHz = 250000UL;
-			break;
-		case LORA_BW_500:
-			bandwidthInHz = 500000UL;
-			break;
-	}
+    switch( bw )
+    {
+    case LORA_BW_007:
+        bandwidthInHz = 7812UL;
+        break;
+    case LORA_BW_010:
+        bandwidthInHz = 10417UL;
+        break;
+    case LORA_BW_015:
+        bandwidthInHz = 15625UL;
+        break;
+    case LORA_BW_020:
+        bandwidthInHz = 20833UL;
+        break;
+    case LORA_BW_031:
+        bandwidthInHz = 31250UL;
+        break;
+    case LORA_BW_041:
+        bandwidthInHz = 41667UL;
+        break;
+    case LORA_BW_062:
+        bandwidthInHz = 62500UL;
+        break;
+    case LORA_BW_125:
+        bandwidthInHz = 125000UL;
+        break;
+    case LORA_BW_250:
+        bandwidthInHz = 250000UL;
+        break;
+    case LORA_BW_500:
+        bandwidthInHz = 500000UL;
+        break;
+    }
 
 	return bandwidthInHz;
 }
@@ -918,13 +919,14 @@ static uint32_t RadioGetGfskTimeOnAirNumerator( uint32_t datarate, uint8_t coder
 	const RadioAddressComp_t addrComp		= RADIO_ADDRESSCOMP_FILT_OFF;
 	const uint8_t			 syncWordLength = 3;
 
-	return ( preambleLen << 3 ) +
-		   ( ( fixLen == false ) ? 8 : 0 ) +
-		   ( syncWordLength << 3 ) +
-		   ( ( payloadLen +
-			   ( addrComp == RADIO_ADDRESSCOMP_FILT_OFF ? 0 : 1 ) +
-			   ( ( crcOn == true ) ? 2 : 0 ) )
-			 << 3 );
+    return ( preambleLen << 3 ) +
+           ( ( fixLen == false ) ? 8 : 0 ) +
+             ( syncWordLength << 3 ) +
+             ( ( payloadLen +
+               ( addrComp == RADIO_ADDRESSCOMP_FILT_OFF ? 0 : 1 ) +
+               ( ( crcOn == true ) ? 2 : 0 ) 
+               ) << 3 
+             );
 }
 
 static uint32_t RadioGetLoRaTimeOnAirNumerator( uint32_t bandwidth,
@@ -935,18 +937,21 @@ static uint32_t RadioGetLoRaTimeOnAirNumerator( uint32_t bandwidth,
 	int32_t crDenom			  = coderate + 4;
 	bool	lowDatareOptimize = false;
 
-	// Ensure that the preamble length is at least 12 symbols when using SF5 or
-	// SF6
-	if ( ( datarate == 5 ) || ( datarate == 6 ) ) {
-		if ( preambleLen < 12 ) {
-			preambleLen = 12;
-		}
-	}
+    // Ensure that the preamble length is at least 12 symbols when using SF5 or
+    // SF6
+    if( ( datarate == 5 ) || ( datarate == 6 ) )
+    {
+        if( preambleLen < 12 )
+        {
+            preambleLen = 12;
+        }
+    }
 
-	if ( ( ( bandwidth == 0 ) && ( ( datarate == 11 ) || ( datarate == 12 ) ) ) ||
-		 ( ( bandwidth == 1 ) && ( datarate == 12 ) ) ) {
-		lowDatareOptimize = true;
-	}
+    if( ( ( bandwidth == 0 ) && ( ( datarate == 11 ) || ( datarate == 12 ) ) ) ||
+        ( ( bandwidth == 1 ) && ( datarate == 12 ) ) )
+    {
+        lowDatareOptimize = true;
+    }
 
 	int32_t ceilDenominator;
 	int32_t ceilNumerator = ( payloadLen << 3 ) +
@@ -954,31 +959,37 @@ static uint32_t RadioGetLoRaTimeOnAirNumerator( uint32_t bandwidth,
 							( 4 * datarate ) +
 							( fixLen ? 0 : 20 );
 
-	if ( datarate <= 6 ) {
-		ceilDenominator = 4 * datarate;
-	}
-	else {
-		ceilNumerator += 8;
+    if( datarate <= 6 )
+    {
+        ceilDenominator = 4 * datarate;
+    }
+    else
+    {
+        ceilNumerator += 8;
 
-		if ( lowDatareOptimize == true ) {
-			ceilDenominator = 4 * ( datarate - 2 );
-		}
-		else {
-			ceilDenominator = 4 * datarate;
-		}
-	}
+        if( lowDatareOptimize == true )
+        {
+            ceilDenominator = 4 * ( datarate - 2 );
+        }
+        else
+        {
+            ceilDenominator = 4 * datarate;
+        }
+    }
 
-	if ( ceilNumerator < 0 ) {
-		ceilNumerator = 0;
-	}
+    if( ceilNumerator < 0 )
+    {
+        ceilNumerator = 0;
+    }
 
 	// Perform integral ceil()
 	int32_t intermediate =
 		( ( ceilNumerator + ceilDenominator - 1 ) / ceilDenominator ) * crDenom + preambleLen + 12;
 
-	if ( datarate <= 6 ) {
-		intermediate += 2;
-	}
+    if( datarate <= 6 )
+    {
+        intermediate += 2;
+    }
 
 	return ( uint32_t )( ( 4 * intermediate + 1 ) * ( 1 << ( datarate - 2 ) ) );
 }
@@ -991,22 +1002,27 @@ uint32_t RadioTimeOnAir( RadioModems_t modem, uint32_t bandwidth,
 	uint32_t numerator	 = 0;
 	uint32_t denominator = 1;
 
-	switch ( modem ) {
-		case MODEM_FSK: {
-			numerator	= 1000U * RadioGetGfskTimeOnAirNumerator( datarate, coderate,
-																  preambleLen, fixLen,
-																  payloadLen, crcOn );
-			denominator = datarate;
-		} break;
-		case MODEM_LORA: {
-			numerator	= 1000U * RadioGetLoRaTimeOnAirNumerator( bandwidth, datarate,
-																  coderate, preambleLen,
-																  fixLen, payloadLen, crcOn );
-			denominator = RadioGetLoRaBandwidthInHz( Bandwidths[bandwidth] );
-		} break;
-	}
-	// Perform integral ceil()
-	return ( numerator + denominator - 1 ) / denominator;
+    switch( modem )
+    {
+    case MODEM_FSK:
+        {
+            numerator   = 1000U * RadioGetGfskTimeOnAirNumerator( datarate, coderate,
+                                                                  preambleLen, fixLen,
+                                                                  payloadLen, crcOn );
+            denominator = datarate;
+        }
+        break;
+    case MODEM_LORA:
+        {
+            numerator   = 1000U * RadioGetLoRaTimeOnAirNumerator( bandwidth, datarate,
+                                                                  coderate, preambleLen,
+                                                                  fixLen, payloadLen, crcOn );
+            denominator = RadioGetLoRaBandwidthInHz( Bandwidths[bandwidth] );
+        }
+        break;
+    }
+    // Perform integral ceil()
+    return ( numerator + denominator - 1 ) / denominator;
 }
 
 void RadioSend( uint8_t *buffer, uint8_t size )
@@ -1016,13 +1032,15 @@ void RadioSend( uint8_t *buffer, uint8_t size )
 						   IRQ_RADIO_NONE,
 						   IRQ_RADIO_NONE );
 
-	if ( SX126xGetPacketType() == PACKET_TYPE_LORA ) {
-		SX126x.PacketParams.Params.LoRa.PayloadLength = size;
-	}
-	else {
-		SX126x.PacketParams.Params.Gfsk.PayloadLength = size;
-	}
-	SX126xSetPacketParams( &SX126x.PacketParams );
+    if( SX126xGetPacketType( ) == PACKET_TYPE_LORA )
+    {
+        SX126x.PacketParams.Params.LoRa.PayloadLength = size;
+    }
+    else
+    {
+        SX126x.PacketParams.Params.Gfsk.PayloadLength = size;
+    }
+    SX126xSetPacketParams( &SX126x.PacketParams );
 
 	SX126xSendPayload( buffer, size, 0 );
 	// TODO
@@ -1045,17 +1063,6 @@ void RadioStandby( void )
 	SX126xSetStandby( STDBY_RC );
 }
 
-void LorawanRadioRx( uint32_t timeout )
-{
-	UNUSED( timeout );
-	SX126xSetDioIrqParams( IRQ_RADIO_ALL, //IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT,
-						   IRQ_RADIO_ALL, //IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT,
-						   IRQ_RADIO_NONE,
-						   IRQ_RADIO_NONE );
-
-	SX126xSetRx( 0xFFFFFF );
-}
-
 void RadioRx( uint32_t timeout )
 {
 	SX126xSetDioIrqParams( IRQ_RADIO_ALL, //IRQ_RX_DONE | IRQ_RX_TX_TIMEOUT,
@@ -1063,17 +1070,20 @@ void RadioRx( uint32_t timeout )
 						   IRQ_RADIO_NONE,
 						   IRQ_RADIO_NONE );
 
-	if ( timeout != 0 ) {
-		TimerSetValue( &RxTimeoutTimer, timeout );
-		TimerStart( &RxTimeoutTimer );
-	}
+    if( timeout != 0 )
+    {
+        TimerSetValue( &RxTimeoutTimer, timeout );
+        TimerStart( &RxTimeoutTimer );
+    }
 
-	if ( RxContinuous == true ) {
-		SX126xSetRx( 0xFFFFFF ); // Rx Continuous
-	}
-	else {
-		SX126xSetRx( RxTimeout << 6 );
-	}
+    if( RxContinuous == true )
+    {
+        SX126xSetRx( 0xFFFFFF ); // Rx Continuous
+    }
+    else
+    {
+        SX126xSetRx( RxTimeout << 6 );
+    }
 }
 
 void RadioRxBoosted( uint32_t timeout )
@@ -1083,17 +1093,20 @@ void RadioRxBoosted( uint32_t timeout )
 						   IRQ_RADIO_NONE,
 						   IRQ_RADIO_NONE );
 
-	if ( timeout != 0 ) {
-		TimerSetValue( &RxTimeoutTimer, timeout );
-		TimerStart( &RxTimeoutTimer );
-	}
+    if( timeout != 0 )
+    {
+        TimerSetValue( &RxTimeoutTimer, timeout );
+        TimerStart( &RxTimeoutTimer );
+    }
 
-	if ( RxContinuous == true ) {
-		SX126xSetRxBoosted( 0xFFFFFF ); // Rx Continuous
-	}
-	else {
-		SX126xSetRxBoosted( RxTimeout << 6 );
-	}
+    if( RxContinuous == true )
+    {
+        SX126xSetRxBoosted( 0xFFFFFF ); // Rx Continuous
+    }
+    else
+    {
+        SX126xSetRxBoosted( RxTimeout << 6 );
+    }
 }
 
 void RadioSetRxDutyCycle( uint32_t rxTime, uint32_t sleepTime )
@@ -1109,7 +1122,7 @@ void RadioStartCad( void )
 
 void RadioSetTxContinuousWave( uint32_t freq, int8_t power, uint16_t time )
 {
-	uint32_t timeout = (uint32_t) time * 1000;
+    uint32_t timeout = ( uint32_t )time * 1000;
 
 	SX126xSetRfFrequency( freq );
 	SX126xSetRfTxPower( power );
@@ -1147,33 +1160,38 @@ void RadioReadBuffer( uint32_t addr, uint8_t *buffer, uint8_t size )
 
 void RadioSetMaxPayloadLength( RadioModems_t modem, uint8_t max )
 {
-	if ( modem == MODEM_LORA ) {
-		SX126x.PacketParams.Params.LoRa.PayloadLength = MaxPayloadLength = max;
-		SX126xSetPacketParams( &SX126x.PacketParams );
-	}
-	else {
-		if ( SX126x.PacketParams.Params.Gfsk.HeaderType == RADIO_PACKET_VARIABLE_LENGTH ) {
-			SX126x.PacketParams.Params.Gfsk.PayloadLength = MaxPayloadLength = max;
-			SX126xSetPacketParams( &SX126x.PacketParams );
-		}
-	}
+    if( modem == MODEM_LORA )
+    {
+        SX126x.PacketParams.Params.LoRa.PayloadLength = MaxPayloadLength = max;
+        SX126xSetPacketParams( &SX126x.PacketParams );
+    }
+    else
+    {
+        if( SX126x.PacketParams.Params.Gfsk.HeaderType == RADIO_PACKET_VARIABLE_LENGTH )
+        {
+            SX126x.PacketParams.Params.Gfsk.PayloadLength = MaxPayloadLength = max;
+            SX126xSetPacketParams( &SX126x.PacketParams );
+        }
+    }
 }
 
 void RadioSetPublicNetwork( bool enable )
 {
 	RadioPublicNetwork.Current = RadioPublicNetwork.Previous = enable;
 
-	RadioSetModem( MODEM_LORA );
-	if ( enable == true ) {
-		// Change LoRa modem SyncWord
-		SX126xWriteRegister( REG_LR_SYNCWORD, ( LORA_MAC_PUBLIC_SYNCWORD >> 8 ) & 0xFF );
-		SX126xWriteRegister( REG_LR_SYNCWORD + 1, LORA_MAC_PUBLIC_SYNCWORD & 0xFF );
-	}
-	else {
-		// Change LoRa modem SyncWord
-		SX126xWriteRegister( REG_LR_SYNCWORD, ( LORA_MAC_PRIVATE_SYNCWORD >> 8 ) & 0xFF );
-		SX126xWriteRegister( REG_LR_SYNCWORD + 1, LORA_MAC_PRIVATE_SYNCWORD & 0xFF );
-	}
+    RadioSetModem( MODEM_LORA );
+    if( enable == true )
+    {
+        // Change LoRa modem SyncWord
+        SX126xWriteRegister( REG_LR_SYNCWORD, ( LORA_MAC_PUBLIC_SYNCWORD >> 8 ) & 0xFF );
+        SX126xWriteRegister( REG_LR_SYNCWORD + 1, LORA_MAC_PUBLIC_SYNCWORD & 0xFF );
+    }
+    else
+    {
+        // Change LoRa modem SyncWord
+        SX126xWriteRegister( REG_LR_SYNCWORD, ( LORA_MAC_PRIVATE_SYNCWORD >> 8 ) & 0xFF );
+        SX126xWriteRegister( REG_LR_SYNCWORD + 1, LORA_MAC_PRIVATE_SYNCWORD & 0xFF );
+    }
 }
 
 uint32_t RadioGetWakeupTime( void )
@@ -1181,23 +1199,25 @@ uint32_t RadioGetWakeupTime( void )
 	return SX126xGetBoardTcxoWakeupTime() + RADIO_WAKEUP_TIME;
 }
 
-void RadioOnTxTimeoutIrq( void *context )
+void RadioOnTxTimeoutIrq( void* context )
 {
 	UNUSED( context );
-	if ( ( RadioEvents != NULL ) && ( RadioEvents->TxTimeout != NULL ) ) {
-		RadioEvents->TxTimeout();
-	}
+	if( ( RadioEvents != NULL ) && ( RadioEvents->TxTimeout != NULL ) )
+    {
+        RadioEvents->TxTimeout( );
+    }
 }
 
-void RadioOnRxTimeoutIrq( void *context )
+void RadioOnRxTimeoutIrq( void* context )
 {
 	UNUSED( context );
-	if ( ( RadioEvents != NULL ) && ( RadioEvents->RxTimeout != NULL ) ) {
-		RadioEvents->RxTimeout();
-	}
+	if( ( RadioEvents != NULL ) && ( RadioEvents->RxTimeout != NULL ) )
+    {
+        RadioEvents->RxTimeout( );
+    }
 }
 
-void RadioOnDioIrq( void *context )
+void RadioOnDioIrq( void* context )
 {
 	UNUSED( context );
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
@@ -1212,105 +1232,128 @@ void vWaitforInterrupt( void )
 
 void RadioIrqProcess( void )
 {
-	if ( IrqFired == true ) {
-		CRITICAL_SECTION_BEGIN();
-		// Clear IRQ flag
-		IrqFired = false;
-		CRITICAL_SECTION_END();
+    if( IrqFired == true )
+    {
+        CRITICAL_SECTION_BEGIN( );
+        // Clear IRQ flag
+        IrqFired = false;
+        CRITICAL_SECTION_END( );
 
 		uint16_t irqRegs = SX126xGetIrqStatus();
 		SX126xClearIrqStatus( irqRegs );
 
-		if ( ( irqRegs & IRQ_TX_DONE ) == IRQ_TX_DONE ) {
-			TimerStop( &TxTimeoutTimer );
-			//!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
-			SX126xSetOperatingMode( MODE_STDBY_RC );
-			if ( ( RadioEvents != NULL ) && ( RadioEvents->TxDone != NULL ) ) {
-				RadioEvents->TxDone();
-			}
-		}
+        if( ( irqRegs & IRQ_TX_DONE ) == IRQ_TX_DONE )
+        {
+            TimerStop( &TxTimeoutTimer );
+            //!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
+            SX126xSetOperatingMode( MODE_STDBY_RC );
+            if( ( RadioEvents != NULL ) && ( RadioEvents->TxDone != NULL ) )
+            {
+                RadioEvents->TxDone( );
+            }
+        }
 
-		if ( ( irqRegs & IRQ_RX_DONE ) == IRQ_RX_DONE ) {
-			if ( ( irqRegs & IRQ_CRC_ERROR ) == IRQ_CRC_ERROR ) {
-				if ( RxContinuous == false ) {
-					//!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
-					SX126xSetOperatingMode( MODE_STDBY_RC );
-				}
-				if ( ( RadioEvents != NULL ) && ( RadioEvents->RxError ) ) {
-					RadioEvents->RxError();
-				}
-			}
-			else {
-				uint8_t size;
+        if( ( irqRegs & IRQ_RX_DONE ) == IRQ_RX_DONE )
+        {
+            if( ( irqRegs & IRQ_CRC_ERROR ) == IRQ_CRC_ERROR )
+            {
+                if( RxContinuous == false )
+                {
+                    //!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
+                    SX126xSetOperatingMode( MODE_STDBY_RC );
+                }
+                if( ( RadioEvents != NULL ) && ( RadioEvents->RxError ) )
+                {
+                    RadioEvents->RxError( );
+                }
+            }
+            else
+            {
+                uint8_t size;
 
-				TimerStop( &RxTimeoutTimer );
-				if ( RxContinuous == false ) {
-					//!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
-					SX126xSetOperatingMode( MODE_STDBY_RC );
+                TimerStop( &RxTimeoutTimer );
+                if( RxContinuous == false )
+                {
+                    //!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
+                    SX126xSetOperatingMode( MODE_STDBY_RC );
 
-					// WORKAROUND - Implicit Header Mode Timeout Behavior, see DS_SX1261-2_V1.2 datasheet chapter 15.3
-					// RegRtcControl = @address 0x0902
-					SX126xWriteRegister( 0x0902, 0x00 );
-					// RegEventMask = @address 0x0944
-					SX126xWriteRegister( 0x0944, SX126xReadRegister( 0x0944 ) | ( 1 << 1 ) );
-					// WORKAROUND END
-				}
-				SX126xGetPayload( RadioRxPayload, &size, 255 );
-				SX126xGetPacketStatus( &RadioPktStatus );
-				if ( ( RadioEvents != NULL ) && ( RadioEvents->RxDone != NULL ) ) {
-					RadioEvents->RxDone( RadioRxPayload, size, RadioPktStatus.Params.LoRa.RssiPkt, RadioPktStatus.Params.LoRa.SnrPkt );
-				}
-			}
-		}
+                    // WORKAROUND - Implicit Header Mode Timeout Behavior, see DS_SX1261-2_V1.2 datasheet chapter 15.3
+                    // RegRtcControl = @address 0x0902
+                    SX126xWriteRegister( 0x0902, 0x00 );
+                    // RegEventMask = @address 0x0944
+                    SX126xWriteRegister( 0x0944, SX126xReadRegister( 0x0944 ) | ( 1 << 1 ) );
+                    // WORKAROUND END
+                }
+                SX126xGetPayload( RadioRxPayload, &size , 255 );
+                SX126xGetPacketStatus( &RadioPktStatus );
+                if( ( RadioEvents != NULL ) && ( RadioEvents->RxDone != NULL ) )
+                {
+                    RadioEvents->RxDone( RadioRxPayload, size, RadioPktStatus.Params.LoRa.RssiPkt, RadioPktStatus.Params.LoRa.SnrPkt );
+                }
+            }
+        }
 
-		if ( ( irqRegs & IRQ_CAD_DONE ) == IRQ_CAD_DONE ) {
-			//!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
-			SX126xSetOperatingMode( MODE_STDBY_RC );
-			if ( ( RadioEvents != NULL ) && ( RadioEvents->CadDone != NULL ) ) {
-				RadioEvents->CadDone( ( ( irqRegs & IRQ_CAD_ACTIVITY_DETECTED ) == IRQ_CAD_ACTIVITY_DETECTED ) );
-			}
-		}
+        if( ( irqRegs & IRQ_CAD_DONE ) == IRQ_CAD_DONE )
+        {
+            //!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
+            SX126xSetOperatingMode( MODE_STDBY_RC );
+            if( ( RadioEvents != NULL ) && ( RadioEvents->CadDone != NULL ) )
+            {
+                RadioEvents->CadDone( ( ( irqRegs & IRQ_CAD_ACTIVITY_DETECTED ) == IRQ_CAD_ACTIVITY_DETECTED ) );
+            }
+        }
 
-		if ( ( irqRegs & IRQ_RX_TX_TIMEOUT ) == IRQ_RX_TX_TIMEOUT ) {
-			if ( SX126xGetOperatingMode() == MODE_TX ) {
-				TimerStop( &TxTimeoutTimer );
-				//!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
-				SX126xSetOperatingMode( MODE_STDBY_RC );
-				if ( ( RadioEvents != NULL ) && ( RadioEvents->TxTimeout != NULL ) ) {
-					RadioEvents->TxTimeout();
-				}
-			}
-			else if ( SX126xGetOperatingMode() == MODE_RX ) {
-				TimerStop( &RxTimeoutTimer );
-				//!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
-				SX126xSetOperatingMode( MODE_STDBY_RC );
-				if ( ( RadioEvents != NULL ) && ( RadioEvents->RxTimeout != NULL ) ) {
-					RadioEvents->RxTimeout();
-				}
-			}
-		}
+        if( ( irqRegs & IRQ_RX_TX_TIMEOUT ) == IRQ_RX_TX_TIMEOUT )
+        {
+            if( SX126xGetOperatingMode( ) == MODE_TX )
+            {
+                TimerStop( &TxTimeoutTimer );
+                //!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
+                SX126xSetOperatingMode( MODE_STDBY_RC );
+                if( ( RadioEvents != NULL ) && ( RadioEvents->TxTimeout != NULL ) )
+                {
+                    RadioEvents->TxTimeout( );
+                }
+            }
+            else if( SX126xGetOperatingMode( ) == MODE_RX )
+            {
+                TimerStop( &RxTimeoutTimer );
+                //!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
+                SX126xSetOperatingMode( MODE_STDBY_RC );
+                if( ( RadioEvents != NULL ) && ( RadioEvents->RxTimeout != NULL ) )
+                {
+                    RadioEvents->RxTimeout( );
+                }
+            }
+        }
 
-		if ( ( irqRegs & IRQ_PREAMBLE_DETECTED ) == IRQ_PREAMBLE_DETECTED ) {
-			//__NOP( );
-		}
+        if( ( irqRegs & IRQ_PREAMBLE_DETECTED ) == IRQ_PREAMBLE_DETECTED )
+        {
+            //__NOP( );
+        }
 
-		if ( ( irqRegs & IRQ_SYNCWORD_VALID ) == IRQ_SYNCWORD_VALID ) {
-			//__NOP( );
-		}
+        if( ( irqRegs & IRQ_SYNCWORD_VALID ) == IRQ_SYNCWORD_VALID )
+        {
+            //__NOP( );
+        }
 
-		if ( ( irqRegs & IRQ_HEADER_VALID ) == IRQ_HEADER_VALID ) {
-			//__NOP( );
-		}
+        if( ( irqRegs & IRQ_HEADER_VALID ) == IRQ_HEADER_VALID )
+        {
+            //__NOP( );
+        }
 
-		if ( ( irqRegs & IRQ_HEADER_ERROR ) == IRQ_HEADER_ERROR ) {
-			TimerStop( &RxTimeoutTimer );
-			if ( RxContinuous == false ) {
-				//!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
-				SX126xSetOperatingMode( MODE_STDBY_RC );
-			}
-			if ( ( RadioEvents != NULL ) && ( RadioEvents->RxTimeout != NULL ) ) {
-				RadioEvents->RxTimeout();
-			}
-		}
-	}
+        if( ( irqRegs & IRQ_HEADER_ERROR ) == IRQ_HEADER_ERROR )
+        {
+            TimerStop( &RxTimeoutTimer );
+            if( RxContinuous == false )
+            {
+                //!< Update operating mode state to a value lower than \ref MODE_STDBY_XOSC
+                SX126xSetOperatingMode( MODE_STDBY_RC );
+            }
+            if( ( RadioEvents != NULL ) && ( RadioEvents->RxTimeout != NULL ) )
+            {
+                RadioEvents->RxTimeout( );
+            }
+        }
+    }
 }
