@@ -766,7 +766,8 @@ void RadioSetTxConfig( RadioModems_t modem, int8_t power, uint32_t fdev,
 {
 	UNUSED( freqHopOn );
 	UNUSED( hopPeriod );
-	switch ( modem ) {
+    switch( modem )
+    {
 		case MODEM_FSK:
 			SX126x.ModulationParams.PacketType			= PACKET_TYPE_GFSK;
 			SX126x.ModulationParams.Params.Gfsk.BitRate = datarate;
@@ -782,13 +783,15 @@ void RadioSetTxConfig( RadioModems_t modem, int8_t power, uint32_t fdev,
 			SX126x.PacketParams.Params.Gfsk.AddrComp		  = RADIO_ADDRESSCOMP_FILT_OFF;
 			SX126x.PacketParams.Params.Gfsk.HeaderType		  = ( fixLen == true ) ? RADIO_PACKET_FIXED_LENGTH : RADIO_PACKET_VARIABLE_LENGTH;
 
-			if ( crcOn == true ) {
-				SX126x.PacketParams.Params.Gfsk.CrcLength = RADIO_CRC_2_BYTES_CCIT;
-			}
-			else {
-				SX126x.PacketParams.Params.Gfsk.CrcLength = RADIO_CRC_OFF;
-			}
-			SX126x.PacketParams.Params.Gfsk.DcFree = RADIO_DC_FREEWHITENING;
+            if( crcOn == true )
+            {
+                SX126x.PacketParams.Params.Gfsk.CrcLength = RADIO_CRC_2_BYTES_CCIT;
+            }
+            else
+            {
+                SX126x.PacketParams.Params.Gfsk.CrcLength = RADIO_CRC_OFF;
+            }
+            SX126x.PacketParams.Params.Gfsk.DcFree = RADIO_DC_FREEWHITENING;
 
 			RadioStandby();
 			RadioSetModem( ( SX126x.ModulationParams.PacketType == PACKET_TYPE_GFSK ) ? MODEM_FSK : MODEM_LORA );
@@ -798,39 +801,45 @@ void RadioSetTxConfig( RadioModems_t modem, int8_t power, uint32_t fdev,
 			SX126xSetWhiteningSeed( 0x01FF );
 			break;
 
-		case MODEM_LORA:
-			SX126x.ModulationParams.PacketType					= PACKET_TYPE_LORA;
-			SX126x.ModulationParams.Params.LoRa.SpreadingFactor = (RadioLoRaSpreadingFactors_t) datarate;
-			SX126x.ModulationParams.Params.LoRa.Bandwidth		= Bandwidths[bandwidth];
-			SX126x.ModulationParams.Params.LoRa.CodingRate		= (RadioLoRaCodingRates_t) coderate;
+        case MODEM_LORA:
+            SX126x.ModulationParams.PacketType = PACKET_TYPE_LORA;
+            SX126x.ModulationParams.Params.LoRa.SpreadingFactor = ( RadioLoRaSpreadingFactors_t ) datarate;
+            SX126x.ModulationParams.Params.LoRa.Bandwidth =  Bandwidths[bandwidth];
+            SX126x.ModulationParams.Params.LoRa.CodingRate= ( RadioLoRaCodingRates_t )coderate;
 
-			if ( ( ( bandwidth == 0 ) && ( ( datarate == 11 ) || ( datarate == 12 ) ) ) ||
-				 ( ( bandwidth == 1 ) && ( datarate == 12 ) ) ) {
-				SX126x.ModulationParams.Params.LoRa.LowDatarateOptimize = 0x01;
-			}
-			else {
-				SX126x.ModulationParams.Params.LoRa.LowDatarateOptimize = 0x00;
-			}
+            if( ( ( bandwidth == 0 ) && ( ( datarate == 11 ) || ( datarate == 12 ) ) ) ||
+            ( ( bandwidth == 1 ) && ( datarate == 12 ) ) )
+            {
+                SX126x.ModulationParams.Params.LoRa.LowDatarateOptimize = 0x01;
+            }
+            else
+            {
+                SX126x.ModulationParams.Params.LoRa.LowDatarateOptimize = 0x00;
+            }
 
 			SX126x.PacketParams.PacketType = PACKET_TYPE_LORA;
 
-			if ( ( SX126x.ModulationParams.Params.LoRa.SpreadingFactor == LORA_SF5 ) ||
-				 ( SX126x.ModulationParams.Params.LoRa.SpreadingFactor == LORA_SF6 ) ) {
-				if ( preambleLen < 12 ) {
-					SX126x.PacketParams.Params.LoRa.PreambleLength = 12;
-				}
-				else {
-					SX126x.PacketParams.Params.LoRa.PreambleLength = preambleLen;
-				}
-			}
-			else {
-				SX126x.PacketParams.Params.LoRa.PreambleLength = preambleLen;
-			}
+            if( ( SX126x.ModulationParams.Params.LoRa.SpreadingFactor == LORA_SF5 ) ||
+                ( SX126x.ModulationParams.Params.LoRa.SpreadingFactor == LORA_SF6 ) )
+            {
+                if( preambleLen < 12 )
+                {
+                    SX126x.PacketParams.Params.LoRa.PreambleLength = 12;
+                }
+                else
+                {
+                    SX126x.PacketParams.Params.LoRa.PreambleLength = preambleLen;
+                }
+            }
+            else
+            {
+                SX126x.PacketParams.Params.LoRa.PreambleLength = preambleLen;
+            }
 
-			SX126x.PacketParams.Params.LoRa.HeaderType	  = (RadioLoRaPacketLengthsMode_t) fixLen;
-			SX126x.PacketParams.Params.LoRa.PayloadLength = MaxPayloadLength;
-			SX126x.PacketParams.Params.LoRa.CrcMode		  = (RadioLoRaCrcModes_t) crcOn;
-			SX126x.PacketParams.Params.LoRa.InvertIQ	  = (RadioLoRaIQModes_t) iqInverted;
+            SX126x.PacketParams.Params.LoRa.HeaderType = ( RadioLoRaPacketLengthsMode_t )fixLen;
+            SX126x.PacketParams.Params.LoRa.PayloadLength = MaxPayloadLength;
+            SX126x.PacketParams.Params.LoRa.CrcMode = ( RadioLoRaCrcModes_t )crcOn;
+            SX126x.PacketParams.Params.LoRa.InvertIQ = ( RadioLoRaIQModes_t )iqInverted;
 
 			RadioStandby();
 			RadioSetModem( ( SX126x.ModulationParams.PacketType == PACKET_TYPE_GFSK ) ? MODEM_FSK : MODEM_LORA );
@@ -839,16 +848,18 @@ void RadioSetTxConfig( RadioModems_t modem, int8_t power, uint32_t fdev,
 			break;
 	}
 
-	// WORKAROUND - Modulation Quality with 500 kHz LoRa Bandwidth, see DS_SX1261-2_V1.2 datasheet chapter 15.1
-	if ( ( modem == MODEM_LORA ) && ( SX126x.ModulationParams.Params.LoRa.Bandwidth == LORA_BW_500 ) ) {
-		// RegTxModulation = @address 0x0889
-		SX126xWriteRegister( 0x0889, SX126xReadRegister( 0x0889 ) & ~( 1 << 2 ) );
-	}
-	else {
-		// RegTxModulation = @address 0x0889
-		SX126xWriteRegister( 0x0889, SX126xReadRegister( 0x0889 ) | ( 1 << 2 ) );
-	}
-	// WORKAROUND END
+    // WORKAROUND - Modulation Quality with 500 kHz LoRa Bandwidth, see DS_SX1261-2_V1.2 datasheet chapter 15.1
+    if( ( modem == MODEM_LORA ) && ( SX126x.ModulationParams.Params.LoRa.Bandwidth == LORA_BW_500 ) )
+    {
+        // RegTxModulation = @address 0x0889
+        SX126xWriteRegister( 0x0889, SX126xReadRegister( 0x0889 ) & ~( 1 << 2 ) );
+    }
+    else
+    {
+        // RegTxModulation = @address 0x0889
+        SX126xWriteRegister( 0x0889, SX126xReadRegister( 0x0889 ) | ( 1 << 2 ) );
+    }
+    // WORKAROUND END
 
 	SX126xSetRfTxPower( power );
 	TxTimeout = timeout;
