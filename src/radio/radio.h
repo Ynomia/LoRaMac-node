@@ -24,7 +24,8 @@
 #define __RADIO_H__
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #include <stdint.h>
@@ -150,16 +151,16 @@ struct Radio_s
      *
      * \retval isFree         [true: Channel is free, false: Channel is not free]
      */
-	bool ( *IsChannelFree )( uint32_t freq, uint32_t rxBandwidth, int16_t rssiThresh, uint32_t maxCarrierSenseTime );
-	/*!
-     * \brief Generates a 16 bits random value based on the RSSI readings
+    bool    ( *IsChannelFree )( uint32_t freq, uint32_t rxBandwidth, int16_t rssiThresh, uint32_t maxCarrierSenseTime );
+    /*!
+     * \brief Generates a 32 bits random value based on the RSSI readings
      *
      * \remark This function sets the radio in LoRa modem mode and disables
      *         all interrupts.
      *         After calling this function either Radio.SetRxConfig or
      *         Radio.SetTxConfig functions must be called.
      *
-     * \retval randomValue    16 bits random value
+     * \retval randomValue    32 bits random value
      */
     uint32_t ( *Random )( void );
     /*!
