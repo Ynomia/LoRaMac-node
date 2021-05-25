@@ -159,6 +159,53 @@ extern "C"
  */
 #define LORAMAC_CRYPTO_MULTICAST_KEYS   127
 
+
+/*!
+ * Maximum MAC commands buffer size
+ */
+#define LORA_MAC_COMMAND_MAX_LENGTH                 128
+
+
+/*!
+ * Bitmap value
+ */
+#define LORAMAC_NVM_NOTIFY_FLAG_NONE                0x00
+
+/*!
+ * Bitmap value for the NVM group crypto.
+ */
+#define LORAMAC_NVM_NOTIFY_FLAG_CRYPTO              0x01
+
+/*!
+ * Bitmap value for the NVM group MAC 1.
+ */
+#define LORAMAC_NVM_NOTIFY_FLAG_MAC_GROUP1          0x02
+
+/*!
+ * Bitmap value for the NVM group MAC 2.
+ */
+#define LORAMAC_NVM_NOTIFY_FLAG_MAC_GROUP2          0x04
+
+/*!
+ * Bitmap value for the NVM group secure element.
+ */
+#define LORAMAC_NVM_NOTIFY_FLAG_SECURE_ELEMENT      0x08
+
+/*!
+ * Bitmap value for the NVM group 1 region.
+ */
+#define LORAMAC_NVM_NOTIFY_FLAG_REGION_GROUP1       0x10
+
+/*!
+ * Bitmap value for the NVM group 2 region.
+ */
+#define LORAMAC_NVM_NOTIFY_FLAG_REGION_GROUP2       0x20
+
+/*!
+ * Bitmap value for the NVM group class b.
+ */
+#define LORAMAC_NVM_NOTIFY_FLAG_CLASS_B             0x40
+
 /*!
  * End-Device activation type
  */
@@ -177,62 +224,6 @@ typedef enum eActivationType
      */
     ACTIVATION_TYPE_OTAA = 2,
 }ActivationType_t;
-
-/*!
- * LoRaMAC channels parameters definition
- */
-typedef union uDrRange
-{
-    /*!
-     * Byte-access to the bits
-     */
-    int8_t Value;
-    /*!
-     * Structure to store the minimum and the maximum datarate
-     */
-    struct sFields
-    {
-        /*!
-         * Minimum data rate
-         *
-         * LoRaWAN Regional Parameters V1.0.2rB
-         *
-         * The allowed ranges are region specific. Please refer to \ref DR_0 to \ref DR_15 for details.
-         */
-        int8_t Min : 4;
-        /*!
-         * Maximum data rate
-         *
-         * LoRaWAN Regional Parameters V1.0.2rB
-         *
-         * The allowed ranges are region specific. Please refer to \ref DR_0 to \ref DR_15 for details.
-         */
-        int8_t Max : 4;
-    }Fields;
-}DrRange_t;
-
-/*!
- * LoRaMAC channel definition
- */
-typedef struct sChannelParams
-{
-    /*!
-     * Frequency in Hz
-     */
-    uint32_t Frequency;
-    /*!
-     * Alternative frequency for RX window 1
-     */
-    uint32_t Rx1Frequency;
-    /*!
-     * Data rate definition
-     */
-    DrRange_t DrRange;
-    /*!
-     * Band index
-     */
-    uint8_t Band;
-}ChannelParams_t;
 
 /*!
  * LoRaMAC receive window channel parameters
