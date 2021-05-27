@@ -85,7 +85,7 @@ bool RadioIsChannelFree( uint32_t freq, uint32_t rxBandwidth, int16_t rssiThresh
  *
  * \retval randomValue    16 bits random value
  */
-uint32_t RadioRandom( void );
+uint16_t RadioRandom( void );
 
 /*!
  * \brief Sets the reception parameters
@@ -610,9 +610,9 @@ bool RadioIsChannelFree( uint32_t freq, uint32_t rxBandwidth, int16_t rssiThresh
     return status;
 }
 
-uint32_t RadioRandom( void )
+uint16_t RadioRandom( void )
 {
-    uint32_t rnd = 0;
+    uint16_t rnd = 0;
 
 	/*
      * Radio setup for random number generation

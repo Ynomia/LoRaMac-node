@@ -162,7 +162,7 @@ struct Radio_s
      *
      * \retval randomValue    32 bits random value
      */
-    uint32_t ( *Random )( void );
+    uint16_t ( *Random )( void );
     /*!
      * \brief Sets the reception parameters
      *

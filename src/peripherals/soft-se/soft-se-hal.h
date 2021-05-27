@@ -47,7 +47,7 @@ void SoftSeHalGetUniqueId( uint8_t *id );
  *         generator
  * \retval number 32 bit random value
  */
-uint32_t SoftSeHalGetRandomNumber( void );
+uint16_t SoftSeHalGetRandomNumber( void );
 
 #ifdef __cplusplus
 }
