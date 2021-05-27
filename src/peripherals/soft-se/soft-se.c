@@ -477,7 +477,7 @@ SecureElementStatus_t SecureElementProcessJoinAccept( JoinReqIdentifier_t joinRe
     return SECURE_ELEMENT_SUCCESS;
 }
 
-SecureElementStatus_t SecureElementRandomNumber( uint32_t* randomNum )
+SecureElementStatus_t SecureElementRandomNumber( uint16_t* randomNum )
 {
     if( randomNum == NULL )
     {

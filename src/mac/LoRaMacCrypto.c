@@ -1111,8 +1111,12 @@ LoRaMacCryptoStatus_t LoRaMacCryptoPrepareJoinRequest( LoRaMacMessageJoinRequest
 
     // Add device nonce
 #if ( USE_RANDOM_DEV_NONCE == 1 )
-    uint32_t devNonce = 0;
+    uint16_t devNonce = 0;
     SecureElementRandomNumber( &devNonce );
+    if ( devNonce == 0 ) {
+		devNonce = randr( 1, 0x01FF );
+	}
+    eLog ( LOG_LORAWAN, LOG_DEBUG, "devNonce = %d\r\n", devNonce);
     CryptoCtx.NvmCtx->DevNonce = devNonce;
 #else
     CryptoCtx.NvmCtx->DevNonce++;

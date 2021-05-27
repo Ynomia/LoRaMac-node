@@ -807,7 +807,7 @@ void SX126xSetWhiteningSeed( uint16_t seed );
  *
  * \retval randomValue    16 bits random value
  */
-uint32_t SX126xGetRandom( void );
+uint16_t SX126xGetRandom( void );
 
 /*!
  * \brief Sets the radio in sleep mode

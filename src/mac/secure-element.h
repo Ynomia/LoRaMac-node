@@ -207,7 +207,7 @@ SecureElementStatus_t SecureElementProcessJoinAccept( JoinReqIdentifier_t joinRe
  * \param[OUT] randomNum      - 32 bit random number
  * \retval                    - Status of the operation
  */
-SecureElementStatus_t SecureElementRandomNumber( uint32_t* randomNum );
+SecureElementStatus_t SecureElementRandomNumber( uint16_t* randomNum );
 
 /*!
  * Sets the DevEUI

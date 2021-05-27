@@ -33,7 +33,7 @@ void SoftSeHalGetUniqueId( uint8_t *id )
     BoardGetUniqueId( id );
 }
 
-uint32_t SoftSeHalGetRandomNumber( void )
+uint16_t SoftSeHalGetRandomNumber( void )
 {
     return Radio.Random( );
 }
