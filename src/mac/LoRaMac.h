@@ -687,7 +687,7 @@ typedef struct sMcpsReqUnconfirmed
     /*!
      * Size of the frame payload
      */
-    uint16_t fBufferSize;
+    uint8_t fBufferSize;
     /*!
      * Uplink datarate, if ADR is off
      */
@@ -1953,7 +1953,7 @@ typedef union uMibParam
      *
      * Related MIB type: \ref MIB_CHANNELS_DEFAULT_DATARATE
      */
-    int8_t ChannelsDefaultDatarate;
+    uint8_t ChannelsDefaultDatarate;
     /*!
      * Channels data rate
      *
