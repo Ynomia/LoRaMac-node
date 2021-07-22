@@ -38,7 +38,7 @@ STATIC_SEMAPHORE_STRUCTURES( xRadioInteruptHandle );
 /* Functions ----------------------------------------------- */
 void vTimerTaskInit( void )
 {
-	STATIC_TASK_CREATE( TimerTask, vTimerTaskFunction, "TimerTask", NULL );
+	STATIC_TASK_CREATE( TimerTask, vTimerTaskFunction, "LoRa Timer", NULL );
 }
 
 void TimerInit( TimerEvent_t *obj, void ( *fnCallback )( void *pvContext ) )
